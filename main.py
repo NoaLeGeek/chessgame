@@ -27,6 +27,7 @@ def get_position(x, y):
 
 def main():
     pygame.init()
+    count = 0
     run = True
     fps = 60
     # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
@@ -49,7 +50,10 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
-                    window.blit(pieces["wR"], (location[0] - square_size/2, location[1] - square_size/2))
+                    window.blit(pieces[list(pieces.keys())[count]], (location[0] - square_size/2, location[1] - square_size/2))
+                    count += 1
+                    if count >= len(pieces):
+                        count = 0
 
 
 if __name__ == "__main__":
