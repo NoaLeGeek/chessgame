@@ -3,7 +3,12 @@ import os
 
 
 def main():
+    pygame.init()
+    clock = pygame.time.Clock()
+    run = True
+    fps = 60
     width, height = 760, 760
+    win = pygame.display.set_mode((width, height))
     rows, cols = 8, 8
     square_size = width // cols
     tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
@@ -18,7 +23,20 @@ def main():
                    "orange": ((250, 228, 174), (209, 136, 21)),
                    "red": ((245, 219, 195), (187, 87, 70)),
                    "tan": ((237, 203, 165), (216, 164, 109))}
-    print("Hello World!")
+    selected_asset = "brown"
+    # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
+    pieces = {}
+    for piece in ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]:
+        pieces[piece] = pygame.transform.scale(pygame.image.load(
+            os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", selected_asset, piece + ".svg")), (square_size, square_size))
+    while run:
+        clock.tick(fps)
+        win.blit(pieces["wR"], (50, 50))
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
 
 
 if __name__ == "__main__":
