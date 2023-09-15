@@ -28,7 +28,7 @@ def main():
     pieces = {}
     for piece in ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]:
         pieces[piece] = pygame.transform.scale(pygame.image.load(
-            os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", selected_asset, piece + ".svg")), (square_size, square_size))
+            os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", selected_asset, piece + ".png")), (square_size, square_size))
     while run:
         clock.tick(fps)
         win.blit(pieces["wR"], (50, 50))
