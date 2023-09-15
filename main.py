@@ -38,6 +38,7 @@ def main():
     while run:
         clock.tick(fps)
         window.blit(pieces["wR"], (50, 50))
+        pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -48,8 +49,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
-                    window.blit(pieces["wR"], (location[0], location[1]))
-        pygame.display.update()
+                    window.blit(pieces["wR"], (location[0] - square_size/2, location[1] - square_size/2))
 
 
 if __name__ == "__main__":
