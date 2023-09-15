@@ -1,4 +1,3 @@
-
 class Piece:
     def __init__(self, square_size, image, color, type, row, column):
         self.square_size = square_size
@@ -17,7 +16,7 @@ class Piece:
         self.calc_pos()
 
     def calc_pos(self):
-        self.x = self.col * self.square_size
+        self.x = self.column * self.square_size
         self.y = self.row * self.square_size
 
     def clear_available_moves(self):
@@ -35,3 +34,25 @@ class Pawn(Piece):
         if self.color == "white":
             if row < 1:
                 pass
+            if board[row - 1][column] == 0:
+                self.available_moves.append((row - 1, column))
+            if self.first_move and board[row - 1][column] == 0 and board[row - 2][column] == 0:
+                self.available_moves.append((row - 2, column))
+            if column > 0 and board[row - 1][column - 1] != 0 and board[row - 1][column - 1].color != self.color:
+                self.available_moves.append((row - 1, column - 1))
+            if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][
+                column + 1].color != self.color:
+                self.available_moves.append((row - 1, column + 1))
+        if self.color == "black":
+            if row >= len(board[0]) - 1:
+                pass
+            if board[row + 1][column] == 0:
+                self.available_moves.append((row + 1, column))
+            if self.first_move and board[row + 1][column] == 0 and board[row + 2][column] == 0:
+                self.available_moves.append((row + 2, column))
+            if column > 0 and board[row + 1][column - 1] != 0 and board[row + 1][column - 1].color != self.color:
+                self.available_moves.append((row + 1, column - 1))
+            if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][
+                column + 1].color != self.color:
+                self.available_moves.append((row + 1, column + 1))
+        return self.available_moves
