@@ -56,3 +56,46 @@ class Pawn(Piece):
                 column + 1].color != self.color:
                 self.available_moves.append((row + 1, column + 1))
         return self.available_moves
+
+
+class Rook(Piece):
+    def __init__(self, square_size, image, color, type, row, column):
+        super().__init__(square_size, image, color, type, row, column)
+
+    def get_available_moves(self, row, column, board):
+        self.clear_available_moves()
+        for i in range(row + 1, len(board[0])):
+            if board[i][column] == 0:
+                self.available_moves.append((i, column))
+            elif board[i][column].color != self.color:
+                self.available_moves.append((i, column))
+                break
+            else:
+                break
+        for i in range(row - 1, -1, -1):
+            if board[i][column] == 0:
+                self.available_moves.append((i, column))
+            elif board[i][column].color != self.color:
+                self.available_moves.append((i, column))
+                break
+            else:
+                break
+        for i in range(column + 1, len(board[0])):
+            if board[row][i] == 0:
+                self.available_moves.append((row, i))
+            elif board[row][i].color != self.color:
+                self.available_moves.append((row, i))
+                break
+            else:
+                break
+        for i in range(column - 1, -1, -1):
+            if board[row][i] == 0:
+                self.available_moves.append((row, i))
+            elif board[row][i].color != self.color:
+                self.available_moves.append((row, i))
+                break
+            else:
+                break
+        return self.available_moves
+
+
