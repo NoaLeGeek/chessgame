@@ -162,6 +162,23 @@ class Knight(Piece):
 
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
+        if row > 1 and column > 0 and (board[row - 2][column - 1] == 0 or board[row - 2][column - 1].color != self.color):
+            self.available_moves.append((row - 2, column - 1))
+        if row > 1 and column < len(board) - 1 and (board[row - 2][column + 1] == 0 or board[row - 2][column + 1].color != self.color):
+            self.available_moves.append((row - 2, column + 1))
+        if row < len(board[0]) - 2 and column > 0 and (board[row + 2][column - 1] == 0 or board[row + 2][column - 1].color != self.color):
+            self.available_moves.append((row + 2, column - 1))
+        if row < len(board[0]) - 2 and column < len(board) - 1 and (board[row + 2][column + 1] == 0 or board[row + 2][column + 1].color != self.color):
+            self.available_moves.append((row + 2, column + 1))
+        if row > 0 and column > 1 and (board[row - 1][column - 2] == 0 or board[row - 1][column - 2].color != self.color):
+            self.available_moves.append((row - 1, column - 2))
+        if row > 0 and column < len(board) - 2 and (board[row - 1][column + 2] == 0 or board[row - 1][column + 2].color != self.color):
+            self.available_moves.append((row - 1, column + 2))
+        if row < len(board) - 1 and column > 1 and (board[row + 1][column - 2] == 0 or board[row + 1][column - 2].color != self.color):
+            self.available_moves.append((row + 1, column - 2))
+        if row < len(board) - 1 and column < len(board) - 2 and (board[row + 1][column + 2] == 0 or board[row + 1][column + 2].color != self.color):
+            self.available_moves.append((row + 1, column + 2))
+        return self.available_moves
 
 
 class Queen(Piece):
