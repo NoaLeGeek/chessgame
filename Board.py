@@ -60,15 +60,15 @@ class Board:
             for column in range(row % 2, columns, 2):
                 pygame.draw.rect(self.window, tile_assets[selected_asset][1],(row * self.square_size, column * self.square_size, self.square_size, self.square_size))
 
-    def draw_piece(self, piece):
-        self.window.blit(piece.image, (piece.x, piece.y))
+    def draw_piece(self, piece, window):
+        window.blit(piece.image, (piece.x, piece.y))
 
     def draw_pieces(self):
         for row in range(self.rows):
             for column in range(self.columns):
                 piece = self.board[row][column]
                 if piece != 0:
-                    self.draw_piece(piece)
+                    self.draw_piece(piece, self.window)
 
 
 

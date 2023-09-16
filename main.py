@@ -2,11 +2,9 @@ import pygame
 import os
 import random
 
+from Game import Game
 from Board import Board
 from constants import *
-
-clock = pygame.time.Clock()
-window = pygame.display.set_mode((width, height))
 
 
 def get_position(x, y):
@@ -15,24 +13,29 @@ def get_position(x, y):
 
 def main():
     pygame.init()
+    clock = pygame.time.Clock()
+    window = pygame.display.set_mode((width, height))
     run = True
+    game_over = False
+    turn = "white"
     fps = 60
+    game = Game(width, height, rows, columns, square_size, window)
     while run:
         clock.tick(fps)
-        pygame.display.update()
+        game.update_window()
+        game_over = game.check_game()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    pass
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.KEYDOWN and game_over:
+                if event.key == pygame.K_SPACE and game_over:
+                    game.reset(window)
+            if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
-                    window.blit(pieces[list(pieces.keys())[random.randint(0, len(pieces) - 1)]],
-                                (location[0] - square_size / 2, location[1] - square_size / 2))
-                    row, col = get_position(location[0], location[1])
+                    row, column = get_position(location[0], location[1])
+                    game.select(row, column)
 
 
 if __name__ == "__main__":
