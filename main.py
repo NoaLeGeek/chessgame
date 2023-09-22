@@ -1,10 +1,9 @@
-import pygame
-import os
-import random
-
 from Game import Game
-from Board import Board
 from constants import *
+
+pygame.init()
+clock = pygame.time.Clock()
+window = pygame.display.set_mode((width, height))
 
 
 def get_position(x, y):
@@ -12,9 +11,6 @@ def get_position(x, y):
 
 
 def main():
-    pygame.init()
-    clock = pygame.time.Clock()
-    window = pygame.display.set_mode((width, height))
     run = True
     game_over = False
     turn = "white"

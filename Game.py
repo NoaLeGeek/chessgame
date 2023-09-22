@@ -55,8 +55,7 @@ class Game:
     def get_king_pos(self, board):
         for row in range(len(board)):
             for column in range(len(board[0])):
-                if board[row][column] != 0 and board[row][column].type == "King" and board[row][
-                    column].color == self.turn:
+                if board[row][column] != 0 and board[row][column].type == "King" and board[row][column].color == self.turn:
                     return row, column
 
     def possible_moves(self, board):
