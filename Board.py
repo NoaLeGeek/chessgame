@@ -18,11 +18,11 @@ class Board:
         for row in range(self.rows):
             self.board.append([0 for _ in range(self.columns)])
             for column in range(self.columns):
-                if row == 1:
+                if row == 6:
                     self.board[row][column] = Pawn(self.square_size, pieces[0], "white", "P", row, column)
-                elif row == 6:
+                elif row == 1:
                     self.board[row][column] = Pawn(self.square_size, pieces[6], "black", "P", row, column)
-                elif row == 0:
+                elif row == 7:
                     if column == 0 or column == 7:
                         self.board[row][column] = Rook(self.square_size, pieces[3], "white", "R", row, column)
                     elif column == 1 or column == 6:
@@ -33,7 +33,7 @@ class Board:
                         self.board[row][column] = Queen(self.square_size, pieces[4], "white", "Q", row, column)
                     elif column == 4:
                         self.board[row][column] = King(self.square_size, pieces[5], "white", "K", row, column)
-                elif row == 7:
+                elif row == 0:
                     if column == 0 or column == 7:
                         self.board[row][column] = Rook(self.square_size, pieces[9], "black", "R", row, column)
                     elif column == 1 or column == 6:

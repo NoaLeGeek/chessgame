@@ -70,6 +70,8 @@ class Game:
 
     def checkmate(self, board):
         king_pos = self.get_king_pos(board.board)
+        if king_pos is None:
+            return False
         get_king = board.get_piece(king_pos[0], king_pos[1])
         king_available_moves = set(get_king.get_available_moves(king_pos[0], king_pos[1], board.board))
         enemies_moves_set = set(self.enemies_moves(get_king, board.board))

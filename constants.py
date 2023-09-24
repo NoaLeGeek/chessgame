@@ -1,7 +1,7 @@
 import os
 import pygame
 
-width, height = 760, 760
+width, height = 640, 640
 rows, columns = 8, 8
 square_size = width // columns
 tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
@@ -22,4 +22,4 @@ pieces = []
 for piece in ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]:
     pieces.append(pygame.transform.scale(pygame.image.load(
         os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", selected_asset,
-                     piece + ".png")), (square_size, square_size)))
+                     piece + ".png")), (square_size*3/4, square_size*3/4)))

@@ -9,6 +9,7 @@ class Piece:
         self.x = 0
         self.y = 0
         self.available_moves = []
+        self.calc_pos()
 
     def piece_move(self, row, column):
         self.row = row
@@ -16,8 +17,8 @@ class Piece:
         self.calc_pos()
 
     def calc_pos(self):
-        self.x = self.column * self.square_size
-        self.y = self.row * self.square_size
+        self.x = (self.column + 1/8) * self.square_size
+        self.y = (self.row + 1/8) * self.square_size
 
     def clear_available_moves(self):
         if self.available_moves:
@@ -36,8 +37,8 @@ class Pawn(Piece):
                 pass
             if board[row - 1][column] == 0:
                 self.available_moves.append((row - 1, column))
-            if self.first_move and board[row - 1][column] == 0 and board[row - 2][column] == 0:
-                self.available_moves.append((row - 2, column))
+                if self.first_move and board[row - 2][column] == 0:
+                    self.available_moves.append((row - 2, column))
             if column > 0 and board[row - 1][column - 1] != 0 and board[row - 1][column - 1].color != self.color:
                 self.available_moves.append((row - 1, column - 1))
             if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][
