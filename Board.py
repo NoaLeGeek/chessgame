@@ -50,7 +50,7 @@ class Board:
 
     def move(self, piece, row, column):
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
-        piece.move(row, column)
+        piece.piece_move(row, column)
         if piece.type == "P":
             piece.first_move = False
 

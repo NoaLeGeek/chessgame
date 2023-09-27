@@ -81,12 +81,10 @@ class Game:
         return len(king_moves) == 0 and len(king_available_moves) != 0 and possible_moves_to_def == 0
 
     def draw_available_moves(self):
-        if len(self.valid_moves) > 0:
+        if self.valid_moves:
             for pos in self.valid_moves:
                 row, column = pos[0], pos[1]
-                pygame.draw.circle(self.window, (127, 255, 0), (
-                column * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2),
-                                   self.square_size // 8)
+                pygame.draw.circle(self.window, (127, 255, 0), (column * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2), self.square_size // 8)
 
     def remove(self, board, piece, row, column):
         if piece != 0:
