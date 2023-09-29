@@ -33,27 +33,25 @@ class Pawn(Piece):
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
         if self.color == "white":
-            if row < 1:
-                pass
-            if board[row - 1][column] == 0:
-                self.available_moves.append((row - 1, column))
-                if self.first_move and row >= 2 and board[row - 2][column] == 0:
-                    self.available_moves.append((row - 2, column))
-            if column > 0 and board[row - 1][column - 1] != 0 and board[row - 1][column - 1].color != self.color:
-                self.available_moves.append((row - 1, column - 1))
-            if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][column + 1].color != self.color:
-                self.available_moves.append((row - 1, column + 1))
+            if row >= 1:
+                if board[row - 1][column] == 0:
+                    self.available_moves.append((row - 1, column))
+                    if self.first_move and row >= 2 and board[row - 2][column] == 0:
+                        self.available_moves.append((row - 2, column))
+                if column > 0 and board[row - 1][column - 1] != 0 and board[row - 1][column - 1].color != self.color:
+                    self.available_moves.append((row - 1, column - 1))
+                if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][column + 1].color != self.color:
+                    self.available_moves.append((row - 1, column + 1))
         if self.color == "black":
-            if row < len(board) - 1:
-                pass
-            if board[row + 1][column] == 0:
-                self.available_moves.append((row + 1, column))
-            if self.first_move and board[row + 1][column] == 0 and board[row + 2][column] == 0:
-                self.available_moves.append((row + 2, column))
-            if column > 0 and board[row + 1][column - 1] != 0 and board[row + 1][column - 1].color != self.color:
-                self.available_moves.append((row + 1, column - 1))
-            if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][column + 1].color != self.color:
-                self.available_moves.append((row + 1, column + 1))
+            if row >= len(board) - 1:
+                if board[row + 1][column] == 0:
+                    self.available_moves.append((row + 1, column))
+                if self.first_move and board[row + 1][column] == 0 and board[row + 2][column] == 0:
+                    self.available_moves.append((row + 2, column))
+                if column > 0 and board[row + 1][column - 1] != 0 and board[row + 1][column - 1].color != self.color:
+                    self.available_moves.append((row + 1, column - 1))
+                if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][column + 1].color != self.color:
+                    self.available_moves.append((row + 1, column + 1))
         return self.available_moves
 
 
