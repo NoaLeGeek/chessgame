@@ -7,7 +7,7 @@ window = pygame.display.set_mode((width, height))
 
 
 def get_position(x, y):
-    return x // square_size, y // square_size
+    return y // square_size, x // square_size
 
 
 def main():
@@ -31,6 +31,8 @@ def main():
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
+                    print("clicked on:", game.get_board().board[row][column])
+                    print("cRow", row, "cColumn", column)
                     game.select(row, column)
 
 

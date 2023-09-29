@@ -18,31 +18,31 @@ class Board:
         for row in range(self.rows):
             self.board.append([0 for _ in range(self.columns)])
             for column in range(self.columns):
-                if row == 6:
+                if column == 6:
                     self.board[row][column] = Pawn(self.square_size, pieces[0], "white", "P", row, column)
-                elif row == 1:
+                elif column == 1:
                     self.board[row][column] = Pawn(self.square_size, pieces[6], "black", "P", row, column)
-                elif row == 7:
-                    if column == 0 or column == 7:
+                elif column == 7:
+                    if row == 0 or row == 7:
                         self.board[row][column] = Rook(self.square_size, pieces[3], "white", "R", row, column)
-                    elif column == 1 or column == 6:
+                    elif row == 1 or row == 6:
                         self.board[row][column] = Knight(self.square_size, pieces[1], "white", "N", row, column)
-                    elif column == 2 or column == 5:
+                    elif row == 2 or row == 5:
                         self.board[row][column] = Bishop(self.square_size, pieces[2], "white", "B", row, column)
-                    elif column == 3:
+                    elif row == 3:
                         self.board[row][column] = Queen(self.square_size, pieces[4], "white", "Q", row, column)
-                    elif column == 4:
+                    elif row == 4:
                         self.board[row][column] = King(self.square_size, pieces[5], "white", "K", row, column)
-                elif row == 0:
-                    if column == 0 or column == 7:
+                elif column == 0:
+                    if row == 0 or row == 7:
                         self.board[row][column] = Rook(self.square_size, pieces[9], "black", "R", row, column)
-                    elif column == 1 or column == 6:
+                    elif row == 1 or row == 6:
                         self.board[row][column] = Knight(self.square_size, pieces[7], "black", "N", row, column)
-                    elif column == 2 or column == 5:
+                    elif row == 2 or row == 5:
                         self.board[row][column] = Bishop(self.square_size, pieces[8], "black", "B", row, column)
-                    elif column == 3:
+                    elif row == 3:
                         self.board[row][column] = Queen(self.square_size, pieces[10], "black", "Q", row, column)
-                    elif column == 4:
+                    elif row == 4:
                         self.board[row][column] = King(self.square_size, pieces[11], "black", "K", row, column)
 
     def get_piece(self, row, column):
@@ -50,7 +50,7 @@ class Board:
 
     def move(self, piece, row, column):
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
-        piece.move(row, column)
+        piece.piece_move(row, column)
         if piece.type == "P":
             piece.first_move = False
 
@@ -61,7 +61,7 @@ class Board:
                 pygame.draw.rect(self.window, tile_assets[selected_asset][1],(row * self.square_size, column * self.square_size, self.square_size, self.square_size))
 
     def draw_piece(self, piece, window):
-        window.blit(piece.image, (piece.x, piece.y))
+        window.blit(piece.image, (piece.y, piece.x))
 
     def draw_pieces(self):
         for row in range(self.rows):
