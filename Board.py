@@ -66,9 +66,7 @@ class Board:
     def draw_pieces(self):
         for row in range(self.rows):
             for column in range(self.columns):
+                self.window.blit(pygame.font.SysFont("monospace", 15).render(f"({column},{row})", 1, (0, 0, 0)), (row*square_size+35, column*square_size+60))
                 piece = self.board[row][column]
                 if piece != 0:
                     self.draw_piece(piece, self.window)
-
-
-
