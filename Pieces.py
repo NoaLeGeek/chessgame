@@ -43,11 +43,11 @@ class Pawn(Piece):
                 if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][column + 1].color != self.color:
                     self.available_moves.append((row - 1, column + 1))
         if self.color == "black":
-            if row >= len(board) - 1:
+            if row <= len(board) - 1:
                 if board[row + 1][column] == 0:
                     self.available_moves.append((row + 1, column))
-                if self.first_move and board[row + 1][column] == 0 and board[row + 2][column] == 0:
-                    self.available_moves.append((row + 2, column))
+                    if self.first_move and board[row + 2][column] == 0 and row <= len(board) - 2:
+                        self.available_moves.append((row + 2, column))
                 if column > 0 and board[row + 1][column - 1] != 0 and board[row + 1][column - 1].color != self.color:
                     self.available_moves.append((row + 1, column - 1))
                 if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][column + 1].color != self.color:
