@@ -31,8 +31,11 @@ def main():
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
-                    print("clicked on:", game.get_board().board[row][column])
+                    selected_piece = game.get_board().board[row][column]
+                    print("clicked on:", selected_piece)
                     print("cRow", row, "cColumn", column)
+                    if selected_piece != 0:
+                        print("avaible moves:", selected_piece.get_available_moves(row, column, game.get_board().board))
                     game.select(row, column)
 
 
