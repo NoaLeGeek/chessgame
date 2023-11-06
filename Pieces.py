@@ -17,8 +17,8 @@ class Piece:
         self.calc_pos()
 
     def calc_pos(self):
-        self.x = (self.column + 1/8) * self.square_size
-        self.y = (self.row + 1/8) * self.square_size
+        self.x = (self.column + 1 / 8) * self.square_size
+        self.y = (self.row + 1 / 8) * self.square_size
 
     def clear_available_moves(self):
         if self.available_moves:
@@ -40,7 +40,8 @@ class Pawn(Piece):
                         self.available_moves.append((row - 2, column))
                 if column > 0 and board[row - 1][column - 1] != 0 and board[row - 1][column - 1].color != self.color:
                     self.available_moves.append((row - 1, column - 1))
-                if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][column + 1].color != self.color:
+                if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][
+                    column + 1].color != self.color:
                     self.available_moves.append((row - 1, column + 1))
         if self.color == "black":
             if row <= len(board) - 1:
@@ -50,7 +51,8 @@ class Pawn(Piece):
                         self.available_moves.append((row + 2, column))
                 if column > 0 and board[row + 1][column - 1] != 0 and board[row + 1][column - 1].color != self.color:
                     self.available_moves.append((row + 1, column - 1))
-                if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][column + 1].color != self.color:
+                if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][
+                    column + 1].color != self.color:
                     self.available_moves.append((row + 1, column + 1))
         return self.available_moves
 
@@ -58,6 +60,7 @@ class Pawn(Piece):
 class Rook(Piece):
     def __init__(self, square_size, image, color, type, row, column):
         super().__init__(square_size, image, color, type, row, column)
+        self.first_move = True
 
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
@@ -278,23 +281,35 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, square_size, image, color, type, row, column):
         super().__init__(square_size, image, color, type, row, column)
+        self.first_move = True
+        self.not_castled = True
 
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
-        if row > 0 and column > 0 and (board[row - 1][column - 1] == 0 or board[row - 1][column - 1].color != self.color):
+        if row > 0 and column > 0 and (
+                board[row - 1][column - 1] == 0 or board[row - 1][column - 1].color != self.color):
             self.available_moves.append((row - 1, column - 1))
         if row > 0 and (board[row - 1][column] == 0 or board[row - 1][column].color != self.color):
             self.available_moves.append((row - 1, column))
-        if row > 0 and column < len(board[0]) - 1 and (board[row - 1][column + 1] == 0 or board[row - 1][column + 1].color != self.color):
+        if row > 0 and column < len(board[0]) - 1 and (
+                board[row - 1][column + 1] == 0 or board[row - 1][column + 1].color != self.color):
             self.available_moves.append((row - 1, column + 1))
         if column > 0 and (board[row][column - 1] == 0 or board[row][column - 1].color != self.color):
             self.available_moves.append((row, column - 1))
         if column < len(board[0]) - 1 and (board[row][column + 1] == 0 or board[row][column + 1].color != self.color):
             self.available_moves.append((row, column + 1))
-        if row < len(board) - 1 and column > 0 and (board[row + 1][column - 1] == 0 or board[row + 1][column - 1].color != self.color):
+        if row < len(board) - 1 and column > 0 and (
+                board[row + 1][column - 1] == 0 or board[row + 1][column - 1].color != self.color):
             self.available_moves.append((row + 1, column - 1))
         if row < len(board) - 1 and (board[row + 1][column] == 0 or board[row + 1][column].color != self.color):
             self.available_moves.append((row + 1, column))
-        if row < len(board) - 1 and column < len(board[0]) - 1 and (board[row + 1][column + 1] == 0 or board[row + 1][column + 1].color != self.color):
+        if row < len(board) - 1 and column < len(board[0]) - 1 and (
+                board[row + 1][column + 1] == 0 or board[row + 1][column + 1].color != self.color):
             self.available_moves.append((row + 1, column + 1))
+        if self.first_move:
+            # do the castle move
+            if board[row][0] != 0 and board[row][0].type == "R" and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
+                self.available_moves.append((row, 2))
+            if board[row][7] != 0 and board[row][7].type == "R" and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:
+                self.available_moves.append((row, 6))
         return self.available_moves

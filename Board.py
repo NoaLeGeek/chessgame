@@ -49,10 +49,20 @@ class Board:
         return self.board[row][column]
 
     def move(self, piece, row, column):
+        if piece.type == "K" and abs(piece.column - column) == 2:
+            print("Castle")
+            if column == 6:
+                self.board[row][5], self.board[row][7] = self.board[row][7], self.board[row][5]
+                self.board[row][5].piece_move(row, 5)
+            else:
+                self.board[row][3], self.board[row][0] = self.board[row][0], self.board[row][3]
+                self.board[row][3].piece_move(row, 3)
+            piece.not_castled = False
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
         piece.piece_move(row, column)
-        if piece.type == "P":
+        if piece.type in ["P", "R", "K"]:
             piece.first_move = False
+
 
     def draw_board(self):
         self.window.fill(tile_assets[selected_asset][0])
