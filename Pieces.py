@@ -32,28 +32,16 @@ class Pawn(Piece):
 
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
-        if self.color == "white":
-            if row >= 1:
-                if board[row - 1][column] == 0:
-                    self.available_moves.append((row - 1, column))
-                    if self.first_move and row >= 2 and board[row - 2][column] == 0:
-                        self.available_moves.append((row - 2, column))
-                if column > 0 and board[row - 1][column - 1] != 0 and board[row - 1][column - 1].color != self.color:
-                    self.available_moves.append((row - 1, column - 1))
-                if column < len(board[0]) - 1 and board[row - 1][column + 1] != 0 and board[row - 1][
-                    column + 1].color != self.color:
-                    self.available_moves.append((row - 1, column + 1))
-        if self.color == "black":
-            if row <= len(board) - 1:
-                if board[row + 1][column] == 0:
-                    self.available_moves.append((row + 1, column))
-                    if self.first_move and board[row + 2][column] == 0 and row <= len(board) - 2:
-                        self.available_moves.append((row + 2, column))
-                if column > 0 and board[row + 1][column - 1] != 0 and board[row + 1][column - 1].color != self.color:
-                    self.available_moves.append((row + 1, column - 1))
-                if column < len(board[0]) - 1 and board[row + 1][column + 1] != 0 and board[row + 1][
-                    column + 1].color != self.color:
-                    self.available_moves.append((row + 1, column + 1))
+        x = 1 if self.color == "white" else -1
+        if 1 <= row <= len(board) - 1:
+            if board[row - x][column] == 0:
+                self.available_moves.append((row - x, column))
+                if self.first_move and ((x > 0 and 2 <= row) or (x < 0 and row <= len(board) - 2)) and board[row - x - (1 if x > 0 else -1)][column] == 0:
+                    self.available_moves.append((row - x - (1 if x > 0 else -1), column))
+            if column > 0 and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
+                self.available_moves.append((row - x, column - 1))
+            if column < len(board[0]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
+                self.available_moves.append((row - x, column + 1))
         return self.available_moves
 
 
@@ -308,8 +296,10 @@ class King(Piece):
             self.available_moves.append((row + 1, column + 1))
         if self.first_move:
             # do the castle move
-            if board[row][0] != 0 and board[row][0].type == "R" and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
+            if board[row][0] != 0 and board[row][0].type == "R" and board[row][0].first_move and board[row][1] == 0 and \
+                    board[row][2] == 0 and board[row][3] == 0:
                 self.available_moves.append((row, 2))
-            if board[row][7] != 0 and board[row][7].type == "R" and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:
+            if board[row][7] != 0 and board[row][7].type == "R" and board[row][7].first_move and board[row][6] == 0 and \
+                    board[row][5] == 0:
                 self.available_moves.append((row, 6))
         return self.available_moves
