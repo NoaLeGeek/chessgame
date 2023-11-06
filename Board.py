@@ -49,6 +49,7 @@ class Board:
         return self.board[row][column]
 
     def move(self, piece, row, column):
+        # TODO don't forget to disable castling if king is checked
         if piece.type == "K" and abs(piece.column - column) == 2:
             print("Castle")
             if column == 6:
