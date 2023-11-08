@@ -20,6 +20,7 @@ class Board:
             for column in range(self.columns):
                 if row == 6:
                     self.board[row][column] = Pawn(self.square_size, pieces[0], "white", "P", row, column)
+                    self.board[row][column].test = False
                 elif row == 1:
                     self.board[row][column] = Pawn(self.square_size, pieces[6], "black", "P", row, column)
                 elif row == 7:
@@ -49,6 +50,11 @@ class Board:
         return self.board[row][column]
 
     def move(self, piece, row, column):
+        # TODO this don't work if we do 2 en passant in a row
+        if piece.type == "P":
+            piece.en_passant = (abs(piece.row - row) == 2)
+            print("abs", abs(piece.row - row))
+            print("what ep:", piece.en_passant)
         # TODO don't forget to disable castling if king is checked
         if piece.type == "K" and abs(piece.column - column) == 2:
             if column == 6:

@@ -29,6 +29,7 @@ class Pawn(Piece):
     def __init__(self, square_size, image, color, type, row, column):
         super().__init__(square_size, image, color, type, row, column)
         self.first_move = True
+        self.en_passant = False
 
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
@@ -42,6 +43,15 @@ class Pawn(Piece):
                 self.available_moves.append((row - x, column - 1))
             if column < len(board[0]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
                 self.available_moves.append((row - x, column + 1))
+            if self.en_passant:
+                print("ep passed")
+                if self.color == "white" and row == 3:
+                    print("en passant white?")
+                    if board[row - 1][column - 1] != 0 and board[row - 1][column - 1].type == "P" and board[row - 1][column - 1].color != self.color:
+                        self.available_moves.append((row - 1, column - 1))
+                    if board[row - 1][column + 1] != 0 and board[row - 1][column + 1].type == "P" and board[row - 1][column + 1].color != self.color:
+                        self.available_moves.append((row - 1, column + 1))
+
         return self.available_moves
 
 
