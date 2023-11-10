@@ -34,24 +34,19 @@ class Pawn(Piece):
     def get_available_moves(self, row, column, board):
         self.clear_available_moves()
         x = 1 if self.color == "white" else -1
-        if 1 <= row <= len(board) - 1:
+        if 1 <= row <= len(board) - 2:
             if board[row - x][column] == 0:
                 self.available_moves.append((row - x, column))
-                if self.first_move and ((x > 0 and 2 <= row) or (x < 0 and row <= len(board) - 2)) and board[row - x - (1 if x > 0 else -1)][column] == 0:
+                if self.first_move and ((x > 0 and 2 <= row) or (x < 0 and row <= len(board) - 3)) and board[row - x - (1 if x > 0 else -1)][column] == 0:
                     self.available_moves.append((row - x - (1 if x > 0 else -1), column))
-            if column > 0 and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
+            if 1 <= column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
                 self.available_moves.append((row - x, column - 1))
-            if column < len(board[0]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
+            if column <= len(board[0] - 2) and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
                 self.available_moves.append((row - x, column + 1))
-            if self.en_passant:
-                print("ep passed")
-                if self.color == "white" and row == 3:
-                    print("en passant white?")
-                    if board[row - 1][column - 1] != 0 and board[row - 1][column - 1].type == "P" and board[row - 1][column - 1].color != self.color:
-                        self.available_moves.append((row - 1, column - 1))
-                    if board[row - 1][column + 1] != 0 and board[row - 1][column + 1].type == "P" and board[row - 1][column + 1].color != self.color:
-                        self.available_moves.append((row - 1, column + 1))
-
+            if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and board[row][column - 1].type == "P" and board[row][column - 1].en_passant and board[row - x][column - 1] == 0:
+                self.available_moves.append((row - x, column - 1))
+            if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and board[row][column + 1].type == "P" and board[row][column + 1].en_passant and board[row - x][column + 1] == 0:
+                self.available_moves.append((row - x, column + 1))
         return self.available_moves
 
 

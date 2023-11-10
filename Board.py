@@ -13,6 +13,7 @@ class Board:
         self.window = window
         self.board = []
         self.create_board()
+        self.debug = True
 
     def create_board(self):
         for row in range(self.rows):
@@ -50,11 +51,7 @@ class Board:
         return self.board[row][column]
 
     def move(self, piece, row, column):
-        # TODO this don't work if we do 2 en passant in a row
-        if piece.type == "P":
-            piece.en_passant = (abs(piece.row - row) == 2)
-            print("abs", abs(piece.row - row))
-            print("what ep:", piece.en_passant)
+        piece.en_passant = (piece.type == "P" and abs(piece.row - row) == 2)
         # TODO don't forget to disable castling if king is checked
         if piece.type == "K" and abs(piece.column - column) == 2:
             if column == 6:
@@ -64,10 +61,18 @@ class Board:
                 self.board[row][3], self.board[row][0] = self.board[row][0], self.board[row][3]
                 self.board[row][3].piece_move(row, 3)
             piece.not_castled = False
+        # TODO apparently this don't work if the en passant can be done due to a pin
+        x = 1 if piece.color == "white" else -1
+        if piece.type == "P" and self.board[row+x][column] != 0 and self.board[row+x][column].en_passant:
+                self.board[row+x][column] = 0
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
         piece.piece_move(row, column)
-        if piece.type in ["P", "R", "K"]:
+        if piece.type in ["P", "R", "K"] and piece.first_move:
             piece.first_move = False
+        for row in range(rows):
+            for column in range(columns):
+                if self.board[row][column] != 0 and self.board[row][column].type == "P" and self.board[row][column].en_passant and self.board[row][column].color != piece.color:
+                    self.board[row][column].en_passant = False
 
 
     def draw_board(self):
@@ -82,7 +87,8 @@ class Board:
     def draw_pieces(self):
         for row in range(self.rows):
             for column in range(self.columns):
-                self.window.blit(pygame.font.SysFont("monospace", 15).render(f"({column},{row})", 1, (0, 0, 0)), (row*square_size+35, column*square_size+60))
+                if self.debug:
+                    self.window.blit(pygame.font.SysFont("monospace", 15).render(f"({column},{row})", 1, (0, 0, 0)), (row*square_size+35, column*square_size+60))
                 piece = self.board[row][column]
                 if piece != 0:
                     self.draw_piece(piece, self.window)
