@@ -26,6 +26,9 @@ class Game:
         self.square_size = square_size
         self.selected = None
 
+    def is_king_checked(self):
+        pass
+
     def check_game(self):
         if self.Black_pieces_left == 0:
             print("Whites win")
@@ -41,21 +44,21 @@ class Game:
                 print("White wins")
                 return True
 
-    def enemies_moves(self, piece, board):
+    def get_color_moves(self, board, color):
         enemies_moves = []
         for row in range(len(board)):
             for column in range(len(board[0])):
-                if board[row][column] != 0 and board[row][column].color != piece.color:
+                if board[row][column] != 0 and board[row][column].color == color:
                     enemies_moves += board[row][column].get_available_moves(row, column, board)
         return enemies_moves
 
     def change_turn(self):
         self.turn = "white" if self.turn == "black" else "black"
 
-    def get_king_pos(self, board):
+    def get_king_position(self, board, color: str):
         for row in range(len(board)):
             for column in range(len(board[0])):
-                if board[row][column] != 0 and board[row][column].type == "King" and board[row][column].color == self.turn:
+                if board[row][column] != 0 and board[row][column].type == "K" and board[row][column].color == color:
                     return row, column
 
     def possible_moves(self, board):
@@ -69,12 +72,12 @@ class Game:
         return possible_moves
 
     def checkmate(self, board):
-        king_pos = self.get_king_pos(board.board)
+        king_pos = self.get_king_position(board.board, self.turn)
         if king_pos is None:
             return False
-        get_king = board.get_piece(king_pos[0], king_pos[1])
-        king_available_moves = set(get_king.get_available_moves(king_pos[0], king_pos[1], board.board))
-        enemies_moves_set = set(self.enemies_moves(get_king, board.board))
+        king = board.board[king_pos[0]][king_pos[1]]
+        king_available_moves = set(king.get_available_moves(king_pos[0], king_pos[1], board.board))
+        enemies_moves_set = set(self.get_color_moves(board.board, king.color))
         king_moves = king_available_moves - enemies_moves_set
         set1 = king_available_moves.intersection(enemies_moves_set)
         possible_moves_to_def = set1.intersection(self.possible_moves(board.board))
@@ -101,7 +104,7 @@ class Game:
             self.board.board[row][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
         self.board.board[piece.row][piece.column]
-        king_pos = self.get_king_pos(self.board.board)
+        king_pos = self.get_king_position(self.board.board, self.turn)
         if king_pos in self.enemies_moves(piece, self.board.board):
             piece.row, piece.column = piece_row, piece_column
             self.board.board[piece_row][piece_column] = piece

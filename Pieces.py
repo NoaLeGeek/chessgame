@@ -41,7 +41,7 @@ class Pawn(Piece):
                     self.available_moves.append((row - x - (1 if x > 0 else -1), column))
             if 1 <= column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
                 self.available_moves.append((row - x, column - 1))
-            if column <= len(board[0] - 2) and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
+            if column <= len(board[0]) - 2 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
                 self.available_moves.append((row - x, column + 1))
             if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and board[row][column - 1].type == "P" and board[row][column - 1].en_passant and board[row - x][column - 1] == 0:
                 self.available_moves.append((row - x, column - 1))

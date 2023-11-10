@@ -32,10 +32,13 @@ def main():
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
                     selected_piece = game.get_board().board[row][column]
-                    print("clicked on:", selected_piece)
+                    print("clicked on:", selected_piece.type if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
                     if selected_piece != 0:
-                        print("avaible moves:", selected_piece.get_available_moves(row, column, game.get_board().board))
+                        pass
+                        # print("avaible moves:", selected_piece.get_available_moves(row, column, game.get_board().board))
+                    print("king pos:", game.get_king_position(game.get_board().board, game.turn))
+                    print("king checked:", game.is_king_checked())
                     game.select(row, column)
 
 

@@ -1,4 +1,3 @@
-import pygame
 from Pieces import *
 from constants import *
 
@@ -46,9 +45,6 @@ class Board:
                         self.board[row][column] = Queen(self.square_size, pieces[10], "black", "Q", row, column)
                     elif column == 4:
                         self.board[row][column] = King(self.square_size, pieces[11], "black", "K", row, column)
-
-    def get_piece(self, row, column):
-        return self.board[row][column]
 
     def move(self, piece, row, column):
         piece.en_passant = (piece.type == "P" and abs(piece.row - row) == 2)
