@@ -110,11 +110,9 @@ class Game:
                 self.board.board[row][3], self.board[row][0] = self.board.board[row][0], self.board.board[row][3]
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
-        # TODO apparently this don't work if the en passant can be done due to a pin
-        x = 1 if piece.color == 1 else -1
-        if piece.type == "P" and self.board.board[row + x][column] != 0 and self.board.board[row + x][
+        if piece.type == "P" and self.board.board[row + piece.color][column] != 0 and self.board.board[row + piece.color][
             column].en_passant:
-            self.board.board[row + x][column] = 0
+            self.board.board[row + piece.color][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
             self.board.board[piece.row][piece.column]
         piece.piece_move(row, column)
