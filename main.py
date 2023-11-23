@@ -1,3 +1,5 @@
+import random
+
 from Game import Game
 from constants import *
 
@@ -13,7 +15,6 @@ def get_position(x, y):
 def main():
     run = True
     game_over = False
-    turn = "white"
     fps = 60
     game = Game(width, height, rows, columns, square_size, window)
     while run:
@@ -21,12 +22,21 @@ def main():
         game.update_window()
         game_over = game.check_game()
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if game_over or event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-            if event.type == pygame.KEYDOWN and game_over:
-                if event.key == pygame.K_SPACE and game_over:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
                     game.reset(window)
+            # if game.turn == -1:
+            #     moves = {}
+            #     for row in range(rows):
+            #         for column in range(columns):
+            #             if game.board.board[row][column] != 0 and game.board.board[row][column].color == -1 and game.board.board[row][column].get_available_moves(game.board.board, row, column):
+            #                 moves[(row, column)] = random.choice(game.board.board[row][column].get_available_moves(game.board.board, row, column))
+            #     row, column = random.choice(list(moves.keys()))
+            #     game.move(game.board.board[row][column], moves[(row, column)][0], moves[(row, column)][1])
+            #     game.turn = 1
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
@@ -36,9 +46,11 @@ def main():
                     print("cRow", row, "cColumn", column)
                     if selected_piece != 0:
                         pass
-                        # print("avaible moves:", selected_piece.get_available_moves(row, column, game.get_board().board))
-                    print("king pos:", game.get_king_position(game.get_board().board, game.turn))
-                    print("king checked:", game.is_king_checked())
+                        # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
+                    print("king pos:", game.get_king_position(game.turn))
+                    if game.is_king_checked():
+                        print("king checked")
+                    print("checkmate:", game.checkmate())
                     game.select(row, column)
 
 
