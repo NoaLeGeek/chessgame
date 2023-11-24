@@ -100,7 +100,6 @@ class Game:
                 self.black_pieces_left -= 1
 
     def move(self, piece: Pieces.Piece, row: int, column: int):
-        # TODO i think that this function should be in Game py
         piece.en_passant = (piece.type == "P" and abs(piece.row - row) == 2)
         if piece.type == "K" and abs(piece.column - column) == 2 and not self.is_king_checked():
             if column == 6:
@@ -110,8 +109,9 @@ class Game:
                 self.board.board[row][3], self.board[row][0] = self.board.board[row][0], self.board.board[row][3]
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
-        if piece.type == "P" and self.board.board[row + piece.color][column] != 0 and self.board.board[row + piece.color][
-            column].en_passant:
+        if piece.type == "P" and self.board.board[row + piece.color][column] != 0 and \
+                self.board.board[row + piece.color][
+                    column].en_passant:
             self.board.board[row + piece.color][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
             self.board.board[piece.row][piece.column]
@@ -125,17 +125,19 @@ class Game:
                     self.board.board[row][column].en_passant = False
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
-        piece_row, piece_column = piece.row, piece.column
-        save_piece = self.board.board[row][column]
-        if self.board.board[row][column] != 0:
-            self.board.board[row][column] = 0
-        self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
-            self.board.board[piece.row][piece.column]
-        is_checked = self.is_king_checked()
-        piece.row, piece.column = piece_row, piece_column
-        self.board.board[piece_row][piece_column] = piece
-        self.board.board[row][column] = save_piece
-        return not is_checked
+        if piece.type == "K" and abs(piece.column - column) == 2:
+            return (row, column + (piece.column - column > 0) - (piece.column - column < 0)) not in self.get_color_moves(-piece.color)
+        else:
+            piece_row, piece_column = piece.row, piece.column
+            save_piece = self.board.board[row][column]
+            if self.board.board[row][column] != 0:
+                self.board.board[row][column] = 0
+            self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
+            is_checked = self.is_king_checked()
+            piece.row, piece.column = piece_row, piece_column
+            self.board.board[piece_row][piece_column] = piece
+            self.board.board[row][column] = save_piece
+            return not is_checked
 
     def select(self, row, column):
         if self.selected:
@@ -146,7 +148,9 @@ class Game:
         piece = self.board.board[row][column]
         if piece != 0 and self.turn == piece.color:
             self.selected = piece
-            self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if self.can_move(self.selected, move[0], move[1])]
+            # TODO if a queen is pinned due to a rook vertically, she can't move horizontally but she can move in the column of the rook to take it for example
+            self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if
+                                self.can_move(self.selected, move[0], move[1])]
 
     def make_move(self, row, column):
         piece = self.board.board[row][column]
