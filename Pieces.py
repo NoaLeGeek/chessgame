@@ -1,9 +1,8 @@
 class Piece:
-    def __init__(self, square_size, image, color, type, row, column):
+    def __init__(self, square_size, image, color, row, column):
         self.square_size = square_size
         self.image = image
         self.color = color
-        self.type = type
         self.row = row
         self.column = column
         self.x = 0
@@ -26,8 +25,8 @@ class Piece:
 
 
 class Pawn(Piece):
-    def __init__(self, square_size, image, color, type, row, column):
-        super().__init__(square_size, image, color, type, row, column)
+    def __init__(self, square_size, image, color, row, column):
+        super().__init__(square_size, image, color, row, column)
         self.first_move = True
         self.en_passant = False
 
@@ -43,16 +42,16 @@ class Pawn(Piece):
                 self.available_moves.append((row - self.color, column - 1))
             if column <= len(board[0]) - 2 and board[row - self.color][column + 1] != 0 and board[row - self.color][column + 1].color != self.color:
                 self.available_moves.append((row - self.color, column + 1))
-            if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and board[row][column - 1].type == "P" and board[row][column - 1].en_passant and board[row - self.color][column - 1] == 0:
+            if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and isinstance(board[row][column - 1], Pawn) and board[row][column - 1].en_passant and board[row - self.color][column - 1] == 0:
                 self.available_moves.append((row - self.color, column - 1))
-            if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and board[row][column + 1].type == "P" and board[row][column + 1].en_passant and board[row - self.color][column + 1] == 0:
+            if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and isinstance(board[row][column + 1], Pawn) and board[row][column + 1].en_passant and board[row - self.color][column + 1] == 0:
                 self.available_moves.append((row - self.color, column + 1))
         return self.available_moves
 
 
 class Rook(Piece):
-    def __init__(self, square_size, image, color, type, row, column):
-        super().__init__(square_size, image, color, type, row, column)
+    def __init__(self, square_size, image, color, row, column):
+        super().__init__(square_size, image, color, row, column)
         self.first_move = True
 
     def get_available_moves(self, board, row, column):
@@ -93,8 +92,8 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, square_size, image, color, type, row, column):
-        super().__init__(square_size, image, color, type, row, column)
+    def __init__(self, square_size, image, color, row, column):
+        super().__init__(square_size, image, color, row, column)
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -150,8 +149,8 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, square_size, image, color, type, row, column):
-        super().__init__(square_size, image, color, type, row, column)
+    def __init__(self, square_size, image, color, row, column):
+        super().__init__(square_size, image, color, row, column)
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -183,8 +182,8 @@ class Knight(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, square_size, image, color, type, row, column):
-        super().__init__(square_size, image, color, type, row, column)
+    def __init__(self, square_size, image, color, row, column):
+        super().__init__(square_size, image, color, row, column)
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -272,8 +271,8 @@ class Queen(Piece):
 
 
 class King(Piece):
-    def __init__(self, square_size, image, color, type, row, column):
-        super().__init__(square_size, image, color, type, row, column)
+    def __init__(self, square_size, image, color, row, column):
+        super().__init__(square_size, image, color, row, column)
         self.first_move = True
         self.not_castled = True
 
@@ -300,11 +299,8 @@ class King(Piece):
                 board[row + 1][column + 1] == 0 or board[row + 1][column + 1].color != self.color):
             self.available_moves.append((row + 1, column + 1))
         if self.first_move:
-            # do the castle move
-            if board[row][0] != 0 and board[row][0].type == "R" and board[row][0].first_move and board[row][1] == 0 and \
-                    board[row][2] == 0 and board[row][3] == 0:
+            if board[row][0] != 0 and isinstance(board[row][0], Rook) and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
                 self.available_moves.append((row, 2))
-            if board[row][7] != 0 and board[row][7].type == "R" and board[row][7].first_move and board[row][6] == 0 and \
-                    board[row][5] == 0:
+            if board[row][7] != 0 and isinstance(board[row][7], Rook) and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:
                 self.available_moves.append((row, 6))
         return self.available_moves

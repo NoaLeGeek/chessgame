@@ -42,7 +42,7 @@ def main():
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
                     selected_piece = game.get_board().board[row][column]
-                    print("clicked on:", selected_piece.type if selected_piece != 0 else 0)
+                    print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
                     if selected_piece != 0:
                         pass
@@ -50,7 +50,7 @@ def main():
                     print("king pos:", game.get_king_position(game.turn))
                     if game.is_king_checked():
                         print("king checked")
-                    print("checkmate:", game.checkmate())
+                    print("checkmate:", game.is_checkmate())
                     game.select(row, column)
 
 
