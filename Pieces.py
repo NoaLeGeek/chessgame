@@ -29,6 +29,7 @@ class Pawn(Piece):
         super().__init__(square_size, image, color, row, column)
         self.first_move = True
         self.en_passant = False
+        self.value = 1
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -46,6 +47,7 @@ class Pawn(Piece):
                 self.available_moves.append((row - self.color, column - 1))
             if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and isinstance(board[row][column + 1], Pawn) and board[row][column + 1].en_passant and board[row - self.color][column + 1] == 0:
                 self.available_moves.append((row - self.color, column + 1))
+        # TODO add promotion, the gui for white is going from top to bottom with this order: Queen Knight Rook Bishop, for black it's from bottom to top with same order just reversed, the gui has a exit to cancel the promotion
         return self.available_moves
 
 
@@ -53,6 +55,7 @@ class Rook(Piece):
     def __init__(self, square_size, image, color, row, column):
         super().__init__(square_size, image, color, row, column)
         self.first_move = True
+        self.value = 5
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -94,6 +97,7 @@ class Rook(Piece):
 class Bishop(Piece):
     def __init__(self, square_size, image, color, row, column):
         super().__init__(square_size, image, color, row, column)
+        self.value = 3
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -151,6 +155,7 @@ class Bishop(Piece):
 class Knight(Piece):
     def __init__(self, square_size, image, color, row, column):
         super().__init__(square_size, image, color, row, column)
+        self.value = 3
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -184,6 +189,7 @@ class Knight(Piece):
 class Queen(Piece):
     def __init__(self, square_size, image, color, row, column):
         super().__init__(square_size, image, color, row, column)
+        self.value = 9
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
@@ -298,7 +304,7 @@ class King(Piece):
         if row < len(board) - 1 and column < len(board[0]) - 1 and (
                 board[row + 1][column + 1] == 0 or board[row + 1][column + 1].color != self.color):
             self.available_moves.append((row + 1, column + 1))
-        if self.first_move:
+        if self.column == 4 and self.first_move:
             if board[row][0] != 0 and isinstance(board[row][0], Rook) and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
                 self.available_moves.append((row, 2))
             if board[row][7] != 0 and isinstance(board[row][7], Rook) and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:

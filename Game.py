@@ -7,22 +7,27 @@ class Game:
     def __init__(self, width, height, rows, columns, square_size, window):
         self.window = window
         self.board = Board(width, height, rows, columns, square_size, window)
+        self.turn = 0
         self.create_board()
         self.square_size = square_size
         self.selected = None
-        self.turn = 1
         self.valid_moves = []
         self.black_pieces_left = 16
         self.white_pieces_left = 16
+        self.halfMoves = 0
+        self.fullMoves = 1
+        self.history = []
 
     def create_board(self):
+        # TODO from a certain position, generate the FEN if asked
         self.board.board = [[0] * 8 for _ in range(8)]
         fen = {
             'p': (Pieces.Pawn, (square_size, pieces[6], -1)), 'n': (Pieces.Knight, (square_size, pieces[7], -1)), 'b': (Pieces.Bishop, (square_size, pieces[8], -1)), 'r': (Pieces.Rook, (square_size, pieces[9], -1)), 'q': (Pieces.Queen, (square_size, pieces[10], -1)), 'k': (Pieces.King, (square_size, pieces[11], -1)),
             'P': (Pieces.Pawn, (square_size, pieces[0], 1)), 'N': (Pieces.Knight, (square_size, pieces[1], 1)), 'B': (Pieces.Bishop, (square_size, pieces[2], 1)), 'R': (Pieces.Rook, (square_size, pieces[3], 1)), 'Q': (Pieces.Queen, (square_size, pieces[4], 1)), 'K': (Pieces.King, (square_size, pieces[5], 1))
         }
-        split = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w – – 0 1".split(' ')
-        #TODO il faut s'occuper des autres paramètres comme w, KQkq, etc...
+        defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w – – 0 1"
+        customfen = "8/r1r3pk/1N2pp2/3p4/P2QP1qp/1R6/2PB2P1/5RK1 w - - 8 41"
+        split = customfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -37,14 +42,22 @@ class Game:
                 case 1:
                     self.turn = 1 if split[i] == 'w' else -1
                 case 2:
-                    if "K" not in split[i]:
+                    if "K" not in split[i] and isinstance(self.board.board[7][7], Pieces.Rook):
                         self.board.board[7][7].first_move = False
-                    if "Q" not in split[i]:
+                    if "Q" not in split[i] and isinstance(self.board.board[7][0], Pieces.Rook):
                         self.board.board[7][0].first_move = False
-                    if "k" not in split[i]:
+                    if "k" not in split[i] and isinstance(self.board.board[0][7], Pieces.Rook):
                         self.board.board[0][7].first_move = False
-                    if "q" not in split[i]:
+                    if "q" not in split[i] and isinstance(self.board.board[0][0], Pieces.Rook):
                         self.board.board[0][0].first_move = False
+                case 3:
+                    if split[i] not in ['-', '–']:
+                        self.board.board[int(split[i][1]) + self.turn][ord(split[i][0]) - 97].en_passant = True
+                case 4:
+                    # TODO you'll have to put halfMoves = 0 every time a pawn is moved or a piece is captured, this is maybe the time to make Move a class to differenciate between a normal move and a capture
+                    self.halfMoves = int(split[i])
+                case 5:
+                    self.fullMoves = int(split[i])
 
     def update_window(self):
         self.board.draw_board()
@@ -64,16 +77,20 @@ class Game:
         if self.black_pieces_left == 0:
             print("Whites win")
             return True
-        if self.white_pieces_left == 0:
+        elif self.white_pieces_left == 0:
             print("Blacks win")
             return True
-        if self.is_checkmate():
-            if self.turn == 1:
-                print("Black Wins")
-                return True
-            else:
-                print("White wins")
-                return True
+        elif self.is_king_checked() and self.is_stalemate():
+            print("{} Wins".format("Black" if self.turn == 1 else "White"))
+            return True
+        elif self.is_stalemate():
+            print("Stalemate")
+            return True
+        elif self.halfMoves >= 100:
+            print("Draw by the 50 moves rule")
+            return True
+        # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
+
 
     def get_color_moves(self, color: int):
         color_moves = []
@@ -83,8 +100,20 @@ class Game:
                     color_moves += self.board.board[row][column].get_available_moves(self.board.board, row, column)
         return color_moves
 
+    def get_color_pieces(self, color: int):
+        color_pieces = []
+        for row in range(len(self.board.board)):
+            for column in range(len(self.board.board[0])):
+                piece = self.board.board[row][column]
+                if piece != 0 and piece.color == color:
+                    color_pieces.append(piece)
+        return color_pieces
+
     def change_turn(self):
+        if self.turn == -1:
+            self.fullMoves += 1
         self.turn *= -1
+        self.halfMoves += 1
 
     def get_king_position(self, color: int):
         for row in range(len(self.board.board)):
@@ -100,19 +129,8 @@ class Game:
                     possible_moves += board[row][column].get_available_moves(board, row, column)
         return possible_moves
 
-    def is_checkmate(self) -> bool:
-        if not self.is_king_checked():
-            return False
-        king_pos = self.get_king_position(self.turn)
-        king = self.board.board[king_pos[0]][king_pos[1]]
-        king_moves = set(king.get_available_moves(self.board.board, king_pos[0], king_pos[1]))
-        enemies_moves_set = set(self.get_color_moves(-king.color))
-        only_moves = king_moves - enemies_moves_set
-        set1 = king_moves.intersection(enemies_moves_set)
-        for tup in set1:
-            Board.draw_rect(self.board, tup[0], tup[1])
-        return len(only_moves) == 0 and len(king_moves) != 0 and len(
-            set1.intersection(set(self.get_color_moves(king.color)) - king_moves)) == 0
+    def is_stalemate(self) -> bool:
+        return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column)])
 
     def draw_available_moves(self):
         if self.valid_moves:

@@ -50,7 +50,7 @@ def main():
                     print("king pos:", game.get_king_position(game.turn))
                     if game.is_king_checked():
                         print("king checked")
-                    print("checkmate:", game.is_checkmate())
+                    print("checkmate:", game.is_stalemate() and game.is_king_checked())
                     game.select(row, column)
 
 
