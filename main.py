@@ -16,7 +16,7 @@ def main():
     run = True
     game_over = False
     fps = 60
-    game = Game(width, height, rows, columns, square_size, window)
+    game = Game(width, height, rows, columns, window)
     while run:
         clock.tick(fps)
         game.update_window()
@@ -29,14 +29,10 @@ def main():
                 if event.key == pygame.K_SPACE:
                     game.reset(window)
             # if game.turn == -1:
-            #     moves = {}
-            #     for row in range(rows):
-            #         for column in range(columns):
-            #             if game.board.board[row][column] != 0 and game.board.board[row][column].color == -1 and game.board.board[row][column].get_available_moves(game.board.board, row, column):
-            #                 moves[(row, column)] = random.choice(game.board.board[row][column].get_available_moves(game.board.board, row, column))
-            #     row, column = random.choice(list(moves.keys()))
-            #     game.move(game.board.board[row][column], moves[(row, column)][0], moves[(row, column)][1])
-            #     game.turn = 1
+            #     randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
+            #     game.select(randomPiece.row, randomPiece.column)
+            #     randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
+            #     game.select(randomMove[0], randomMove[1])
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
@@ -51,6 +47,7 @@ def main():
                     if game.is_king_checked():
                         print("king checked")
                     print("checkmate:", game.is_stalemate() and game.is_king_checked())
+                    #if game.turn == 1:
                     game.select(row, column)
 
 
