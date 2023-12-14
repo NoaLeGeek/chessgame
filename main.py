@@ -7,7 +7,6 @@ pygame.init()
 clock = pygame.time.Clock()
 window = pygame.display.set_mode((width, height))
 
-
 def get_position(x, y):
     return y // square_size, x // square_size
 
