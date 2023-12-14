@@ -4,29 +4,40 @@ from constants import *
 
 
 class Game:
-    def __init__(self, width, height, rows, columns, square_size, window):
+    def __init__(self, width, height, rows, columns, window):
         self.window = window
-        self.board = Board(width, height, rows, columns, square_size, window)
+        self.board = Board(width, height, rows, columns, window)
         self.turn = 0
         self.create_board()
-        self.square_size = square_size
         self.selected = None
+        self.promotion = None
         self.valid_moves = []
         self.black_pieces_left = 16
         self.white_pieces_left = 16
         self.halfMoves = 0
         self.fullMoves = 1
         self.history = []
+        self.highlightedSquares = []
+        # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):
-        # TODO from a certain position, generate the FEN if asked
-        self.board.board = [[0] * 8 for _ in range(8)]
+        self.board.board = [[0] * columns for _ in range(rows)]
         fen = {
-            'p': (Pieces.Pawn, (square_size, pieces[6], -1)), 'n': (Pieces.Knight, (square_size, pieces[7], -1)), 'b': (Pieces.Bishop, (square_size, pieces[8], -1)), 'r': (Pieces.Rook, (square_size, pieces[9], -1)), 'q': (Pieces.Queen, (square_size, pieces[10], -1)), 'k': (Pieces.King, (square_size, pieces[11], -1)),
-            'P': (Pieces.Pawn, (square_size, pieces[0], 1)), 'N': (Pieces.Knight, (square_size, pieces[1], 1)), 'B': (Pieces.Bishop, (square_size, pieces[2], 1)), 'R': (Pieces.Rook, (square_size, pieces[3], 1)), 'Q': (Pieces.Queen, (square_size, pieces[4], 1)), 'K': (Pieces.King, (square_size, pieces[5], 1))
+            'p': (Pieces.Pawn, (square_size, piece_assets[selected_piece][6], -1)),
+            'n': (Pieces.Knight, (square_size, piece_assets[selected_piece][7], -1)),
+            'b': (Pieces.Bishop, (square_size, piece_assets[selected_piece][8], -1)),
+            'r': (Pieces.Rook, (square_size, piece_assets[selected_piece][9], -1)),
+            'q': (Pieces.Queen, (square_size, piece_assets[selected_piece][10], -1)),
+            'k': (Pieces.King, (square_size, piece_assets[selected_piece][11], -1)),
+            'P': (Pieces.Pawn, (square_size, piece_assets[selected_piece][0], 1)),
+            'N': (Pieces.Knight, (square_size, piece_assets[selected_piece][1], 1)),
+            'B': (Pieces.Bishop, (square_size, piece_assets[selected_piece][2], 1)),
+            'R': (Pieces.Rook, (square_size, piece_assets[selected_piece][3], 1)),
+            'Q': (Pieces.Queen, (square_size, piece_assets[selected_piece][4], 1)),
+            'K': (Pieces.King, (square_size, piece_assets[selected_piece][5], 1))
         }
-        defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w – – 0 1"
-        customfen = "8/r1r3pk/1N2pp2/3p4/P2QP1qp/1R6/2PB2P1/5RK1 w - - 8 41"
+        defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
+        customfen = "8/6P1/7R/8/4p3/4K1kP/r7/3q4 w - - 0 60"
         split = customfen.split(' ')
         for i in range(len(split)):
             match i:
@@ -62,12 +73,13 @@ class Game:
     def update_window(self):
         self.board.draw_board()
         self.board.draw_pieces()
-        self.draw_available_moves()
+        self.board.draw_moves(self.valid_moves)
+        if self.promotion:
+            self.board.draw_promotion(self.promotion)
         pygame.display.update()
 
-    def reset(self, window):
-        self.board = Board(width, height, rows, columns, square_size, window)
-        self.square_size = square_size
+    def reset(self, frame):
+        self.board = Board(width, height, rows, columns, frame)
         self.selected = None
 
     def is_king_checked(self):
@@ -86,9 +98,10 @@ class Game:
         elif self.is_stalemate():
             print("Stalemate")
             return True
-        elif self.halfMoves >= 100:
-            print("Draw by the 50 moves rule")
-            return True
+        #TODO enabled the 50 moves rule when it's done
+        #elif self.halfMoves >= 100:
+            #print("Draw by the 50 moves rule")
+            #return True
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
 
 
@@ -132,14 +145,6 @@ class Game:
     def is_stalemate(self) -> bool:
         return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column)])
 
-    def draw_available_moves(self):
-        if self.valid_moves:
-            for pos in self.valid_moves:
-                row, column = pos[0], pos[1]
-                pygame.draw.circle(self.window, (127, 255, 0), (
-                    column * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2),
-                                   self.square_size // 8)
-
     def remove(self, piece: Pieces.Piece, row: int, column: int):
         if piece != 0:
             self.board.board[row][column] = 0
@@ -155,7 +160,7 @@ class Game:
                 self.board.board[row][5], self.board.board[row][7] = self.board.board[row][7], self.board.board[row][5]
                 self.board.board[row][5].piece_move(row, 5)
             else:
-                self.board.board[row][3], self.board[row][0] = self.board.board[row][0], self.board.board[row][3]
+                self.board.board[row][3], self.board.board[row][0] = self.board.board[row][0], self.board.board[row][3]
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
         if isinstance(piece, Pieces.Pawn) and self.board.board[row + piece.color][column] != 0 and \
@@ -196,13 +201,15 @@ class Game:
         piece = self.board.board[row][column]
         if piece != 0 and self.turn == piece.color:
             self.selected = piece
-            # TODO can be optimised by removing all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-            self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if
-                                self.can_move(self.selected, move[0], move[1])]
+            # TODO /!\ NEEDS to be optimised by removing all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
+            self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if self.can_move(self.selected, move[0], move[1])]
 
     def make_move(self, row, column):
         piece = self.board.board[row][column]
         if not self.selected or (row, column) not in self.valid_moves or (piece != 0 and piece.color == self.selected.color):
+            return False
+        if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
+            self.promotion = self.selected
             return False
         self.remove(piece, row, column)
         self.move(self.selected, row, column)

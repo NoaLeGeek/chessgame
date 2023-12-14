@@ -1,6 +1,13 @@
 import os
 import pygame
 
+
+def generate_images(asset: str):
+    return [pygame.transform.scale(pygame.image.load(
+        os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset,
+                     piece + ".png")), (square_size * 3 / 4, square_size * 3 / 4)) for piece in piece_constants]
+
+
 width, height = 640, 640
 rows, columns = 8, 8
 square_size = width // columns
@@ -16,10 +23,10 @@ tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
                "orange": ((250, 228, 174), (209, 136, 21)),
                "red": ((245, 219, 195), (187, 87, 70)),
                "tan": ((237, 203, 165), (216, 164, 109))}
-selected_asset = "brown"
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
-pieces = []
-for piece in ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]:
-    pieces.append(pygame.transform.scale(pygame.image.load(
-        os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", selected_asset,
-                     piece + ".png")), (square_size*3/4, square_size*3/4)))
+piece_constants = ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]
+# TODO maybe a function to generate images because that's repeating
+piece_assets = {"lichess": generate_images("lichess"),
+                "simple": generate_images("simple")}
+selected_tile = "brown"
+selected_piece = "simple"

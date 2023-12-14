@@ -1,3 +1,5 @@
+import pygame.draw
+
 from Pieces import *
 from constants import *
 
@@ -13,16 +15,16 @@ class Board:
         self.debug = False
 
     def draw_board(self):
-        self.frame.fill(tile_assets[selected_asset][0])
+        self.frame.fill(tile_assets[selected_tile][0])
         for row in range(rows):
             for column in range(row % 2, columns, 2):
-                pygame.draw.rect(self.frame, tile_assets[selected_asset][1],(row * square_size, column * square_size, square_size, square_size))
+                pygame.draw.rect(self.frame, tile_assets[selected_tile][1],(row * square_size, column * square_size, square_size, square_size))
 
     def draw_piece(self, piece, window):
         window.blit(piece.image, (piece.x, piece.y))
 
     def draw_rect(self, row, column):
-        pygame.draw.rect(self.frame, (255, 0, 0), (row * square_size, column * square_size, square_size, square_size), 2)
+        pygame.draw.rect(self.frame, (255, 0, 0), (row * square_size, column * square_size, square_size, square_size))
 
     def draw_pieces(self):
         for row in range(self.rows):
@@ -37,3 +39,7 @@ class Board:
         for pos in moves:
             row, column = pos[0], pos[1]
             pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2, row * square_size + square_size // 2), square_size // 8)
+
+    def draw_promotion(self, promotion):
+        for row in range((0 if promotion.color == 1 else 7), (0 if promotion.color == 1 else 7)+4*promotion.color, promotion.color):
+            pygame.draw.rect(self.frame, (255, 255, 255, 0.5), (promotion.column * square_size, row * square_size, square_size, square_size))

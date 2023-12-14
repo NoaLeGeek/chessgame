@@ -49,6 +49,7 @@ def main():
                     print("checkmate:", game.is_stalemate() and game.is_king_checked())
                     #if game.turn == 1:
                     game.select(row, column)
+                    game.highlightedSquares = []
 
 
 if __name__ == "__main__":
