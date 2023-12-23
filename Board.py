@@ -41,5 +41,11 @@ class Board:
             pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2, row * square_size + square_size // 2), square_size // 8)
 
     def draw_promotion(self, promotion):
+        # TODO promotion is offbeat by 1 square if it's a capture
         for row in range((0 if promotion.color == 1 else 7), (0 if promotion.color == 1 else 7)+4*promotion.color, promotion.color):
             pygame.draw.rect(self.frame, (255, 255, 255, 0.5), (promotion.column * square_size, row * square_size, square_size, square_size))
+
+    def draw_test(self):
+        for row in range(self.rows):
+            for column in range(self.columns):
+                pygame.draw.circle(self.frame, (255, 0, 0), (column * square_size + square_size // 2, row * square_size + square_size // 2), square_size // 16)

@@ -1,3 +1,5 @@
+from math import sqrt
+
 class Piece:
     def __init__(self, square_size, image, color, row, column):
         self.square_size = square_size
@@ -8,16 +10,16 @@ class Piece:
         self.x = 0
         self.y = 0
         self.available_moves = []
-        self.calc_pos()
+        self.calc_pos(image)
 
     def piece_move(self, row, column):
         self.row = row
         self.column = column
-        self.calc_pos()
+        self.calc_pos(self.image)
 
-    def calc_pos(self):
-        self.x = (self.column + 1 / 8) * self.square_size
-        self.y = (self.row + 1 / 8) * self.square_size
+    def calc_pos(self, image):
+        self.x = self.column*self.square_size
+        self.y = self.row*self.square_size
 
     def clear_available_moves(self):
         if self.available_moves:

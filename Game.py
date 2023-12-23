@@ -38,7 +38,7 @@ class Game:
         }
         defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "8/6P1/7R/8/4p3/4K1kP/r7/3q4 w - - 0 60"
-        split = customfen.split(' ')
+        split = defaultFen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -76,6 +76,7 @@ class Game:
         self.board.draw_moves(self.valid_moves)
         if self.promotion:
             self.board.draw_promotion(self.promotion)
+        self.board.draw_test()
         pygame.display.update()
 
     def reset(self, frame):
