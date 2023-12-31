@@ -37,7 +37,7 @@ class Game:
             'K': (Pieces.King, (square_size, piece_assets[selected_piece][5], 1))
         }
         defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
-        customfen = "8/6P1/7R/8/4p3/4K1kP/r7/3q4 w - - 0 60"
+        customfen = "8/6P1/7R/8/4p3/4K1kP/r7/3q4 w - - 0 6"
         split = defaultFen.split(' ')
         for i in range(len(split)):
             match i:
