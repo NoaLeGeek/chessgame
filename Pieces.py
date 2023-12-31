@@ -18,8 +18,9 @@ class Piece:
         self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = self.column*self.square_size
-        self.y = self.row*self.square_size
+        print(image.get_width(), image.get_height())
+        self.x = (self.column+0.5*(1-(image.get_width()/self.square_size)))*self.square_size
+        self.y = (self.row+0.5*(1-(image.get_height()/self.square_size)))*self.square_size
 
     def clear_available_moves(self):
         if self.available_moves:

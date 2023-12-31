@@ -76,7 +76,7 @@ class Game:
         self.board.draw_moves(self.valid_moves)
         if self.promotion:
             self.board.draw_promotion(self.promotion)
-        self.board.draw_test()
+        #self.board.draw_test()
         pygame.display.update()
 
     def reset(self, frame):
