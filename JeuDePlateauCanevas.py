@@ -3,6 +3,7 @@
 import random
 from tkinter import *
 from tkinter.messagebox import showinfo
+from tkinter.colorchooser import askcolor
 
 rows, columns = 3, 3
 lengthBoard = 550
@@ -17,6 +18,8 @@ selectOpponent = IntVar()
 selectBot = IntVar()
 configSize = IntVar()
 configWinSize = IntVar()
+configColorX = "#FF0000"
+configColorO = "#0000FF"
 selectOpponent.set(1)
 selectBot.set(1)
 configSize.set(3)
@@ -47,7 +50,8 @@ def newGame():
     botSmart.configure(state=DISABLED)
     spinboxSize.configure(state=DISABLED)
     spinboxWinSize.configure(state=DISABLED)
-
+    buttonColorX.configure(state=DISABLED)
+    buttonColorO.configure(state=DISABLED)
 
 
 def drawBoard():
@@ -87,7 +91,7 @@ def drawCircle(x: int, y: int):
     y1 = 2 * margin + y * length
     x2 = (x + 1) * length
     y2 = (y + 1) * length
-    board.create_oval(x1, y1, x2, y2, width=5, outline="blue")
+    board.create_oval(x1, y1, x2, y2, width=5, outline=configColorO)
 
 
 def drawCross(x: int, y: int):
@@ -95,8 +99,8 @@ def drawCross(x: int, y: int):
     y1 = 2 * margin + y * length
     x2 = (x + 1) * length
     y2 = (y + 1) * length
-    board.create_line(x1, y1, x2, y2, width=5, fill="red")
-    board.create_line(x1, y2, x2, y1, width=5, fill="red")
+    board.create_line(x1, y1, x2, y2, width=5, fill=configColorX)
+    board.create_line(x1, y2, x2, y1, width=5, fill=configColorX)
     pass
 
 
@@ -134,29 +138,43 @@ def drawLine(x1, y1, x2, y2):
     y1_pixel = margin + length * (y1 + 0.5)
     x2_pixel = margin + length * (x2 + 0.5)
     y2_pixel = margin + length * (y2 + 0.5)
-    board.create_line(x1_pixel, y1_pixel, x2_pixel, y2_pixel, width=5, fill=("darkblue" if numberPlays % 2 == 0 else "darkred"))
+    color = "#{:02X}{:02X}{:02X}".format(int(int((configColorO if numberPlays % 2 == 0 else configColorX)[1:3], 16) * (116/255)), int(int((configColorO if numberPlays % 2 == 0 else configColorX)[3:5], 16) * (116/255)), int(int((configColorO if numberPlays % 2 == 0 else configColorX)[5:7], 16) * (116/255)))
+    board.create_line(x1_pixel, y1_pixel, x2_pixel, y2_pixel, width=5, fill=color)
 
 
 def computerPlays():
     global numberPlays, turn, gameOver, boardData
+    print("=====")
+    for i in range(rows):
+        print(boardData[i])
     x, y = None, None
     if selectBot.get() == 2:
+        # -1 sert à vérifier si le bot a un coup gagnant et 1 sert à vérifier si le bot a un coup qui bloque le joueur. Si aucun des deux, le bot joue aléatoirement.
+        # L'ordre du -1 et du 1 est important puisqu'il faut que le bot vérifie d'abord s'il peut gagner avant de vérifier s'il peut bloquer le joueur.
         for player in [-1, 1]:
-            for i in range(rows):
-                for j in range(columns - configWinSize.get() + 1):
+            for j in range(columns - configWinSize.get() + 1):
+                for i in range(rows):
                     if sum(boardData[i][j + k] for k in range(configWinSize.get())) == player * (configWinSize.get() - 1):
                         x, y = next((i, j + k) for k in range(configWinSize.get()) if boardData[i][j + k] == 0)
+                        break
                     if sum(boardData[j + k][i] for k in range(configWinSize.get())) == player * (configWinSize.get() - 1):
                         x, y = next((j + k, i) for k in range(configWinSize.get()) if boardData[j + k][i] == 0)
-            for i in range(rows - configWinSize.get() + 1):
-                for j in range(columns - configWinSize.get() + 1):
+                        break
+                # Si x est défini, cela signifie que le bot a trouvé un coup gagnant ou un coup qui bloque le joueur.
+                # Il est important de sortir de la boucle afin de ne pas écraser un possible coup gagnant trouvé par un possible coup trouvé qui bloque le joueur.
+                if x is not None:
+                    break
+                for i in range(rows - configWinSize.get() + 1):
                     if sum(boardData[i + k][j + k] for k in range(configWinSize.get())) == player * (configWinSize.get() - 1):
                         x, y = next((i + k, j + k) for k in range(configWinSize.get()) if boardData[i + k][j + k] == 0)
+                        break
                     if sum(boardData[i + k][j + configWinSize.get() - 1 - k] for k in range(configWinSize.get())) == player * (configWinSize.get() - 1):
                         x, y = next((i + k, j + configWinSize.get() - 1 - k) for k in range(configWinSize.get()) if boardData[i + k][j + configWinSize.get() - 1 - k] == 0)
+                        break
+            if x is not None:
+                break
     if x is None:
         x, y = random.choice(list(filter(lambda pos: boardData[pos[0]][pos[1]] == 0, [(i, j) for i in range(rows) for j in range(columns)])))
-        print("random choice on", x, y)
     boardData[x][y] = turn
     numberPlays += 1
     if numberPlays % 2 == 1:
@@ -182,6 +200,8 @@ def updateState():
         botSmart.configure(state=NORMAL)
         spinboxSize.configure(state=NORMAL)
         spinboxWinSize.configure(state=NORMAL)
+        buttonColorX.configure(state=NORMAL)
+        buttonColorO.configure(state=NORMAL)
     else:
         if selectOpponent.get() == 2:
             textState.config(text="Tour du {}".format("Joueur" if turn == 1 else "Ordinateur"))
@@ -196,6 +216,16 @@ def toggle_widget(widget: Widget, **kwargs):
     else:
         widget.pack_forget()
         textName.config(text="Joueur 1 - Joueur 2")
+
+
+def change_color(symbol: int, color: str):
+    global configColorX, configColorO
+    if symbol == 1:
+        configColorX = color
+        buttonColorX.config(bg=color)
+    else:
+        configColorO = color
+        buttonColorO.config(bg=color)
 
 
 win.title("Jeu de Noa OTTERMANN")
@@ -241,7 +271,7 @@ textVariants = Label(frameVariants, text="Variantes", font=("Helvetica", 9, "und
 textVariants.pack(side=TOP)
 textSize = Label(frameVariants, text="Taille de la grille", font=("Helvetica", 9))
 textSize.pack(side=TOP)
-spinboxSize = Spinbox(frameVariants, from_=1, to=10, textvariable=configSize, wrap=True, command=lambda: spinboxWinSize.config(to=configSize.get()))
+spinboxSize = Spinbox(frameVariants, from_=2, to=10, textvariable=configSize, wrap=True, command=lambda: spinboxWinSize.config(to=configSize.get()))
 spinboxSize.pack(side=TOP, padx=5, pady=5)
 textWinSize = Label(frameVariants, text="Taille de l'alignement", font=("Helvetica", 9))
 textWinSize.pack(side=TOP)
@@ -251,4 +281,8 @@ frameConfig = Frame(win, borderwidth=2, relief=GROOVE)
 frameConfig.pack(side=TOP, padx=5, pady=5)
 textConfig = Label(frameConfig, text="Paramètres", font=("Helvetica", 9, "underline"))
 textConfig.pack(side=TOP)
+buttonColorX = Button(frameConfig, text="Couleur des X", command=lambda: change_color(1, askcolor(title="Couleur des X", color=configColorX)[1]), bg=configColorX)
+buttonColorX.pack(side=TOP, padx=5, pady=5)
+buttonColorO = Button(frameConfig, text="Couleur des O", command=lambda: change_color(-1, askcolor(title="Couleur des O", color=configColorO)[1]), bg=configColorO)
+buttonColorO.pack(side=TOP, padx=5, pady=5)
 win.mainloop()
