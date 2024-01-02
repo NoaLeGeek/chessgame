@@ -144,9 +144,6 @@ def drawLine(x1, y1, x2, y2):
 
 def computerPlays():
     global numberPlays, turn, gameOver, boardData
-    print("=====")
-    for i in range(rows):
-        print(boardData[i])
     x, y = None, None
     if selectBot.get() == 2:
         # -1 sert à vérifier si le bot a un coup gagnant et 1 sert à vérifier si le bot a un coup qui bloque le joueur. Si aucun des deux, le bot joue aléatoirement.
@@ -222,10 +219,10 @@ def change_color(symbol: int, color: str):
     global configColorX, configColorO
     if symbol == 1:
         configColorX = color
-        buttonColorX.config(bg=color)
+        buttonColorX.config(bg=color, fg="#{:02X}{:02X}{:02X}".format(255 - int(configColorX[1:3], 16), 255 - int(configColorX[3:5], 16), 255 - int(configColorX[5:7], 16)))
     else:
         configColorO = color
-        buttonColorO.config(bg=color)
+        buttonColorO.config(bg=color, fg="#{:02X}{:02X}{:02X}".format(255 - int(configColorO[1:3], 16), 255 - int(configColorO[3:5], 16), 255 - int(configColorO[5:7], 16)))
 
 
 win.title("Jeu de Noa OTTERMANN")
@@ -241,7 +238,7 @@ textName.pack(side=TOP, pady=5)
 textScore = Label(win, text="0-0", font=("Helvetica", 20), bg="bisque")
 textScore.pack(side=TOP, pady=5)
 buttonRules = Button(win, text="Règles du jeu",
-                     command=lambda: showinfo("Règles du jeu\n\n", "- Le premier joueur à aligner 3 symboles identiques gagne la partie.\n- Il y a égalité lorsque la grille est complétée sans vainqueur.\n- Le premier joueur commence toujours avec le symbole X."))
+                     command=lambda: showinfo("Règles du jeu\n\n", "- Le premier joueur à aligner 3 symboles identiques gagne la partie.\n- Il y a égalité lorsque la grille est complétée sans vainqueur.\n- Le premier joueur commence toujours avec le symbole X.\n\nVariantes :\n- La taille de l'alignement peut être modifiée entre 2 et la taille de la grille.\n- La taille de la grille peut être modifiée entre 2 et 10.\n- Si la taille de l'alignement a été modifiée, alors le premier joueur à aligner la taille de l'alignement choisie gagne la partie.\n"))
 buttonRules.pack(side=TOP, pady=5)
 buttonNewGame = Button(win, text="Nouvelle partie", command=newGame)
 buttonNewGame.pack(side=TOP, pady=5)
@@ -281,8 +278,8 @@ frameConfig = Frame(win, borderwidth=2, relief=GROOVE)
 frameConfig.pack(side=TOP, padx=5, pady=5)
 textConfig = Label(frameConfig, text="Paramètres", font=("Helvetica", 9, "underline"))
 textConfig.pack(side=TOP)
-buttonColorX = Button(frameConfig, text="Couleur des X", command=lambda: change_color(1, askcolor(title="Couleur des X", color=configColorX)[1]), bg=configColorX)
+buttonColorX = Button(frameConfig, text="Couleur des X", command=lambda: change_color(1, askcolor(title="Couleur des X", color=configColorX)[1]), bg=configColorX, fg="#00FFFF")
 buttonColorX.pack(side=TOP, padx=5, pady=5)
-buttonColorO = Button(frameConfig, text="Couleur des O", command=lambda: change_color(-1, askcolor(title="Couleur des O", color=configColorO)[1]), bg=configColorO)
+buttonColorO = Button(frameConfig, text="Couleur des O", command=lambda: change_color(-1, askcolor(title="Couleur des O", color=configColorO)[1]), bg=configColorO, fg="#FFFF00")
 buttonColorO.pack(side=TOP, padx=5, pady=5)
 win.mainloop()
