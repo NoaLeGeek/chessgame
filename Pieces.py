@@ -18,9 +18,8 @@ class Piece:
         self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        print(image.get_width(), image.get_height())
-        self.x = (self.column+0.5*(1-(image.get_width()/self.square_size)))*self.square_size
-        self.y = (self.row+0.5*(1-(image.get_height()/self.square_size)))*self.square_size
+        self.x = (self.column+0.5-0.5*image.get_width()/self.square_size)*self.square_size
+        self.y = (self.row+0.5-0.5*image.get_height()/self.square_size)*self.square_size
 
     def clear_available_moves(self):
         if self.available_moves:
@@ -33,6 +32,8 @@ class Pawn(Piece):
         self.first_move = True
         self.en_passant = False
         self.value = 1
+        # Contains a tuple with (piece that wants to promote, the offset: -1 if it was a capture from the left, 0 if there's no offset, 1 if it was a capture from the right)
+        self.promotion = (False, None)
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
