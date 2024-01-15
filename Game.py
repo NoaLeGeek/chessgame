@@ -10,7 +10,6 @@ class Game:
         self.turn = 0
         self.create_board()
         self.selected = None
-        self.promotion = None
         self.valid_moves = []
         self.black_pieces_left = 16
         self.white_pieces_left = 16
@@ -73,9 +72,12 @@ class Game:
     def update_window(self):
         self.board.draw_board()
         self.board.draw_pieces()
-        self.board.draw_moves(self.valid_moves)
-        if self.promotion:
-            self.board.draw_promotion(self.promotion)
+        if self.valid_moves:
+            self.board.draw_moves(self.valid_moves)
+        for row in range(len(self.board.board)):
+            for column in range(len(self.board.board[0])):
+                if isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].promotion[0]:
+                    self.board.draw_promotion(self.board.board[row][column], self.board.board[row][column].promotion[1])
         #self.board.draw_test()
         pygame.display.update()
 
@@ -165,8 +167,7 @@ class Game:
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
         if isinstance(piece, Pieces.Pawn) and self.board.board[row + piece.color][column] != 0 and \
-                self.board.board[row + piece.color][
-                    column].en_passant:
+                self.board.board[row + piece.color][column].en_passant:
             self.board.board[row + piece.color][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
             self.board.board[piece.row][piece.column]
@@ -180,7 +181,7 @@ class Game:
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
-            return (row, column + (piece.column - column > 0) - (piece.column - column < 0)) not in self.get_color_moves(-piece.color)
+            return (row, column + (piece.column - column > 0) - (piece.column - column < 0)) not in self.get_color_moves(-piece.color) and not self.is_king_checked()
         else:
             piece_row, piece_column = piece.row, piece.column
             save_piece = self.board.board[row][column]
@@ -195,22 +196,30 @@ class Game:
 
     def select(self, row, column):
         if self.selected:
-            move = self.make_move(row, column)
-            if not move:
+            # If the player clicks on one of his pieces, it will change the selected piece
+            if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color:
                 self.selected = None
                 self.select(row, column)
-        piece = self.board.board[row][column]
-        if piece != 0 and self.turn == piece.color:
-            self.selected = piece
-            # TODO /!\ NEEDS to be optimised by removing all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-            self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if self.can_move(self.selected, move[0], move[1])]
+                return
+            # If the player clicks on a square where the selected piece can't move, it will remove the selection
+            if (row, column) not in self.valid_moves:
+                self.valid_moves = []
+                self.selected = None
+                return
+            self.make_move(row, column)
+        else:
+            piece = self.board.board[row][column]
+            if piece != 0 and self.turn == piece.color:
+                self.selected = piece
+                # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
+                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if self.can_move(self.selected, move[0], move[1])]
 
     def make_move(self, row, column):
         piece = self.board.board[row][column]
-        if not self.selected or (row, column) not in self.valid_moves or (piece != 0 and piece.color == self.selected.color):
-            return False
+        # TODO maybe move this part to self.select()?
         if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
-            self.promotion = self.selected
+            self.selected.promotion = (True, column - self.selected.column)
+            self.valid_moves = []
             return False
         self.remove(piece, row, column)
         self.move(self.selected, row, column)
