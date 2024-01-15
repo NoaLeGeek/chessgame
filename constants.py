@@ -5,7 +5,7 @@ import pygame
 def generate_images(asset: str):
     return [pygame.transform.scale(pygame.image.load(
         os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset,
-                     piece + ".png")), (square_size * 5 / 8, square_size * 3 / 4) if piece.endswith("R") or piece.endswith("P") else (square_size * 3 / 4, square_size * 3 / 4)) for piece in piece_constants]
+                     piece + ".png")), (square_size * 5 / 8, square_size * 3 / 4) if piece.endswith("P") else (square_size * 3 / 4, square_size * 3 / 4)) for piece in piece_constants]
 
 
 width, height = 640, 640
