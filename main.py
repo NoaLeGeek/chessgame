@@ -27,11 +27,11 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     game.reset(window)
-            if game.turn == -1:
-                randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
-                game.select(randomPiece.row, randomPiece.column)
-                randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
-                game.select(randomMove[0], randomMove[1])
+            #if game.turn == -1:
+                #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
+                #game.select(randomPiece.row, randomPiece.column)
+                #randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
+                #game.select(randomMove[0], randomMove[1])
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
@@ -42,13 +42,9 @@ def main():
                     if selected_piece != 0:
                         pass
                         # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
-                    print("king pos:", game.get_king_position(game.turn))
-                    if game.is_king_checked():
-                        print("king checked")
-                    print("checkmate:", game.is_stalemate() and game.is_king_checked())
-                    if game.turn == 1:
-                        game.select(row, column)
-                        game.highlightedSquares = []
+                    #if game.turn == 1:
+                    game.select(row, column)
+                    game.highlightedSquares = []
 
 
 if __name__ == "__main__":

@@ -35,9 +35,10 @@ class Game:
             'Q': (Pieces.Queen, (square_size, piece_assets[selected_piece][4], 1)),
             'K': (Pieces.King, (square_size, piece_assets[selected_piece][5], 1))
         }
-        defaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
-        customfen = "8/6P1/7R/8/4p3/4K1kP/r7/3q4 w - - 0 6"
-        split = defaultFen.split(' ')
+        defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
+        customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
+        custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
+        split = customfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -62,7 +63,9 @@ class Game:
                         self.board.board[0][0].first_move = False
                 case 3:
                     if split[i] not in ['-', '–']:
-                        self.board.board[int(split[i][1]) + self.turn][ord(split[i][0]) - 97].en_passant = True
+                        piece = self.board.board[8 - int(split[i][1]) + self.turn][ord(split[i][0]) - 97]
+                        if piece != 0:
+                            piece.en_passant = True
                 case 4:
                     # TODO you'll have to put halfMoves = 0 every time a pawn is moved or a piece is captured, this is maybe the time to make Move a class to differenciate between a normal move and a capture
                     self.halfMoves = int(split[i])
