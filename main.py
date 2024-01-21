@@ -3,6 +3,7 @@ import random
 from Game import Game
 from constants import *
 
+
 pygame.init()
 clock = pygame.time.Clock()
 window = pygame.display.set_mode((width, height))

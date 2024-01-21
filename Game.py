@@ -22,23 +22,23 @@ class Game:
     def create_board(self):
         self.board.board = [[0] * columns for _ in range(rows)]
         fen = {
-            'p': (Pieces.Pawn, (square_size, piece_assets[selected_piece][6], -1)),
-            'n': (Pieces.Knight, (square_size, piece_assets[selected_piece][7], -1)),
-            'b': (Pieces.Bishop, (square_size, piece_assets[selected_piece][8], -1)),
-            'r': (Pieces.Rook, (square_size, piece_assets[selected_piece][9], -1)),
-            'q': (Pieces.Queen, (square_size, piece_assets[selected_piece][10], -1)),
-            'k': (Pieces.King, (square_size, piece_assets[selected_piece][11], -1)),
-            'P': (Pieces.Pawn, (square_size, piece_assets[selected_piece][0], 1)),
-            'N': (Pieces.Knight, (square_size, piece_assets[selected_piece][1], 1)),
-            'B': (Pieces.Bishop, (square_size, piece_assets[selected_piece][2], 1)),
-            'R': (Pieces.Rook, (square_size, piece_assets[selected_piece][3], 1)),
-            'Q': (Pieces.Queen, (square_size, piece_assets[selected_piece][4], 1)),
-            'K': (Pieces.King, (square_size, piece_assets[selected_piece][5], 1))
+            'p': (Pieces.Pawn, (square_size, piece_assets[selected_asset][6], -1)),
+            'n': (Pieces.Knight, (square_size, piece_assets[selected_asset][7], -1)),
+            'b': (Pieces.Bishop, (square_size, piece_assets[selected_asset][8], -1)),
+            'r': (Pieces.Rook, (square_size, piece_assets[selected_asset][9], -1)),
+            'q': (Pieces.Queen, (square_size, piece_assets[selected_asset][10], -1)),
+            'k': (Pieces.King, (square_size, piece_assets[selected_asset][11], -1)),
+            'P': (Pieces.Pawn, (square_size, piece_assets[selected_asset][0], 1)),
+            'N': (Pieces.Knight, (square_size, piece_assets[selected_asset][1], 1)),
+            'B': (Pieces.Bishop, (square_size, piece_assets[selected_asset][2], 1)),
+            'R': (Pieces.Rook, (square_size, piece_assets[selected_asset][3], 1)),
+            'Q': (Pieces.Queen, (square_size, piece_assets[selected_asset][4], 1)),
+            'K': (Pieces.King, (square_size, piece_assets[selected_asset][5], 1))
         }
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
         custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
-        split = customfen.split(' ')
+        split = defaultfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:

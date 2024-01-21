@@ -15,10 +15,10 @@ class Board:
         self.debug = False
 
     def draw_board(self):
-        self.frame.fill(tile_assets[selected_tile][1])
+        self.frame.fill(tile_assets[selected_tile_asset][1])
         for row in range(rows):
             for column in range(row % 2, columns, 2):
-                pygame.draw.rect(self.frame, tile_assets[selected_tile][0],(row * square_size, column * square_size, square_size, square_size))
+                pygame.draw.rect(self.frame, tile_assets[selected_tile_asset][0],(row * square_size, column * square_size, square_size, square_size))
 
     def draw_piece(self, piece, window):
         window.blit(piece.image, (piece.x, piece.y))
