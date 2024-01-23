@@ -1,5 +1,3 @@
-from math import sqrt
-
 class Piece:
     def __init__(self, square_size, image, color, row, column):
         self.square_size = square_size

@@ -1,22 +1,24 @@
 import random
+import constants
+import pygame
 
 from Game import Game
-from constants import *
+from Pieces import *
 
 
 pygame.init()
 clock = pygame.time.Clock()
-window = pygame.display.set_mode((width, height))
+window = pygame.display.set_mode((constants.width, constants.height))
 
 def get_position(x, y):
-    return y // square_size, x // square_size
+    return y // constants.square_size, x // constants.square_size
 
 
 def main():
     run = True
     game_over = False
     fps = 60
-    game = Game(width, height, rows, columns, window)
+    game = Game(constants.width, constants.height, constants.rows, constants.columns, window)
     while run:
         clock.tick(fps)
         game.update_window()
@@ -46,6 +48,14 @@ def main():
                     #if game.turn == 1:
                     game.select(row, column)
                     game.highlightedSquares = []
+                    #print(constants.selected_asset)
+                    #constants.selected_asset = random.choice(["lichess", "simple", "fancy", "medieval", "warrior", "default"])
+                    # TODO when user will change skin, this will be useful, you have to recenter the pieces
+                    #for i in range(8):
+                        #for j in range(8):
+                            #piece = game.get_board().board[i][j]
+                            #if piece != 0:
+                                #piece.image = constants.piece_assets[constants.selected_asset][test[type(piece)] + (0 if piece.color == 1 else 6)]
 
 
 if __name__ == "__main__":

@@ -21,20 +21,7 @@ class Game:
 
     def create_board(self):
         self.board.board = [[0] * columns for _ in range(rows)]
-        fen = {
-            'p': (Pieces.Pawn, (square_size, piece_assets[selected_asset][6], -1)),
-            'n': (Pieces.Knight, (square_size, piece_assets[selected_asset][7], -1)),
-            'b': (Pieces.Bishop, (square_size, piece_assets[selected_asset][8], -1)),
-            'r': (Pieces.Rook, (square_size, piece_assets[selected_asset][9], -1)),
-            'q': (Pieces.Queen, (square_size, piece_assets[selected_asset][10], -1)),
-            'k': (Pieces.King, (square_size, piece_assets[selected_asset][11], -1)),
-            'P': (Pieces.Pawn, (square_size, piece_assets[selected_asset][0], 1)),
-            'N': (Pieces.Knight, (square_size, piece_assets[selected_asset][1], 1)),
-            'B': (Pieces.Bishop, (square_size, piece_assets[selected_asset][2], 1)),
-            'R': (Pieces.Rook, (square_size, piece_assets[selected_asset][3], 1)),
-            'Q': (Pieces.Queen, (square_size, piece_assets[selected_asset][4], 1)),
-            'K': (Pieces.King, (square_size, piece_assets[selected_asset][5], 1))
-        }
+        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: ([Pieces.Pawn, Pieces.Knight, Pieces.Bishop, Pieces.Rook, Pieces.Queen, Pieces.King][i%6], (square_size, piece_assets[selected_asset][i], (-1 if i > 5 else 1))) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
         custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
@@ -81,7 +68,7 @@ class Game:
             for column in range(len(self.board.board[0])):
                 if isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].promotion[0]:
                     self.board.draw_promotion(self.board.board[row][column], self.board.board[row][column].promotion[1])
-        #self.board.draw_test()
+                    #self.board.draw_test(self.board.board[row][column], self.board.board[row][column].promotion[1])
         pygame.display.update()
 
     def reset(self, frame):
@@ -199,6 +186,18 @@ class Game:
 
     def select(self, row, column):
         if self.selected:
+            # If in the state of promotion
+            if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
+                # Promote the pawn
+                if row in range((0 if self.selected.color == 1 else 4), (4 if self.selected.color == 1 else 8)) and column == self.selected.promotion[1] + self.selected.column:
+                    self.selected.promotion = (False, 0)
+                    self.board.board[self.selected.row][self.selected.column] = 0
+                    self.board.board[row][column] = Pieces.Queen(square_size, piece_assets[selected_asset][4 + (0 if self.selected.color == 1 else 6)], self.selected.color, row, column)
+                    self.selected = None
+                    return
+                # Remove the promotion
+                else:
+                    self.selected.promotion = (False, 0)
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color:
                 self.selected = None
@@ -231,6 +230,9 @@ class Game:
         self.valid_moves = []
         self.selected = None
         return True
+    
+    def promote(self, piece: Pieces.Piece, row: int, column: int):
+        self.board.board[row][column] = piece(square_size, piece_assets[selected_asset][4 + (0 if piece.color == 1 else 6)], piece.color, row, column)
 
     def get_board(self):
         return self.board

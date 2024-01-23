@@ -26,4 +26,4 @@ piece_constants = ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "
 # TODO maybe a function to generate images because that's repeating
 piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "simple", "fancy", "medieval", "warrior", "default"]}
 selected_tile_asset = "brown"
-selected_asset = "simple"
+selected_asset = "lichess"
