@@ -21,7 +21,7 @@ class Game:
 
     def create_board(self):
         self.board.board = [[0] * columns for _ in range(rows)]
-        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: ([Pieces.Pawn, Pieces.Knight, Pieces.Bishop, Pieces.Rook, Pieces.Queen, Pieces.King][i%6], (square_size, piece_assets[selected_asset][i], (-1 if i > 5 else 1))) for i in range(12)}
+        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: (Pieces.Piece.index_to_piece(i%6), (square_size, piece_assets[selected_asset][i], (-1 if i > 5 else 1))) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
         custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
@@ -156,8 +156,7 @@ class Game:
                 self.board.board[row][3], self.board.board[row][0] = self.board.board[row][0], self.board.board[row][3]
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
-        if isinstance(piece, Pieces.Pawn) and self.board.board[row + piece.color][column] != 0 and \
-                self.board.board[row + piece.color][column].en_passant:
+        if isinstance(piece, Pieces.Pawn) and self.board.board[row + piece.color][column] != 0 and self.board.board[row + piece.color][column].en_passant:
             self.board.board[row + piece.color][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
             self.board.board[piece.row][piece.column]
@@ -189,11 +188,10 @@ class Game:
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
+                # TODO self.select row and column are the one of the pawn
+                # TODO row and column are where the player clicked for promotion
                 if row in range((0 if self.selected.color == 1 else 4), (4 if self.selected.color == 1 else 8)) and column == self.selected.promotion[1] + self.selected.column:
-                    self.selected.promotion = (False, 0)
-                    self.board.board[self.selected.row][self.selected.column] = 0
-                    self.board.board[row][column] = Pieces.Queen(square_size, piece_assets[selected_asset][4 + (0 if self.selected.color == 1 else 6)], self.selected.color, row, column)
-                    self.selected = None
+                    self.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][::self.selected.color][(row if self.selected.color == 1 else 7 - row)])
                     return
                 # Remove the promotion
                 else:
@@ -231,8 +229,14 @@ class Game:
         self.selected = None
         return True
     
-    def promote(self, piece: Pieces.Piece, row: int, column: int):
-        self.board.board[row][column] = piece(square_size, piece_assets[selected_asset][4 + (0 if piece.color == 1 else 6)], piece.color, row, column)
+    def promote(self, type: Pieces.Piece):
+        self.remove(self.board.board[0 if self.selected.color == 1 else 7][self.selected.column + self.selected.promotion[1]], 0, self.selected.column + self.selected.promotion[1])
+        self.move(self.selected, (0 if self.selected.color == 1 else 7), self.selected.column + self.selected.promotion[1])
+        self.board.board[0 if self.selected.color == 1 else 7][self.selected.column + self.selected.promotion[1]] = type(square_size, piece_assets[selected_asset][Pieces.Piece.piece_to_index(type) + (0 if self.selected.color == 1 else 6)], self.selected.color, (0 if self.selected.color == 1 else 7), self.selected.column + self.selected.promotion[1])
+        self.change_turn()
+        print("turn", self.turn)
+        self.valid_moves = []
+        self.selected = None
 
     def get_board(self):
         return self.board
