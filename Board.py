@@ -42,7 +42,12 @@ class Board:
             pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2, row * square_size + square_size // 2), square_size // 8)
 
     def draw_promotion(self, promotion, offset):
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, (0 if promotion.color == 1 else 4) * square_size, square_size, 4*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, 2 * (1 - promotion.color) * square_size, square_size, 4*square_size))
+        # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
+        for i in range(4):
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - promotion)//2, promotion.column + offset)
+            self.frame.blit(render, (render.x, render.y))
+            
 
     def draw_test(self, promotion, offset):
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, (0 if promotion.color == 1 else 4) * square_size, square_size, 4*square_size))
