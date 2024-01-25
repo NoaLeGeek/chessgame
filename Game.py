@@ -21,7 +21,7 @@ class Game:
 
     def create_board(self):
         self.board.board = [[0] * columns for _ in range(rows)]
-        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: (Pieces.Piece.index_to_piece(i%6), (square_size, piece_assets[selected_asset][i], (-1 if i > 5 else 1))) for i in range(12)}
+        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: (Pieces.Piece.index_to_piece(i%6), (square_size, (-1 if i > 5 else 1))) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
         custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
@@ -190,8 +190,8 @@ class Game:
                 # Promote the pawn
                 # TODO self.select row and column are the one of the pawn
                 # TODO row and column are where the player clicked for promotion
-                if row in range((0 if self.selected.color == 1 else 4), (4 if self.selected.color == 1 else 8)) and column == self.selected.promotion[1] + self.selected.column:
-                    self.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][::self.selected.color][(row if self.selected.color == 1 else 7 - row)])
+                if row in range(2*(1 - self.selected.color), 2*(3 - self.selected.color)) and column == self.selected.promotion[1] + self.selected.column:
+                    self.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)])
                     return
                 # Remove the promotion
                 else:
@@ -230,9 +230,9 @@ class Game:
         return True
     
     def promote(self, type: Pieces.Piece):
-        self.remove(self.board.board[0 if self.selected.color == 1 else 7][self.selected.column + self.selected.promotion[1]], 0, self.selected.column + self.selected.promotion[1])
-        self.move(self.selected, (0 if self.selected.color == 1 else 7), self.selected.column + self.selected.promotion[1])
-        self.board.board[0 if self.selected.color == 1 else 7][self.selected.column + self.selected.promotion[1]] = type(square_size, piece_assets[selected_asset][Pieces.Piece.piece_to_index(type) + (0 if self.selected.color == 1 else 6)], self.selected.color, (0 if self.selected.color == 1 else 7), self.selected.column + self.selected.promotion[1])
+        self.remove(self.board.board[7*(1 - self.selected.color)//2][self.selected.column + self.selected.promotion[1]], 7*(1 - self.selected.color)//2, self.selected.column + self.selected.promotion[1])
+        self.move(self.selected, 7*(1 - self.selected.color)//2, self.selected.column + self.selected.promotion[1])
+        self.board.board[7*(1 - self.selected.color)//2][self.selected.column] = type(square_size, self.selected.color, 7*(1 - self.selected.color)//2, self.selected.column)
         self.change_turn()
         print("turn", self.turn)
         self.valid_moves = []
