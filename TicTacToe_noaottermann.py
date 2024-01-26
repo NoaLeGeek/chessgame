@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# SI LE PROGRAMME NE FONCTIONNE PAS CORRECTEMENT A CAUSE DES LANGUES, IL FAUT METTRE LES FICHIERS .json DANS LE MEME DOSSIER QUE LE PROGRAMME.
+
 import random
 import json
 from tkinter import *
@@ -276,7 +279,7 @@ def change_color(symbol: int, color: str):
 
 def translate(key, language):
     # On traduit le texte en fonction de la langue choisie.
-    with open(f"lang/{language}.json", "r", encoding="utf-8") as file:
+    with open(f"{language}.json", "r", encoding="utf-8") as file:
         data = json.load(file)
     return data.get(key, key)
 

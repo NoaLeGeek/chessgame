@@ -45,8 +45,8 @@ class Board:
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, 2 * (1 - promotion.color) * square_size, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - promotion)//2, promotion.column + offset)
-            self.frame.blit(render, (render.x, render.y))
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - promotion.color)//2 + promotion.color * i, promotion.column + offset)
+            self.frame.blit(render.image, (render.x, render.y))
             
 
     def draw_test(self, promotion, offset):

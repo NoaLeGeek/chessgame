@@ -26,10 +26,10 @@ class Piece:
             self.available_moves = []
 
     def piece_to_index(piece):
-        return {Pawn: 0, Rook: 1, Knight: 2, Bishop: 3, Queen: 4, King: 5}[type(piece)]
+        return {Pawn: 0, Knight: 1, Bishop: 2, Rook: 3, Queen: 4, King: 5}[type(piece)]
     
     def index_to_piece(index):
-        return [Pawn, Rook, Knight, Bishop, Queen, King][index]
+        return [Pawn, Knight, Bishop, Rook, Queen, King][index]
 
 
 class Pawn(Piece):
