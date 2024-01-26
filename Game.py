@@ -21,7 +21,7 @@ class Game:
 
     def create_board(self):
         self.board.board = [[0] * columns for _ in range(rows)]
-        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: (Pieces.Piece.index_to_piece(i%6), (square_size, (-1 if i > 5 else 1))) for i in range(12)}
+        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
         custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
@@ -35,7 +35,7 @@ class Game:
                             if char.isdigit():
                                 k += int(char)
                             else:
-                                self.board.board[j][k] = fen[char][0](*fen[char][1], j, k)
+                                self.board.board[j][k] = fen[char]((1 if ord(char) < 91 else -1), j, k)
                                 k += 1
                 case 1:
                     self.turn = 1 if split[i] == 'w' else -1
@@ -232,7 +232,7 @@ class Game:
     def promote(self, type: Pieces.Piece):
         self.remove(self.board.board[7*(1 - self.selected.color)//2][self.selected.column + self.selected.promotion[1]], 7*(1 - self.selected.color)//2, self.selected.column + self.selected.promotion[1])
         self.move(self.selected, 7*(1 - self.selected.color)//2, self.selected.column + self.selected.promotion[1])
-        self.board.board[7*(1 - self.selected.color)//2][self.selected.column] = type(square_size, self.selected.color, 7*(1 - self.selected.color)//2, self.selected.column)
+        self.board.board[7*(1 - self.selected.color)//2][self.selected.column] = type(self.selected.color, 7*(1 - self.selected.color)//2, self.selected.column)
         self.change_turn()
         print("turn", self.turn)
         self.valid_moves = []
