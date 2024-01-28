@@ -188,8 +188,6 @@ class Game:
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
-                # TODO self.select row and column are the one of the pawn
-                # TODO row and column are where the player clicked for promotion
                 if row in range(2*(1 - self.selected.color), 2*(3 - self.selected.color)) and column == self.selected.promotion[1] + self.selected.column:
                     self.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)])
                     return
@@ -202,7 +200,7 @@ class Game:
                 self.select(row, column)
                 return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
-            if (row, column) not in self.valid_moves:
+            if (row, column) not in self.valid_moves or (row, column) == (self.selected.row, self.selected.column):
                 self.valid_moves = []
                 self.selected = None
                 return
