@@ -6,10 +6,6 @@ from Game import Game
 from Pieces import *
 
 
-pygame.init()
-clock = pygame.time.Clock()
-window = pygame.display.set_mode((constants.width, constants.height))
-
 def get_position(x, y):
     return y // constants.square_size, x // constants.square_size
 
@@ -18,18 +14,25 @@ def main():
     run = True
     game_over = False
     fps = 60
-    game = Game(constants.width, constants.height, constants.rows, constants.columns, window)
+    game = Game(constants.width, constants.height, constants.rows, constants.columns, constants.window)
     while run:
-        clock.tick(fps)
+        constants.clock.tick(fps)
         game.update_window()
         game_over = game.check_game()
         for event in pygame.event.get():
+            if event.type == pygame.VIDEORESIZE:
+                if pygame.display.Info().current_h != constants.height:
+                    pygame.display.set_mode((pygame.display.Info().current_w, constants.height), pygame.RESIZABLE)
+                if pygame.display.Info().current_w > constants.width:
+                    pygame.display.set_mode((constants.width, pygame.display.Info().current_h), pygame.RESIZABLE)
+                if pygame.display.Info().current_w < constants.height:
+                    pygame.display.set_mode((constants.height, pygame.display.Info().current_h), pygame.RESIZABLE)
             if game_over or event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    game.reset(window)
+                    game.reset(constants.window)
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
