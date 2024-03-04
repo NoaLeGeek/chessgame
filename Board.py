@@ -48,6 +48,11 @@ class Board:
             render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - promotion.color)//2 + promotion.color * i, promotion.column + offset)
             self.frame.blit(render.image, (render.x, render.y))
             
+    def draw_highlightedSquares(self, highlightedSquares):
+        for (row, column) in highlightedSquares:
+            pygame.draw.rect(self.frame, (255, 0, 0), (column * square_size, row * square_size, square_size, square_size))
+
+
 
     def draw_test(self, promotion, offset):
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, (0 if promotion.color == 1 else 4) * square_size, square_size, 4*square_size))

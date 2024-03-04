@@ -61,6 +61,8 @@ class Game:
 
     def update_window(self):
         self.board.draw_board()
+        if self.highlightedSquares:
+            self.board.draw_highlightedSquares(self.highlightedSquares)
         self.board.draw_pieces()
         if self.valid_moves:
             self.board.draw_moves(self.valid_moves)
@@ -68,7 +70,6 @@ class Game:
             for column in range(len(self.board.board[0])):
                 if isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].promotion[0]:
                     self.board.draw_promotion(self.board.board[row][column], self.board.board[row][column].promotion[1])
-                    #self.board.draw_test(self.board.board[row][column], self.board.board[row][column].promotion[1])
         pygame.display.update()
 
     def reset(self, frame):

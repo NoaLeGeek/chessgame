@@ -51,6 +51,10 @@ def main():
                     #if game.turn == 1:
                     game.select(row, column)
                     game.highlightedSquares = []
+                elif pygame.mouse.get_pressed()[2]:
+                    location = pygame.mouse.get_pos()
+                    row, column = get_position(location[0], location[1])
+                    game.highlightedSquares.append((row, column))
                     #print(constants.selected_asset)
                     #constants.selected_asset = random.choice(["lichess", "simple", "fancy", "medieval", "warrior", "default"])
                     # TODO when user will change skin, this will be useful, you have to recenter the pieces
