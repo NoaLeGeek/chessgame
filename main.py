@@ -1,7 +1,5 @@
-import random
 import constants
 import pygame
-import os
 
 from Game import Game
 from Pieces import *
