@@ -16,7 +16,7 @@ class Game:
         self.halfMoves = 0
         self.fullMoves = 1
         self.history = []
-        self.highlightedSquares = []
+        self.highlightedSquares = {}
         # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):

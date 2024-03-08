@@ -39,6 +39,7 @@ def main():
                 #randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
                 #game.select(randomMove[0], randomMove[1])
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
+                # Left click
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
@@ -50,11 +51,16 @@ def main():
                         # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
                     #if game.turn == 1:
                     game.select(row, column)
-                    game.highlightedSquares = []
+                    game.highlightedSquares = {}
+                # Right click
                 elif pygame.mouse.get_pressed()[2]:
-                    location = pygame.mouse.get_pos()
-                    row, column = get_position(location[0], location[1])
-                    game.highlightedSquares.append((row, column))
+                    row, column = get_position(*pygame.mouse.get_pos())
+                    game.selected, game.valid_moves, keys = None, [], pygame.key.get_pressed()
+                    highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
+                    if game.highlightedSquares.get((row, column)) != highlight:
+                        game.highlightedSquares[(row, column)] = highlight
+                    else:
+                        game.highlightedSquares.pop((row, column), None)
                     #print(constants.selected_asset)
                     #constants.selected_asset = random.choice(["lichess", "simple", "fancy", "medieval", "warrior", "default"])
                     # TODO when user will change skin, this will be useful, you have to recenter the pieces

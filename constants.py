@@ -1,14 +1,16 @@
 import os
 import pygame
+from win32api import GetMonitorInfo, MonitorFromPoint
 
 
 def generate_images(asset: str):
     return [pygame.transform.scale(pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png")), (square_size * 5 / 8, square_size * 3 / 4) if piece.endswith("P") and asset in ["lichess"] else (square_size * 3 / 4, square_size * 3 / 4)) for piece in piece_constants]
 
 
+taskbar_height = GetMonitorInfo(MonitorFromPoint((0,0))).get("Monitor")[3] - GetMonitorInfo(MonitorFromPoint((0,0))).get("Work")[3]
 pygame.init()
 clock = pygame.time.Clock()
-width, height = pygame.display.Info().current_w, pygame.display.Info().current_h - 23
+width, height = pygame.display.Info().current_w, pygame.display.Info().current_h - 23 - taskbar_height
 window = pygame.display.set_mode((height, height), pygame.RESIZABLE)
 rows, columns = 8, 8
 square_size = height // columns

@@ -49,10 +49,18 @@ class Board:
             self.frame.blit(render.image, (render.x, render.y))
             
     def draw_highlightedSquares(self, highlightedSquares):
-        for (row, column) in highlightedSquares:
-            pygame.draw.rect(self.frame, (255, 0, 0), (column * square_size, row * square_size, square_size, square_size))
-
-
+        for ((row, column), highlight) in highlightedSquares.items():
+            r, g, b = self.frame.get_at((column * square_size, row * square_size))[:3]
+            match highlight:
+                case 0:
+                    r, g, b = 255, 0, 0
+                case 1:
+                    r, g, b = 0, 255, 0
+                case 2:
+                    r, g, b = 255, 165, 0
+            transparent_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
+            transparent_surface.fill((r, g, b, 128))
+            self.frame.blit(transparent_surface, (column * square_size, row * square_size))
 
     def draw_test(self, promotion, offset):
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, (0 if promotion.color == 1 else 4) * square_size, square_size, 4*square_size))
