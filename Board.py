@@ -50,7 +50,6 @@ class Board:
             
     def draw_highlightedSquares(self, highlightedSquares):
         for ((row, column), highlight) in highlightedSquares.items():
-            r, g, b = self.frame.get_at((column * square_size, row * square_size))[:3]
             match highlight:
                 case 0:
                     r, g, b = 255, 0, 0
@@ -58,8 +57,10 @@ class Board:
                     r, g, b = 0, 255, 0
                 case 2:
                     r, g, b = 255, 165, 0
+                case _:
+                    continue
             transparent_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
-            transparent_surface.fill((r, g, b, 128))
+            transparent_surface.fill((r, g, b, 75))
             self.frame.blit(transparent_surface, (column * square_size, row * square_size))
 
     def draw_test(self, promotion, offset):

@@ -29,6 +29,6 @@ tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]
 # TODO maybe a function to generate images because that's repeating
-piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "simple", "fancy", "medieval", "warrior", "default"]}
+piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "chesscom", "simple", "fancy", "medieval", "warrior", "default"]}
 selected_tile_asset = "brown"
-selected_asset = "lichess"
+selected_asset = "chesscom"
