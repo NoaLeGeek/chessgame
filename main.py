@@ -1,6 +1,7 @@
 import random
 import constants
 import pygame
+import os
 
 from Game import Game
 from Pieces import *
@@ -8,7 +9,6 @@ from Pieces import *
 
 def get_position(x, y):
     return y // constants.square_size, x // constants.square_size
-
 
 def main():
     run = True
