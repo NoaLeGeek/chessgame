@@ -18,8 +18,8 @@ class Piece:
         self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = (self.column+0.5-0.5*image.get_width()/self.square_size)*self.square_size
-        self.y = (self.row+0.5-0.5*image.get_height()/self.square_size)*self.square_size
+        self.x = (self.column + 0.5) * self.square_size - 0.5*image.get_width()
+        self.y = (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if selected_asset.startswith("3d") else 0.5*image.get_height())
 
     def clear_available_moves(self):
         if self.available_moves:

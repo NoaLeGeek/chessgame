@@ -4,11 +4,11 @@ import pygame
 from Game import Game
 from Pieces import *
 
-
 def get_position(x, y):
     return y // constants.square_size, x // constants.square_size
 
 def main():
+    # TODO ajouter de la marge entre le bord de fenêtre et l'échiquier pour les assets en 3D
     run = True
     game_over = False
     fps = 60
@@ -59,8 +59,7 @@ def main():
                         game.highlightedSquares[(row, column)] = highlight
                     else:
                         game.highlightedSquares.pop((row, column), None)
-                    #print(constants.selected_asset)
-                    #constants.selected_asset = random.choice(["lichess", "simple", "fancy", "medieval", "warrior", "default"])
+                    #constants.selected_asset = random.choice(["lichess", "chesscom", "fancy", "medieval", "warrior", "default", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "3d_chesskid", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic"])
                     # TODO when user will change skin, this will be useful, you have to recenter the pieces
                     #for i in range(8):
                         #for j in range(8):

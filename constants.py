@@ -1,10 +1,22 @@
 import os
 import pygame
+import random
 from win32api import GetMonitorInfo, MonitorFromPoint
 
 
 def generate_images(asset: str):
-    return [pygame.transform.scale(pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png")), (square_size * 5 / 8, square_size * 3 / 4) if piece.endswith("P") and asset in ["lichess"] else (square_size * 3 / 4, square_size * 3 / 4)) for piece in piece_constants]
+    images = []
+    for piece in piece_constants:
+        image = pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
+        size = (square_size * 7/8, square_size * 7/8)
+        if asset in ["lichess"]:
+            size = ((square_size * 5 / 8, square_size * 3 / 4) if piece.endswith("P") else (square_size * 3 / 4, square_size * 3 / 4))
+        if asset in ["3d_chesskid", "3d_plastic", "3d_staunton", "3d_wood"]:
+            size = (square_size, image.get_height() * square_size / image.get_width())
+        if asset in ["fancy"]:
+            size = (square_size * 3 / 4, square_size * 3 / 4)
+        images.append(pygame.transform.scale(image, size))
+    return images
 
 
 taskbar_height = GetMonitorInfo(MonitorFromPoint((0,0))).get("Monitor")[3] - GetMonitorInfo(MonitorFromPoint((0,0))).get("Work")[3]
@@ -27,8 +39,8 @@ tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
                "red": ((245, 219, 195), (187, 87, 70)),
                "tan": ((237, 203, 165), (216, 164, 109))}
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
-piece_constants = ["wP", "wN", "wB", "wR", "wQ", "wK", "bP", "bN", "bB", "bR", "bQ", "bK"]
-# TODO maybe a function to generate images because that's repeating
-piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "chesscom", "fancy", "medieval", "warrior", "default", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "3d_chesskid", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz"]}
+piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
+piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]}
 selected_tile_asset = "brown"
-selected_asset = "chesscom"
+selected_asset = "neon"
+
