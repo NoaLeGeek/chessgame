@@ -1,6 +1,7 @@
 import Pieces
 from Board import Board
 from constants import *
+import Move
 
 
 class Game:
@@ -190,7 +191,8 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
                 if row in range(2*(1 - self.selected.color), 2*(3 - self.selected.color)) and column == self.selected.promotion[1] + self.selected.column:
-                    self.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)])
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), True)
+                    move.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)])
                     return
                 # Remove the promotion
                 else:
@@ -205,37 +207,19 @@ class Game:
                 self.valid_moves = []
                 self.selected = None
                 return
-            self.make_move(row, column)
+            # If the player push a pawn to one of the last rows, it will be in the state of promotion
+            if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
+                self.selected.promotion = (True, column - self.selected.column)
+                self.valid_moves = []
+                return
+            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), False)
+            move.make_move()
         else:
             piece = self.board.board[row][column]
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
                 self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if self.can_move(self.selected, move[0], move[1])]
-
-    def make_move(self, row, column):
-        piece = self.board.board[row][column]
-        # TODO maybe move this part to self.select()?
-        if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
-            self.selected.promotion = (True, column - self.selected.column)
-            self.valid_moves = []
-            return False
-        self.remove(piece, row, column)
-        self.move(self.selected, row, column)
-        self.change_turn()
-        print("turn", self.turn)
-        self.valid_moves = []
-        self.selected = None
-        return True
-    
-    def promote(self, type: Pieces.Piece):
-        self.remove(self.board.board[7*(1 - self.selected.color)//2][self.selected.column + self.selected.promotion[1]], 7*(1 - self.selected.color)//2, self.selected.column + self.selected.promotion[1])
-        self.move(self.selected, 7*(1 - self.selected.color)//2, self.selected.column + self.selected.promotion[1])
-        self.board.board[7*(1 - self.selected.color)//2][self.selected.column] = type(self.selected.color, 7*(1 - self.selected.color)//2, self.selected.column)
-        self.change_turn()
-        print("turn", self.turn)
-        self.valid_moves = []
-        self.selected = None
 
     def get_board(self):
         return self.board
