@@ -25,22 +25,12 @@ clock = pygame.time.Clock()
 width, height = pygame.display.Info().current_w, pygame.display.Info().current_h - 23 - taskbar_height
 window = pygame.display.set_mode((height, height), pygame.RESIZABLE)
 rows, columns = 8, 8
+margin = 5
 square_size = height // columns
-tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
-               "green": ((233, 237, 204), (119, 153, 84)),
-               "sky": ((240, 241, 240), (196, 216, 228)),
-               "8-bit": ((243, 243, 244), (106, 155, 65)),
-               "purple": ((240, 241, 240), (132, 118, 186)),
-               "blue": ((234, 233, 210), (75, 115, 153)),
-               "bubblegum": ((254, 255, 254), (251, 217, 225)),
-               "checkers": ((199, 76, 81), (48, 48, 48)),
-               "light": ((216, 217, 216), (168, 169, 168)),
-               "orange": ((250, 228, 174), (209, 136, 21)),
-               "red": ((245, 219, 195), (187, 87, 70)),
-               "tan": ((237, 203, 165), (216, 164, 109))}
+tile_assets = {tile_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", tile_asset + ".png")), (height, height)) for tile_asset in ["green", "checkers", "8_bit", "dark_wood", "glass", "brown", "icy_sea", "newspaper", "walnut", "sky", "lolz", "stone", "bases", "marble", "purple", "translucent", "metal", "tournament", "dash", "burled_wood", "blue", "bubblegum", "graffiti", "light", "neon", "orange", "overlay", "parchment", "red", "sand", "tan"]}
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]}
-selected_tile_asset = "tan"
-selected_asset = "neon"
+selected_tile_asset = "checkers"
+selected_asset = "lichess"
 
