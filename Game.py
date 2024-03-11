@@ -150,21 +150,27 @@ class Game:
 
     def move(self, piece: Pieces.Piece, row: int, column: int):
         piece.en_passant = (isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2)
+        # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
+            # O-O
             if column == 6:
                 self.board.board[row][5], self.board.board[row][7] = self.board.board[row][7], self.board.board[row][5]
                 self.board.board[row][5].piece_move(row, 5)
+            # O-O-O
             else:
                 self.board.board[row][3], self.board.board[row][0] = self.board.board[row][0], self.board.board[row][3]
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
+        # En-passant
         if isinstance(piece, Pieces.Pawn) and self.board.board[row + piece.color][column] != 0 and self.board.board[row + piece.color][column].en_passant:
             self.board.board[row + piece.color][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
             self.board.board[piece.row][piece.column]
         piece.piece_move(row, column)
+        # Update the first_move attribute of the piece if it moved
         if isinstance(piece, (Pieces.King, Pieces.Rook, Pieces.Pawn)) and piece.first_move:
             piece.first_move = False
+        # Remove the en-passant attribute
         for row in range(rows):
             for column in range(columns):
                 if self.board.board[row][column] != 0 and isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].en_passant and self.board.board[row][column].color != piece.color:

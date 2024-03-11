@@ -41,6 +41,6 @@ tile_assets = {"brown": ((237, 214, 176), (184, 135, 98)),
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 piece_assets = {piece_asset: generate_images(piece_asset) for piece_asset in ["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]}
-selected_tile_asset = "brown"
+selected_tile_asset = "tan"
 selected_asset = "neon"
 
