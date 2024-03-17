@@ -15,13 +15,13 @@ class Board:
         self.debug = False
 
     def draw_board(self):
-        self.frame.blit(tile_assets[selected_tile_asset], (0, 0))
+        self.frame.blit(board_assets[board_asset], (margin, margin))
 
     def draw_piece(self, piece, window):
         window.blit(piece.image, (piece.x, piece.y))
 
     def draw_rect(self, row, column):
-        pygame.draw.rect(self.frame, (255, 0, 0), (row * square_size, column * square_size, square_size, square_size))
+        pygame.draw.rect(self.frame, (255, 0, 0), (row * square_size + margin, column * square_size + margin, square_size, square_size))
 
     def draw_pieces(self):
         for row in range(self.rows):
@@ -36,10 +36,10 @@ class Board:
     def draw_moves(self, moves):
         for pos in moves:
             row, column = pos[0], pos[1]
-            pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2, row * square_size + square_size // 2), square_size // 8)
+            pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2 + margin, row * square_size + square_size // 2 + margin), square_size // 8)
 
     def draw_promotion(self, promotion, offset):
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, 2 * (1 - promotion.color) * square_size, square_size, 4*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - promotion.color) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
             render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - promotion.color)//2 + promotion.color * i, promotion.column + offset)
@@ -58,7 +58,25 @@ class Board:
                     continue
             transparent_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
             transparent_surface.fill((r, g, b, 75))
-            self.frame.blit(transparent_surface, (column * square_size, row * square_size))
+            self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
+
+    def flip_board(self):
+        for row in range(self.rows):
+            for column in range(self.columns):
+                piece = self.board[row][column]
+                if piece != 0:
+                    piece.row, piece.column = piece.column, piece.row
+                    piece.calc_pos(piece.image)
+
+    def change_asset(self, asset):
+        piece_assets[asset] = generate_images(asset)
+        pieces_asset = asset
+        for row in range(self.rows):
+            for column in range(self.columns):
+                piece = self.board[row][column]
+                if piece != 0:
+                    piece.image = piece_assets[asset][Piece.piece_to_index(piece) + 3 * (1 - piece.color)]
+                    piece.calc_pos(piece.image)
 
     def draw_test(self, promotion, offset):
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, (0 if promotion.color == 1 else 4) * square_size, square_size, 4*square_size))

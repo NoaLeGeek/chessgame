@@ -298,9 +298,8 @@ def update_widget(widget):
             update_widget(child)
 
 
-win.title("title")
+win.title("Stéganographie")
 win.config(bg="bisque")
-win.bindtags(("title",) + win.bindtags())
 win.resizable(width=False, height=False)
 textState = Label(win, font=("Helvetica", 20), bg="bisque")
 textState.bindtags(("textState.newGame",) + textState.bindtags())

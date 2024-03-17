@@ -1,14 +1,14 @@
 import constants
 import pygame
+import random
 
 from Game import Game
 from Pieces import *
 
 def get_position(x, y):
-    return y // constants.square_size, x // constants.square_size
+    return (y - margin) // constants.square_size, (x - margin) // constants.square_size
 
 def main():
-    # TODO ajouter de la marge entre le bord de fenêtre et l'échiquier pour les assets en 3D
     run = True
     game_over = False
     fps = 60
@@ -31,6 +31,10 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     game.reset(constants.window)
+                if event.key == pygame.K_f:
+                    game.board.flip_board()
+                if event.key == pygame.K_c:
+                    game.board.change_asset(random.choice(["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]))
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
@@ -41,6 +45,7 @@ def main():
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
+                    print(row, column)
                     selected_piece = game.get_board().board[row][column]
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)

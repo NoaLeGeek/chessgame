@@ -1,4 +1,4 @@
-from constants import square_size, piece_assets, selected_asset
+from constants import square_size, piece_assets, pieces_asset, margin
 
 class Piece:
     def __init__(self, color, row, column):
@@ -9,7 +9,7 @@ class Piece:
         self.x = 0
         self.y = 0
         self.available_moves = []
-        self.image = piece_assets[selected_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
+        self.image = piece_assets[pieces_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
         self.calc_pos(self.image)
 
     def piece_move(self, row, column):
@@ -18,8 +18,8 @@ class Piece:
         self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = (self.column + 0.5) * self.square_size - 0.5*image.get_width()
-        self.y = (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if selected_asset.startswith("3d") else 0.5*image.get_height())
+        self.x = margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
+        self.y = margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if pieces_asset.startswith("3d") else 0.5*image.get_height())
 
     def clear_available_moves(self):
         if self.available_moves:

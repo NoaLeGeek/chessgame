@@ -1,0 +1,11 @@
+{
+    "board_asset": "green",
+    "pieces_asset": "chesscom",
+    "background_asset": "",
+    "margin": 16,
+    "taskbar_height": 48,
+    "rows": 8,
+    "columns": 8,
+    "width": "",
+    "height": ""
+}
