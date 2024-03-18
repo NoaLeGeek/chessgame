@@ -37,6 +37,7 @@ def main():
                     game.board.flip_board()
                 if event.key == pygame.K_c:
                     game.board.change_asset(random.choice(["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]))
+                    game.board.change_background(random.choice(["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]))
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
@@ -60,12 +61,13 @@ def main():
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
                     row, column = get_position(*pygame.mouse.get_pos())
-                    game.selected, game.valid_moves, keys = None, [], pygame.key.get_pressed()
-                    highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
-                    if game.highlightedSquares.get((row, column)) != highlight:
-                        game.highlightedSquares[(row, column)] = highlight
-                    else:
-                        game.highlightedSquares.pop((row, column), None)
+                    if 0 <= row < constants.rows and 0 <= column < constants.columns: 
+                        game.selected, game.valid_moves, keys = None, [], pygame.key.get_pressed()
+                        highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
+                        if game.highlightedSquares.get((row, column)) != highlight:
+                            game.highlightedSquares[(row, column)] = highlight
+                        else:
+                            game.highlightedSquares.pop((row, column), None)
                     #constants.selected_asset = random.choice(["lichess", "chesscom", "fancy", "medieval", "warrior", "default", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "3d_chesskid", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic"])
                     # TODO when user will change skin, this will be useful, you have to recenter the pieces
                     #for i in range(8):

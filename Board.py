@@ -68,6 +68,7 @@ class Board:
                     piece.move((7 - piece.row, 7 - piece.column))
 
     def change_asset(self, asset):
+        global pieces_asset
         piece_assets[asset] = generate_images(asset)
         pieces_asset = asset
         for row in range(self.rows):
@@ -76,6 +77,14 @@ class Board:
                 if piece != 0:
                     piece.image = piece_assets[asset][Piece.piece_to_index(piece) + 3 * (1 - piece.color)]
                     piece.calc_pos(piece.image)
+    
+    def draw_background(self):
+        self.frame.blit(background_assets[background_asset], (0, 0))
+
+    def change_background(self, asset):
+        global background_asset
+        background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (self.width, self.height))
+        background_asset = asset
 
     def draw_test(self, promotion, offset):
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size, (0 if promotion.color == 1 else 4) * square_size, square_size, 4*square_size))

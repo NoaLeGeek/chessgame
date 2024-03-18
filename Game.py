@@ -61,6 +61,7 @@ class Game:
                     self.fullMoves = int(split[i])
 
     def update_window(self):
+        self.board.draw_background()
         self.board.draw_board()
         if self.highlightedSquares:
             self.board.draw_highlightedSquares(self.highlightedSquares)
