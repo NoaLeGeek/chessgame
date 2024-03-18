@@ -54,6 +54,7 @@ square_size = floor((height - 2*margin) / columns)
 board_assets = {board_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", board_asset + ".png")), (square_size*8, square_size*8))}
 # ["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]
 piece_assets = {pieces_asset: generate_images(pieces_asset)}
+# ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 board_asset = "green"
 pieces_asset = "chesscom"
 background_asset = "wood"

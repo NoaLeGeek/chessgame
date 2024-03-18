@@ -1,6 +1,8 @@
 import constants
 import pygame
 import random
+import os
+import urllib.request
 
 from Game import Game
 from Pieces import *

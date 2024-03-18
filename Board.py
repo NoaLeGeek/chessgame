@@ -65,8 +65,7 @@ class Board:
             for column in range(self.columns):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.row, piece.column = piece.column, piece.row
-                    piece.calc_pos(piece.image)
+                    piece.move((7 - piece.row, 7 - piece.column))
 
     def change_asset(self, asset):
         piece_assets[asset] = generate_images(asset)
