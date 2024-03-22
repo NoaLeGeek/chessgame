@@ -96,7 +96,7 @@ class Game:
         elif self.is_stalemate():
             print("Stalemate")
             return True
-        #TODO enabled the 50 moves rule when it's done
+        #TODO enabled the 50 moves rule when it's done!
         #elif self.halfMoves >= 100:
             #print("Draw by the 50 moves rule")
             #return True
