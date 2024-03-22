@@ -8,6 +8,7 @@ class Piece:
         self.column = column
         self.x = 0
         self.y = 0
+        self.flipped = -1
         self.available_moves = []
         self.image = piece_assets[pieces_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
         self.calc_pos(self.image)
@@ -43,21 +44,21 @@ class Pawn(Piece):
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
-        # TODO there will be a lot of trouble when "flip board" will be added due to the (row - self.color) by example
         if 1 <= row <= len(board) - 2:
-            if board[row - self.color][column] == 0:
-                self.available_moves.append((row - self.color, column))
-                if self.first_move and ((self.color > 0 and 2 <= row) or (self.color < 0 and row <= len(board) - 3)) and board[row - self.color - (1 if self.color > 0 else -1)][column] == 0:
-                    self.available_moves.append((row - self.color - (1 if self.color > 0 else -1), column))
-            if 1 <= column and board[row - self.color][column - 1] != 0 and board[row - self.color][column - 1].color != self.color:
-                self.available_moves.append((row - self.color, column - 1))
-            if column <= len(board[0]) - 2 and board[row - self.color][column + 1] != 0 and board[row - self.color][column + 1].color != self.color:
-                self.available_moves.append((row - self.color, column + 1))
-            if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and isinstance(board[row][column - 1], Pawn) and board[row][column - 1].en_passant and board[row - self.color][column - 1] == 0:
-                self.available_moves.append((row - self.color, column - 1))
-            if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and isinstance(board[row][column + 1], Pawn) and board[row][column + 1].en_passant and board[row - self.color][column + 1] == 0:
-                self.available_moves.append((row - self.color, column + 1))
-        # TODO add promotion, the gui for white is going from top to bottom with this order: Queen Knight Rook Bishop, for black it's from bottom to top with same order just reversed, the gui has a exit to cancel the promotion
+            x = self.color * -self.flipped
+            if board[row - x][column] == 0:
+                self.available_moves.append((row - x, column))
+                if self.first_move and ((x > 0 and 2 <= row) or (x < 0 and row <= len(board) - 3)) and board[row - 2 * x][column] == 0:
+                    self.available_moves.append((row - 2 * x, column))
+                    print(self.available_moves)
+            if 1 <= column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
+                self.available_moves.append((row - x, column - 1))
+            if column <= len(board[0]) - 2 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
+                self.available_moves.append((row - x, column + 1))
+            if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and isinstance(board[row][column - 1], Pawn) and board[row][column - 1].en_passant and board[row - x][column - 1] == 0:
+                self.available_moves.append((row - x, column - 1))
+            if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and isinstance(board[row][column + 1], Pawn) and board[row][column + 1].en_passant and board[row - x][column + 1] == 0:
+                self.available_moves.append((row - x, column + 1))
         return self.available_moves
 
 

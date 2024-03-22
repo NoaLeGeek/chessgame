@@ -18,6 +18,7 @@ class Game:
         self.fullMoves = 1
         self.history = []
         self.highlightedSquares = {}
+        self.game_over = False
         # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):
@@ -37,6 +38,7 @@ class Game:
                                 k += int(char)
                             else:
                                 self.board.board[j][k] = fen[char]((1 if ord(char) < 91 else -1), j, k)
+                                pie = self.board.board[j][k]
                                 k += 1
                 case 1:
                     self.turn = 1 if split[i] == 'w' else -1

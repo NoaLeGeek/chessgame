@@ -39,6 +39,7 @@ class Board:
             pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2 + margin, row * square_size + square_size // 2 + margin), square_size // 8)
 
     def draw_promotion(self, promotion, offset):
+        # TODO add exit button with a X
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - promotion.color) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
@@ -65,7 +66,11 @@ class Board:
             for column in range(self.columns):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.move((7 - piece.row, 7 - piece.column))
+                    piece.flipped *= -1
+                    piece.piece_move(7 - piece.row, 7 - piece.column)
+        for row in self.board:
+            row.reverse()
+        self.board.reverse()
 
     def change_asset(self, asset):
         global pieces_asset

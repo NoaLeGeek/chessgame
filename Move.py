@@ -19,7 +19,9 @@ class Move:
         print("turn", self.game.turn)
         self.game.valid_moves = []
         self.game.selected = None
-        return True
+        for row in self.game.board.board:
+            print(row)
+        self.game.check_game()
 
     def promote(self, type: Pieces.Piece):
         self.game.remove(self.game.board.board[7*(1 - self.game.selected.color)//2][self.game.selected.column + self.game.selected.promotion[1]], 7*(1 - self.game.selected.color)//2, self.game.selected.column + self.game.selected.promotion[1])
@@ -29,3 +31,4 @@ class Move:
         print("turn", self.game.turn)
         self.game.valid_moves = []
         self.game.selected = None
+        self.game.check_game()
