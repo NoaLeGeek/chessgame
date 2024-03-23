@@ -50,7 +50,6 @@ class Pawn(Piece):
                 self.available_moves.append((row - x, column))
                 if self.first_move and ((x > 0 and 2 <= row) or (x < 0 and row <= len(board) - 3)) and board[row - 2 * x][column] == 0:
                     self.available_moves.append((row - 2 * x, column))
-                    print(self.available_moves)
             if 1 <= column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
                 self.available_moves.append((row - x, column - 1))
             if column <= len(board[0]) - 2 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:

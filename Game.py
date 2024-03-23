@@ -199,9 +199,9 @@ class Game:
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
-                if row in range(2*(1 - self.selected.color), 2*(3 - self.selected.color)) and column == self.selected.promotion[1] + self.selected.column:
+                if row in range(2*(1 - (self.selected.color * -self.flipped)), 2*(3 - (self.selected.color * -self.flipped))) and column == self.selected.promotion[1] + self.selected.column:
                     move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), True)
-                    move.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)])
+                    move.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if (self.selected.color * -self.flipped) == 1 else 7 - row)])
                     return
                 # Remove the promotion
                 else:
