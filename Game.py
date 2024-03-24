@@ -143,7 +143,8 @@ class Game:
     def is_stalemate(self) -> bool:
         return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column)])
 
-    def remove(self, piece: Pieces.Piece, row: int, column: int):
+    def remove(self, row: int, column: int):
+        piece = self.board.board[row][column]
         if piece != 0:
             self.board.board[row][column] = 0
             if piece.color == 1:

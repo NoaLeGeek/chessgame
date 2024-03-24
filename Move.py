@@ -13,7 +13,7 @@ class Move:
     def make_move(self):
         row, column = self.to[0], self.to[1]
         piece = self.game.board.board[row][column]
-        self.game.remove(piece, row, column)
+        self.game.remove(row, column)
         self.game.move(self.game.selected, row, column)
         self.game.change_turn()
         print("turn", self.game.turn)
@@ -22,9 +22,10 @@ class Move:
         self.game.check_game()
 
     def promote(self, type: Pieces.Piece):
-        self.game.remove(self.game.board.board[7*(1 - (self.game.selected.color * -self.game.selected.flipped))//2][self.game.selected.column + self.game.selected.promotion[1]], 7*(1 - (self.game.selected.color * -self.game.selected.flipped))//2, self.game.selected.column + self.game.selected.promotion[1])
-        self.game.move(self.game.selected, 7*(1 - (self.game.selected.color * -self.game.selected.flipped))//2, self.game.selected.column + self.game.selected.promotion[1])
-        self.game.board.board[7*(1 - (self.game.selected.color * -self.game.selected.flipped))//2][self.game.selected.column] = type(self.game.selected.color, 7*(1 - (self.game.selected.color * -self.game.selected.flipped))//2, self.game.selected.column)
+        row, column = 7*(1 - (self.game.selected.color * -self.game.selected.flipped))//2, self.game.selected.column + self.game.selected.promotion[1]
+        self.game.remove(row, column)
+        self.game.move(self.game.selected, row, column)
+        self.game.board.board[row][self.game.selected.column] = type(self.game.selected.color, row, self.game.selected.column)
         self.game.change_turn()
         print("turn", self.game.turn)
         self.game.valid_moves = []

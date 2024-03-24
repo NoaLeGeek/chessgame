@@ -48,7 +48,6 @@ def main():
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
-                    print(row, column)
                     selected_piece = game.get_board().board[row][column]
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
@@ -69,12 +68,6 @@ def main():
                         else:
                             game.highlightedSquares.pop((row, column), None)
                     #constants.selected_asset = random.choice(["lichess", "chesscom", "fancy", "medieval", "warrior", "default", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "3d_chesskid", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic"])
-                    # TODO when user will change skin, this will be useful, you have to recenter the pieces
-                    #for i in range(8):
-                        #for j in range(8):
-                            #piece = game.get_board().board[i][j]
-                            #if piece != 0:
-                                #piece.image = constants.piece_assets[constants.selected_asset][test[type(piece)] + (0 if piece.color == 1 else 6)]
 
 
 if __name__ == "__main__":
