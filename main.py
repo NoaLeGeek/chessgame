@@ -55,7 +55,7 @@ def main():
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
                     if selected_piece != 0 and isinstance(selected_piece, Pawn):
-                        print((selected_piece.en_passant if selected_piece.en_passant else 0))
+                        print(selected_piece.en_passant)
                         # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
                     #if game.turn == 1:
                     game.select(row, column)

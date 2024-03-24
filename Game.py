@@ -165,10 +165,9 @@ class Game:
                 self.board.board[row][3].piece_move(row, 3)
             piece.not_castled = False
         # En-passant
-        if isinstance(piece, Pieces.Pawn) and self.board.board[row + piece.color][column] != 0 and self.board.board[row + piece.color][column].en_passant:
-            self.board.board[row + piece.color][column] = 0
-        self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], \
-            self.board.board[piece.row][piece.column]
+        if isinstance(piece, Pieces.Pawn) and self.board.board[row + (piece.color * -piece.flipped)][column] != 0 and self.board.board[row + (piece.color * -piece.flipped)][column].en_passant:
+            self.board.board[row + (piece.color * -piece.flipped)][column] = 0
+        self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
         piece.piece_move(row, column)
         # Update the first_move attribute of the piece if it moved
         if isinstance(piece, (Pieces.King, Pieces.Rook, Pieces.Pawn)) and piece.first_move:
@@ -199,9 +198,9 @@ class Game:
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
-                if row in range(2*(1 - (self.selected.color * -self.flipped)), 2*(3 - (self.selected.color * -self.flipped))) and column == self.selected.promotion[1] + self.selected.column:
+                if row in range(2*(1 - (self.selected.color * -self.selected.flipped)), 2*(3 - (self.selected.color * -self.selected.flipped))) and column == self.selected.promotion[1] + self.selected.column:
                     move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), True)
-                    move.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if (self.selected.color * -self.flipped) == 1 else 7 - row)])
+                    move.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if (self.selected.color * -self.selected.flipped) == 1 else 7 - row)])
                     return
                 # Remove the promotion
                 else:

@@ -40,10 +40,10 @@ class Board:
 
     def draw_promotion(self, promotion, offset):
         # TODO add exit button with a X
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - promotion.color) * square_size + margin, square_size, 4*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - (promotion.color * -promotion.flipped)) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * promotion.flipped))//2 + (promotion.color * promotion.flipped) * i, promotion.column + offset)
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * -promotion.flipped))//2 + (promotion.color * -promotion.flipped) * i, promotion.column + offset)
             self.frame.blit(render.image, (render.x, render.y))
             
     def draw_highlightedSquares(self, highlightedSquares):
