@@ -35,17 +35,17 @@ def save_file(text):
 def combine_pixels(pixel1, pixel2):
     return bin((pixel1 & 0b11110000) | (pixel2 >> 4))
 
-def toggle_buttons():
+def change_mode():
     global mode
-    for widget in [hide_button, show_button, first_image_button, second_image_button]:
-        if widget.bindtags()[0] in ("hide", "show"):
-            widget.config(state=tk.NORMAL if widget['state'] == tk.DISABLED else tk.DISABLED)
-        else:
-            if widget.winfo_ismapped():
-                widget.pack_forget()
-            else:
-                widget.pack(side=tk.BOTTOM, fill=tk.X)
     mode *= -1
+    # hide mode
+    for widget in [hide_button, show_button]:
+        widget.config(state=tk.NORMAL if widget['state'] == tk.DISABLED else tk.DISABLED)
+    if mode == 1:
+        
+    # show mode
+    else:
+        pass
 
 def flip_arrow():
     global arrow
@@ -58,7 +58,7 @@ win.config(bg="white")
 win.columnconfigure(tuple(range(6)), weight=1)
 win.rowconfigure(tuple(range(6)), weight=1)
 
-hide_button = tk.Button(win, text="Hide", command=toggle_buttons)
+hide_button = tk.Button(win, text="Hide", command=change_mode)
 hide_button.bindtags(("hide",) + hide_button.bindtags())
 hide_button.grid(row=0, column=0, columnspan=3, sticky="new")
 hide_button.config(state=tk.DISABLED)
@@ -83,7 +83,7 @@ second_image_label = tk.Label(win, text="No second image selected", justify=tk.C
 second_image_label.bindtags(("hide.second_label",) + second_image_label.bindtags())
 second_image_label.grid(row=2, column=4, columnspan=2, sticky="n")
 
-show_button = tk.Button(win, text="Show", command=toggle_buttons)
+show_button = tk.Button(win, text="Show", command=change_mode)
 show_button.bindtags(("show",) + show_button.bindtags())
 show_button.grid(row=0, column=3, columnspan=3, sticky="new")
 
