@@ -12,13 +12,10 @@ class Move:
 
     def make_move(self):
         row, column = self.to[0], self.to[1]
-        piece = self.game.board.board[row][column]
         self.game.remove(row, column)
         self.game.move(self.game.selected, row, column)
         self.game.change_turn()
-        print("turn", self.game.turn)
-        self.game.valid_moves = []
-        self.game.selected = None
+        self.game.valid_moves, self.game.selected = [], None
         self.game.check_game()
 
     def promote(self, type: Pieces.Piece):
@@ -27,7 +24,10 @@ class Move:
         self.game.move(self.game.selected, row, column)
         self.game.board.board[row][self.game.selected.column] = type(self.game.selected.color, row, self.game.selected.column)
         self.game.change_turn()
-        print("turn", self.game.turn)
-        self.game.valid_moves = []
-        self.game.selected = None
+        self.game.valid_moves, self.game.selected = [], None
         self.game.check_game()
+
+    def to_literal(self):
+        string = ""
+        
+        return string

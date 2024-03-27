@@ -125,6 +125,7 @@ class Game:
             self.fullMoves += 1
         self.turn *= -1
         self.halfMoves += 1
+        print("turn", self.turn)
 
     def get_king_position(self, color: int):
         for row in range(len(self.board.board)):

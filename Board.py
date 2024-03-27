@@ -36,7 +36,9 @@ class Board:
     def draw_moves(self, moves):
         for pos in moves:
             row, column = pos[0], pos[1]
-            pygame.draw.circle(self.frame, (127, 255, 0), (column * square_size + square_size // 2 + margin, row * square_size + square_size // 2 + margin), square_size // 8)
+            transparent_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
+            pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (square_size // 2, square_size // 2), square_size // 8)
+            self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
     def draw_promotion(self, promotion, offset):
         # TODO add exit button with a X
@@ -44,6 +46,7 @@ class Board:
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
             render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * -promotion.flipped))//2 + (promotion.color * -promotion.flipped) * i, promotion.column + offset)
+            render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
             self.frame.blit(render.image, (render.x, render.y))
             
     def draw_highlightedSquares(self, highlightedSquares):

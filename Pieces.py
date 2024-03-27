@@ -39,7 +39,7 @@ class Pawn(Piece):
         self.first_move = True
         self.en_passant = False
         self.value = 1
-        # Contains a tuple with (piece that wants to promote, the offset: -1 if it was a capture from the left, 0 if there's no offset, 1 if it was a capture from the right)
+        # Contains a tuple with (is in state of promotion boolean, the offset: -1 if it was a capture from the left, 0 if there's no offset, 1 if it was a capture from the right)
         self.promotion = (False, None)
 
     def get_available_moves(self, board, row, column):

@@ -1,7 +1,7 @@
 {
     "board_asset": "green",
     "pieces_asset": "chesscom",
-    "background_asset": "bubblegum",
+    "background_asset": "wood",
     "margin": 32,
     "taskbar_height": 48,
     "rows": 8,

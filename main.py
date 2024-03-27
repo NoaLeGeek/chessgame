@@ -55,7 +55,8 @@ def main():
                         print(selected_piece.en_passant)
                         # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
                     #if game.turn == 1:
-                    game.select(row, column)
+                    if 0 <= row < constants.rows and 0 <= column < constants.columns:
+                        game.select(row, column)
                     game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
