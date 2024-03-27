@@ -123,6 +123,10 @@ def update_widget(widget):
             widget.config(text=translate(widget.bindtags()[0]))
         if isinstance(widget, tk.Tk):
             widget.title(translate(widget.bindtags()[0]))
+        if widget.bindtags()[0] == "hide.first_label.selected":
+            widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(first_image))
+        if widget.bindtags()[0] == "hide.second_label.selected":
+            widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(second_image))
     # On met à jour les widgets enfants du widget.
     if widget.winfo_children():
         for child in widget.winfo_children():
