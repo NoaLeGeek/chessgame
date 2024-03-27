@@ -1,3 +1,23 @@
 {
-    
+    "title": "Stéganographie",
+    "button.hide": "Cacher une image dans une autre",
+    "button.show": "Révéler une image à partir d'une autre",
+    "button.quit": "Quitter",
+    "hide.first_button": "Sélectionner la première image",
+    "hide.second_button": "Sélectionner la seconde image",
+    "config.language_text": "Langage",
+    "error.file_not_found": "Fichier non trouvé. Veuillez vérifier le chemin d'accès.",
+    "error.load_image": "Une erreur s'est produite : {}",
+    "error.error": "Erreur",
+    "error.not_same_size": "Les images doivent être de la même taille",
+    "hide.first_label.not_selected": "Première image non sélectionnée",
+    "hide.second_label.not_selected": "Seconde image non sélectionnée",
+    "hide.first_label.selected": "Première image sélectionnée : {}",
+    "hide.second_label.selected": "Seconde image sélectionnée : {}",
+    "hide.show_first_button": "Afficher la première image",
+    "hide.show_second_button": "Afficher la seconde image",
+    "hide.hide_image_button": "Cacher l'image",
+    "hide.save_hidden_image": "Enregistrer l'image cachée",
+    "hide.show_hidden_image": "Afficher l'image cachée",
+    "hide.hide_checkbutton": "Doit être de la même taille"
 }

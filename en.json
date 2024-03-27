@@ -1,3 +1,23 @@
 {
-    
+    "title": "Steganography",
+    "button.hide": "Hiding an image in another",
+    "button.show": "Revealing an image from another",
+    "button.quit": "Quit",
+    "hide.first_button": "Select the first image",
+    "hide.second_button": "Select the second image",
+    "config.language_text": "Language",
+    "error.file_not_found": "File not found. Please check path.",
+    "error.load_image": "An error has occurred: {}",
+    "error.error": "Error",
+    "error.not_same_size": "Images must be the same size",
+    "hide.first_label.not_selected": "First image not selected",
+    "hide.second_label.not_selected": "Second image not selected",
+    "hide.first_label.selected": "First image selected: {}",
+    "hide.second_label.selected": "Second image selected: {}",
+    "hide.show_first_button": "Show first image",
+    "hide.show_second_button": "Show second image",
+    "hide.hide_image_button": "Hide image",
+    "hide.save_hidden_image": "Save hidden image",
+    "hide.show_hidden_image": "Show hidden image",
+    "hide.hide_checkbutton": "Must be the same size"
 }
