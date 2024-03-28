@@ -19,5 +19,7 @@
     "hide.hide_image_button": "Cacher l'image",
     "hide.save_hidden_image": "Enregistrer l'image cachée",
     "hide.show_hidden_image": "Afficher l'image cachée",
-    "hide.hide_checkbutton": "Doit être de la même taille"
+    "hide.hide_checkbutton": "Doit être de la même taille",
+    "show.select_button": "Sélectionner l'image",
+    "show.select_label.not_selected": "Image non sélectionnée"
 }

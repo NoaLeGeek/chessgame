@@ -204,6 +204,17 @@ show_button = tk.Button(win, command=change_mode)
 show_button.bindtags(("button.show",) + show_button.bindtags())
 show_button.grid(row=0, column=3, columnspan=3, sticky="new")
 
+select_button = tk.Button(win, command=lambda: select_file(translate("show.select_button"), 1), width=round(WIDTH/24))
+select_button.bindtags(("show.select_button",) + select_button.bindtags())
+select_button.grid(row=0, column=2, columnspan=2, sticky="s")
+select_button.grid_remove()
+
+select_label = tk.Label(win, justify=tk.CENTER, width=round(WIDTH/24))
+select_label.bindtags(("show.select_label.not_selected",) + select_label.bindtags())
+select_label.grid(row=1, column=2, columnspan=2, sticky="n")
+select_label.grid_remove()
+
+
 quit_button = tk.Button(win, text="Quit", command=win.destroy)
 quit_button.bindtags(("button.quit",) + quit_button.bindtags())
 quit_button.grid(row=5, column=0, columnspan=6, sticky="sew")

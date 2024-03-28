@@ -19,5 +19,7 @@
     "hide.hide_image_button": "Hide image",
     "hide.save_hidden_image": "Save hidden image",
     "hide.show_hidden_image": "Show hidden image",
-    "hide.hide_checkbutton": "Must be the same size"
+    "hide.hide_checkbutton": "Must be the same size",
+    "show.select_button": "Select the image",
+    "show.select_label.not_selected": "Image not selected"
 }
