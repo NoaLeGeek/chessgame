@@ -82,6 +82,9 @@ class Game:
 
     def is_king_checked(self):
         return self.get_king_position(self.turn) in self.get_color_moves(-self.turn)
+    
+    def is_checkmate(self):
+        return self.is_king_checked() and self.is_stalemate()
 
     def check_game(self):
         if self.black_pieces_left == 0:
@@ -90,7 +93,7 @@ class Game:
         elif self.white_pieces_left == 0:
             print("Blacks win")
             return True
-        elif self.is_king_checked() and self.is_stalemate():
+        elif self.is_checkmate():
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             return True
         elif self.is_stalemate():
@@ -201,8 +204,9 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
                 if row in range(2*(1 - (self.selected.color * -self.selected.flipped)), 2*(3 - (self.selected.color * -self.selected.flipped))) and column == self.selected.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), True)
-                    move.promote([Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if (self.selected.color * -self.selected.flipped) == 1 else 7 - row)])
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if (self.selected.color * -self.selected.flipped) == 1 else 7 - row)])
+                    move.promote()
+                    print(move.to_literal())
                     return
                 # Remove the promotion
                 else:
@@ -224,6 +228,7 @@ class Game:
                 return
             move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), False)
             move.make_move()
+            print(move.to_literal())
         else:
             piece = self.board.board[row][column]
             if piece != 0 and self.turn == piece.color:
