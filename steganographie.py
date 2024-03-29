@@ -12,13 +12,16 @@ mode = 1
 arrow = 1
 first_image = ""
 second_image = ""
+show_image = ""
 hidden_image = None
+initial_image = None
+revealed_image = None
 win = tk.Tk()
 language = tk.StringVar()
 config_hide = tk.BooleanVar()
 
 def select_file(text, index):
-    global first_image, second_image
+    global first_image, second_image, show_image
     fileTypes = (('PNG files', '*.png'),)
     filePath = filedialog.askopenfilename(title=text, initialdir='~', filetypes=fileTypes)
     if index == 1:
@@ -29,6 +32,13 @@ def select_file(text, index):
         update_widget(first_label)
         first_label['text'] = first_label['text'].format(os.path.basename(first_image))
         show_first_button.config(state=tk.NORMAL)
+    if index == 2:
+        show_image = filePath
+        if show_image == "":
+            return
+        select_label.bindtags(("show.select_label.selected",) + select_label.bindtags()[1:])
+        update_widget(select_label)
+        select_label['text'] = select_label['text'].format(os.path.basename(show_image))
     else:
         second_image = filePath
         if second_image == "":
@@ -49,9 +59,17 @@ def combine_pixels(pixel1, pixel2):
     return bin((pixel1 & 0b11110000) | (pixel2 >> 4))
 
 def open_image(index):
-    global first_image, second_image
+    global first_image, second_image, initial_image, revealed_image
     try:
-        image = Image.open(first_image if index == 1 else second_image)
+        match index:
+            case 1:
+                image = Image.open(first_image)
+            case 2:
+                image = Image.open(second_image)
+            case 3:
+                image = Image.open(initial_image)
+            case 4:
+                image = Image.open(revealed_image)
         return image
     except FileNotFoundError:
         messagebox.showerror(translate("error.error"), translate("error.file_not_found"))
@@ -80,7 +98,7 @@ def change_widgets(widget, mode):
             elif w.bindtags()[0].startswith("show"):
                 w.grid_remove()
 
-def hide_image():
+def get_hide_image():
     global hidden_image, first_image, second_image
     if first_image == "" or second_image == "":
         return
@@ -102,6 +120,34 @@ def hide_image():
                 hidden_image.putpixel((i, j), pixels1[i, j])
     save_hidden_image.config(state=tk.NORMAL)
     show_hidden_image.config(state=tk.NORMAL)
+
+def get_initial_image():
+    global initial_image, show_image
+    if show_image == "":
+        return
+    image = Image.open(show_image)
+    initial_image, pixels = Image.new("RGB", image.size), image.load()
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            r, g, b = pixels[i, j][0:3]
+            r = r & 0b11110000
+            g = g & 0b11110000
+            b = b & 0b11110000
+            initial_image.putpixel((i, j), (r, g, b))
+
+def get_reveal_image():
+    global revealed_image, show_image
+    if show_image == "":
+        return
+    image = Image.open(show_image)
+    revealed_image, pixels = Image.new("RGB", image.size), image.load()
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            r, g, b = pixels[i, j][0:3]
+            r = (r & 0b00001111) << 4
+            g = (g & 0b00001111) << 4
+            b = (b & 0b00001111) << 4
+            revealed_image.putpixel((i, j), (r, g, b))
 
 def flip_arrow():
     global arrow
@@ -160,7 +206,7 @@ arrow_button = tk.Button(win, text="<" + "-"*10, command=flip_arrow, width=round
 arrow_button.bindtags(("hide.noTranslation",) + arrow_button.bindtags())
 arrow_button.grid(row=0, column=2, columnspan=2, sticky="sew")
 
-hide_image_button = tk.Button(win, command=lambda: hide_image(), width=round(WIDTH/3))
+hide_image_button = tk.Button(win, command=lambda: get_hide_image(), width=round(WIDTH/3))
 hide_image_button.bindtags(("hide.hide_image_button",) + hide_image_button.bindtags())
 hide_image_button.grid(row=1, column=2, columnspan=2, sticky="sew")
 hide_image_button.config(state=tk.DISABLED)
@@ -204,16 +250,35 @@ show_button = tk.Button(win, command=change_mode)
 show_button.bindtags(("button.show",) + show_button.bindtags())
 show_button.grid(row=0, column=3, columnspan=3, sticky="new")
 
-select_button = tk.Button(win, command=lambda: select_file(translate("show.select_button"), 1), width=round(WIDTH/24))
+select_button = tk.Button(win, command=lambda: select_file(translate("show.select_button"), 2))
 select_button.bindtags(("show.select_button",) + select_button.bindtags())
-select_button.grid(row=0, column=2, columnspan=2, sticky="s")
+select_button.grid(row=0, column=2, columnspan=2, sticky="sew")
 select_button.grid_remove()
 
-select_label = tk.Label(win, justify=tk.CENTER, width=round(WIDTH/24))
+select_label = tk.Label(win, justify=tk.CENTER)
 select_label.bindtags(("show.select_label.not_selected",) + select_label.bindtags())
-select_label.grid(row=1, column=2, columnspan=2, sticky="n")
+select_label.grid(row=1, column=2, columnspan=2, sticky="new")
 select_label.grid_remove()
 
+initial_button = tk.Button(win, command=initial_image)
+initial_button.bindtags(("show.initial_button",) + initial_button.bindtags())
+initial_button.grid(row=1, column=1, columnspan=2, sticky="sew")
+initial_button.grid_remove()
+
+show_initial_button = tk.Button(win, command=lambda: open_image(3).show())
+show_initial_button.bindtags(("show.show_initial_button",) + show_initial_button.bindtags())
+show_initial_button.grid(row=2, column=1, columnspan=2, sticky="new")
+show_initial_button.grid_remove()
+
+reveal_button = tk.Button(win, command=revealed_image)
+reveal_button.bindtags(("show.reveal_button",) + reveal_button.bindtags())
+reveal_button.grid(row=1, column=3, columnspan=2, sticky="sew")
+reveal_button.grid_remove()
+
+show_reveal_button = tk.Button(win, command=lambda: open_image(4).show())
+show_reveal_button.bindtags(("show.show_reveal_button",) + show_reveal_button.bindtags())
+show_reveal_button.grid(row=2, column=3, columnspan=2, sticky="new")
+show_reveal_button.grid_remove()
 
 quit_button = tk.Button(win, text="Quit", command=win.destroy)
 quit_button.bindtags(("button.quit",) + quit_button.bindtags())

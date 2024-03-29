@@ -25,9 +25,8 @@ class Game:
         self.board.board = [[0] * columns for _ in range(rows)]
         fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
-        customfen = "2b3k1/4b2p/2p1q1p1/1pPpPp2/1P1P2B1/7P/3B4/5QK1 w - f6 0 31"
-        custom2fen = "6k1/R2b1p1p/2pp2p1/2n1b3/3NpPP1/2B1P2P/2PP2BK/1r6 b - f3 0 28"
-        split = defaultfen.split(' ')
+        customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
+        split = customfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -100,12 +99,10 @@ class Game:
         elif self.is_stalemate():
             print("Stalemate")
             return True
-        #TODO enabled the 50 moves rule when it's done!
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
             return True
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
-
 
     def get_color_moves(self, color: int):
         color_moves = []
@@ -134,7 +131,7 @@ class Game:
     def get_king_position(self, color: int):
         for row in range(len(self.board.board)):
             for column in range(len(self.board.board[0])):
-                if self.board.board[row][column] != 0 and isinstance(self.board.board[row][column], Pieces.King) and self.board.board[row][column].color == color:
+                if isinstance(self.board.board[row][column], Pieces.King) and self.board.board[row][column].color == color:
                     return row, column
 
     def possible_moves(self, board: list[list[int | Pieces.Piece]]):
@@ -177,7 +174,7 @@ class Game:
         # Remove the en-passant attribute
         for row in range(rows):
             for column in range(columns):
-                if self.board.board[row][column] != 0 and isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].en_passant and self.board.board[row][column].color != piece.color:
+                if isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].en_passant and self.board.board[row][column].color != piece.color:
                     self.board.board[row][column].en_passant = False
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
@@ -224,7 +221,7 @@ class Game:
                 self.selected.promotion = (True, column - self.selected.column)
                 self.valid_moves = []
                 return
-            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (self.board.board[row + x][column] != 0 and self.board.board[row + x][column].color != self.selected.color and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + x][column].en_passant)), False)
+            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (0 < row + x < len(self.board.board) - 1 and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + x][column].color != self.selected.color and self.board.board[row + x][column].en_passant)), False)
             move.make_move()
             print(move.to_literal())
         else:
@@ -233,6 +230,3 @@ class Game:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
                 self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column) if self.can_move(self.selected, move[0], move[1])]
-
-    def get_board(self):
-        return self.board

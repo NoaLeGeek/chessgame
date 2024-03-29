@@ -50,19 +50,19 @@ class Pawn(Piece):
 
     def get_available_moves(self, board, row, column):
         self.clear_available_moves()
-        if 1 <= row <= len(board) - 2:
+        if 0 < row < len(board) - 1:
             x = self.color * -self.flipped
             if board[row - x][column] == 0:
                 self.available_moves.append((row - x, column))
-                if self.first_move and ((x > 0 and 2 <= row) or (x < 0 and row <= len(board) - 3)) and board[row - 2 * x][column] == 0:
+                if self.first_move and ((x > 0 and 1 < row) or (x < 0 and row < len(board) - 2)) and board[row - 2 * x][column] == 0:
                     self.available_moves.append((row - 2 * x, column))
-            if 1 <= column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
+            if 0 < column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
                 self.available_moves.append((row - x, column - 1))
-            if column <= len(board[0]) - 2 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
+            if column < len(board[0]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
                 self.available_moves.append((row - x, column + 1))
-            if 1 <= column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and isinstance(board[row][column - 1], Pawn) and board[row][column - 1].en_passant and board[row - x][column - 1] == 0:
+            if 0 < column and board[row][column - 1] != 0 and board[row][column - 1].color != self.color and isinstance(board[row][column - 1], Pawn) and board[row][column - 1].en_passant and board[row - x][column - 1] == 0:
                 self.available_moves.append((row - x, column - 1))
-            if column <= len(board[0]) - 2 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and isinstance(board[row][column + 1], Pawn) and board[row][column + 1].en_passant and board[row - x][column + 1] == 0:
+            if column < len(board[0]) - 1 and board[row][column + 1] != 0 and board[row][column + 1].color != self.color and isinstance(board[row][column + 1], Pawn) and board[row][column + 1].en_passant and board[row - x][column + 1] == 0:
                 self.available_moves.append((row - x, column + 1))
         return self.available_moves
 
@@ -320,8 +320,8 @@ class King(Piece):
                 board[row + 1][column + 1] == 0 or board[row + 1][column + 1].color != self.color):
             self.available_moves.append((row + 1, column + 1))
         if self.column == 4 and self.first_move:
-            if board[row][0] != 0 and isinstance(board[row][0], Rook) and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
+            if isinstance(board[row][0], Rook) and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
                 self.available_moves.append((row, 2))
-            if board[row][7] != 0 and isinstance(board[row][7], Rook) and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:
+            if isinstance(board[row][7], Rook) and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:
                 self.available_moves.append((row, 6))
         return self.available_moves

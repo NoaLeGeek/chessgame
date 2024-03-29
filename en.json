@@ -21,5 +21,10 @@
     "hide.show_hidden_image": "Show hidden image",
     "hide.hide_checkbutton": "Must be the same size",
     "show.select_button": "Select the image",
-    "show.select_label.not_selected": "Image not selected"
+    "show.select_label.not_selected": "Image not selected",
+    "show.select_label.selected": "Image selected: {}",
+    "show.show_initial_button": "Show initial image",
+    "show.show_reveal_button": "Show revealed image",
+    "show.reveal_button": "Reveal image",
+    "show.initial_button": "Get the initial image"
 }

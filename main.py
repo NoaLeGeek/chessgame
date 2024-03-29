@@ -53,11 +53,12 @@ def main():
                 if pygame.mouse.get_pressed()[0]:
                     location = pygame.mouse.get_pos()
                     row, column = get_position(location[0], location[1])
-                    selected_piece = game.get_board().board[row][column]
+                    selected_piece = game.board.board[row][column]
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
-                    if selected_piece != 0 and isinstance(selected_piece, Pawn):
-                        pass
+                    if isinstance(selected_piece, King) or isinstance(selected_piece, Rook):
+                        print(selected_piece.get_available_moves(game.board.board, row, column))
+                        print("first_move", selected_piece.first_move)
                         # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
                     #if game.turn == 1:
                     if 0 <= row < constants.rows and 0 <= column < constants.columns:

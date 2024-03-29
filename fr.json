@@ -21,5 +21,10 @@
     "hide.show_hidden_image": "Afficher l'image cachée",
     "hide.hide_checkbutton": "Doit être de la même taille",
     "show.select_button": "Sélectionner l'image",
-    "show.select_label.not_selected": "Image non sélectionnée"
+    "show.select_label.not_selected": "Image non sélectionnée",
+    "show.select_label.selected": "Image sélectionnée : {}",
+    "show.show_initial_button": "Afficher l'image initiale",
+    "show.show_reveal_button": "Afficher l'image révélée",
+    "show.reveal_button": "Révéler l'image cachée",
+    "show.initial_button": "Récupérer l'image initiale"
 }
