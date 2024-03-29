@@ -58,6 +58,8 @@ class Board:
                     r, g, b = 0, 255, 0
                 case 2:
                     r, g, b = 255, 165, 0
+                case 3:
+                    r, g, b = 255, 255, 0
                 case _:
                     continue
             transparent_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)

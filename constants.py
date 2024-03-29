@@ -10,8 +10,11 @@ def generate_images(asset: str):
         image = pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
         size = (square_size * 7/8, square_size * 7/8)
         if asset in ["lichess"]:
-            size = ((square_size * 5 / 8, square_size * 3 / 4) if piece.endswith("P") else (square_size * 3 / 4, square_size * 3 / 4))
-        if asset in ["3d_chesskid", "3d_plastic", "3d_staunton", "3d_wood"]:
+            print(int(piece.endswith("P")))
+            size = (square_size * (6 - int(piece.endswith("P"))) / 8, square_size * 3 / 4)
+        if asset.startswith("3d"):
+            if piece.endswith("K"):
+                print("HEIGHT", image.get_height())
             size = (square_size, image.get_height() * square_size / image.get_width())
         if asset in ["fancy"]:
             size = (square_size * 3 / 4, square_size * 3 / 4)
@@ -41,6 +44,8 @@ for key in list(config.keys()):
             pieces_asset = config[key] if config[key] else "chesscom"
         case "background_asset":
             background_asset = config[key] if config[key] else "standard"
+        case "sounds_asset":
+            sounds_asset = config[key] if config[key] else "default"
         case "width":
             width = config[key] if config[key] else pygame.display.Info().current_w
         case "height":

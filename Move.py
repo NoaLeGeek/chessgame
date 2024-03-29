@@ -16,19 +16,40 @@ class Move:
         self.game.move(self.piece, row, column)
         self.game.change_turn()
         self.game.valid_moves, self.game.selected = [], None
+        if self.capture or isinstance(self.piece, Pieces.Pawn):
+            self.game.halfMoves = 0
+        self.game.history.append((self, self.to_literal()))
         self.game.check_game()
 
     def promote(self):
-        #row, column = 7*(1 - (self.piece.color * -self.piece.flipped))//2, self.from_[1] + self.piece.promotion[1]
         row, column = self.to
         self.game.remove(row, column)
         self.game.move(self.piece, row, column)
         self.game.board.board[row][column] = self.promotion(self.piece.color, row, column)
         self.game.change_turn()
         self.game.valid_moves, self.game.selected = [], None
+        if self.capture or isinstance(self.piece, Pieces.Pawn):
+            self.game.halfMoves = 0
+        self.game.history.append((self, self.to_literal()))
         self.game.check_game()
 
     def to_literal(self):
         # TODO DONT FORGET TO ADD THE LITERAL IN THE HISTORIC AFTER DOING THE MOVE
-        string = ["", "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(self.piece)] + ("x" if self.capture else "") + chr((self.to[1] if self.piece.flipped == -1 else 7 - self.to[1]) + 97) + str((7 - self.to[0] if self.piece.flipped == -1 else self.to[0]) + 1) + ("=" + ["N", "B", "R", "Q"][Pieces.Piece.piece_to_index(self.piece) - 1] if self.promotion else "") + ("#" if self.game.is_checkmate() else ("+" if self.game.is_king_checked() else ""))
+        string = ""
+        # The move is O-O or O-O-O
+        if isinstance(self.piece, Pieces.King) and abs(self.from_[1] - self.to[1]) == 2:
+            string += "O" + "-O"*((-self.to[1] + 10) // 4)
+        else:
+            # Add the symbol of the piece or the starting column if it's a pawn
+            string += [(chr((self.from_[1] if self.piece.flipped == -1 else 7 - self.from_[1]) + 97) if self.capture else ""), "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(self.piece)]
+            # Add x if it's a capture
+            string += ("x" if self.capture else "")
+            # Add the destination's column
+            string += chr((self.to[1] if self.piece.flipped == -1 else 7 - self.to[1]) + 97)
+            # Add the destination's row
+            string += str((7 - self.to[0] if self.piece.flipped == -1 else self.to[0]) + 1)
+            # Add promotion
+            string += ("=" + ["N", "B", "R", "Q"][Pieces.Piece.piece_to_index(self.piece) - 1] if self.promotion else "")
+        # Add # if it's checkmate or + if it's a check
+        string += ("#" if self.game.is_checkmate() else ("+" if self.game.is_king_checked() else ""))
         return string

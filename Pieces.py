@@ -21,6 +21,12 @@ class Piece:
     def calc_pos(self, image):
         self.x = margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
         self.y = margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if pieces_asset.startswith("3d") else 0.5*image.get_height())
+        if isinstance(self, King):
+            print("margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()")
+            print(f"{margin} + ({self.column} + 0.5) * {self.square_size} - 0.5*{image.get_width()}")
+            print("margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if pieces_asset.startswith(\"3d\") else 0.5*image.get_height())")
+            print(f"{margin} + ({self.row} + 0.5) * {self.square_size} - ({image.get_height()} - 0.5*{image.get_width()} if {pieces_asset}.startswith(\"3d\") else 0.5*{image.get_height()})")
+            print(self.x, self.y)
 
     def clear_available_moves(self):
         if self.available_moves:

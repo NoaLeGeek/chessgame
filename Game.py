@@ -57,7 +57,6 @@ class Game:
                         if piece != 0:
                             piece.en_passant = True
                 case 4:
-                    # TODO you'll have to put halfMoves = 0 every time a pawn is moved or a piece is captured, this is maybe the time to make Move a class to differenciate between a normal move and a capture
                     self.halfMoves = int(split[i])
                 case 5:
                     self.fullMoves = int(split[i])
@@ -65,6 +64,8 @@ class Game:
     def update_window(self):
         self.board.draw_background()
         self.board.draw_board()
+        if self.history:
+            self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to : 3})
         if self.highlightedSquares:
             self.board.draw_highlightedSquares(self.highlightedSquares)
         self.board.draw_pieces()
@@ -100,9 +101,9 @@ class Game:
             print("Stalemate")
             return True
         #TODO enabled the 50 moves rule when it's done!
-        #elif self.halfMoves >= 100:
-            #print("Draw by the 50 moves rule")
-            #return True
+        elif self.halfMoves >= 100:
+            print("Draw by the 50 moves rule")
+            return True
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
 
 
@@ -160,14 +161,10 @@ class Game:
         piece.en_passant = (isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2)
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
-            # O-O
-            if column == 6:
-                self.board.board[row][5], self.board.board[row][7] = self.board.board[row][7], self.board.board[row][5]
-                self.board.board[row][5].piece_move(row, 5)
-            # O-O-O
-            else:
-                self.board.board[row][3], self.board.board[row][0] = self.board.board[row][0], self.board.board[row][3]
-                self.board.board[row][3].piece_move(row, 3)
+            # Calculate old and new position of the rook for O-O and O-O-O
+            new_rook_pos, old_rook_pos = (column + 4) // 2, 7 * (column - 2) // 4
+            self.board.board[row][new_rook_pos], self.board.board[row][old_rook_pos] = self.board.board[row][old_rook_pos], self.board.board[row][new_rook_pos]
+            self.board.board[row][new_rook_pos].piece_move(row, new_rook_pos)
             piece.not_castled = False
         # En-passant
         if isinstance(piece, Pieces.Pawn) and self.board.board[row + (piece.color * -piece.flipped)][column] != 0 and self.board.board[row + (piece.color * -piece.flipped)][column].en_passant:
