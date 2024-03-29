@@ -43,11 +43,11 @@ def main():
                 if event.key == pygame.K_c:
                     game.board.change_asset(random.choice(["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]))
                     game.board.change_background(random.choice(["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]))
-            if game.turn == -1:
-                randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
-                game.select(randomPiece.row, randomPiece.column)
-                randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
-                game.select(randomMove[0], randomMove[1])
+            #if game.turn == -1:
+                #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
+                #game.select(randomPiece.row, randomPiece.column)
+                #randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
+                #game.select(randomMove[0], randomMove[1])
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
@@ -59,9 +59,9 @@ def main():
                     if selected_piece != 0 and isinstance(selected_piece, Pawn):
                         pass
                         # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
-                    if game.turn == 1:
-                        if 0 <= row < constants.rows and 0 <= column < constants.columns:
-                            game.select(row, column)
+                    #if game.turn == 1:
+                    if 0 <= row < constants.rows and 0 <= column < constants.columns:
+                        game.select(row, column)
                     game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:

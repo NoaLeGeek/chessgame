@@ -197,11 +197,12 @@ class Game:
 
     def select(self, row, column):
         if self.selected:
+            x = self.selected.color * -self.selected.flipped
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
                 # Promote the pawn
-                if row in range(2*(1 - (self.selected.color * -self.selected.flipped)), 2*(3 - (self.selected.color * -self.selected.flipped))) and column == self.selected.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if (self.selected.color * -self.selected.flipped) == 1 else 7 - row)])
+                if row in range(2*(1 - x), 2*(3 - x)) and column == self.selected.promotion[1] + self.selected.column:
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if x == 1 else 7 - row)])
                     move.promote()
                     print(move.to_literal())
                     return
@@ -223,7 +224,7 @@ class Game:
                 self.selected.promotion = (True, column - self.selected.column)
                 self.valid_moves = []
                 return
-            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), False)
+            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (self.board.board[row + x][column] != 0 and self.board.board[row + x][column].color != self.selected.color and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + x][column].en_passant)), False)
             move.make_move()
             print(move.to_literal())
         else:
