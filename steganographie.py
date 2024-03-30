@@ -39,6 +39,10 @@ def select_file(text, index):
         select_label.bindtags(("show.select_label.selected",) + select_label.bindtags()[1:])
         update_widget(select_label)
         select_label['text'] = select_label['text'].format(os.path.basename(show_image))
+        show_initial_button.config(state=tk.NORMAL)
+        show_reveal_button.config(state=tk.NORMAL)
+        reveal_button.config(state=tk.NORMAL)
+        initial_button.config(state=tk.NORMAL)
     else:
         second_image = filePath
         if second_image == "":
@@ -49,6 +53,7 @@ def select_file(text, index):
         show_second_button.config(state=tk.NORMAL)
     if first_image != "" and second_image != "":
         hide_image_button.config(state=tk.NORMAL)
+
 
 def save_file(text):
     fileTypes = (('PNG files', '*.png'),)
@@ -168,7 +173,7 @@ def update_widget(widget):
         if "text" in widget.config():
             widget.config(text=translate(widget.bindtags()[0]))
         if isinstance(widget, tk.Tk):
-            widget.title(translate(widget.bindtags()[0]))
+            widget.title(translate("title"))
         if widget.bindtags()[0] == "hide.first_label.selected":
             widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(first_image))
         if widget.bindtags()[0] == "hide.second_label.selected":
@@ -264,21 +269,25 @@ initial_button = tk.Button(win, command=initial_image)
 initial_button.bindtags(("show.initial_button",) + initial_button.bindtags())
 initial_button.grid(row=1, column=1, columnspan=2, sticky="sew")
 initial_button.grid_remove()
+initial_button.config(state=tk.DISABLED)
 
 show_initial_button = tk.Button(win, command=lambda: open_image(3).show())
 show_initial_button.bindtags(("show.show_initial_button",) + show_initial_button.bindtags())
 show_initial_button.grid(row=2, column=1, columnspan=2, sticky="new")
 show_initial_button.grid_remove()
+show_initial_button.config(state=tk.DISABLED)
 
 reveal_button = tk.Button(win, command=revealed_image)
 reveal_button.bindtags(("show.reveal_button",) + reveal_button.bindtags())
 reveal_button.grid(row=1, column=3, columnspan=2, sticky="sew")
 reveal_button.grid_remove()
+reveal_button.config(state=tk.DISABLED)
 
 show_reveal_button = tk.Button(win, command=lambda: open_image(4).show())
 show_reveal_button.bindtags(("show.show_reveal_button",) + show_reveal_button.bindtags())
 show_reveal_button.grid(row=2, column=3, columnspan=2, sticky="new")
 show_reveal_button.grid_remove()
+show_reveal_button.config(state=tk.DISABLED)
 
 quit_button = tk.Button(win, text="Quit", command=win.destroy)
 quit_button.bindtags(("button.quit",) + quit_button.bindtags())
