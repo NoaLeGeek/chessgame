@@ -40,12 +40,13 @@ class Board:
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (square_size // 2, square_size // 2), square_size // 8)
             self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
-    def draw_promotion(self, promotion, offset):
+    def draw_promotion(self, promotion, offset, flipped):
+        global pieces_asset
         # TODO add exit button with a X
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - (promotion.color * -promotion.flipped)) * square_size + margin, square_size, 4*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - (promotion.color * flipped)) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * -promotion.flipped))//2 + (promotion.color * -promotion.flipped) * i, promotion.column + offset)
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * flipped))//2 + (promotion.color * flipped) * i, promotion.column + offset)
             render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
             self.frame.blit(render.image, (render.x, render.y))
             
@@ -71,7 +72,6 @@ class Board:
             for column in range(self.columns):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.flipped *= -1
                     piece.piece_move(7 - piece.row, 7 - piece.column)
         for row in self.board:
             row.reverse()

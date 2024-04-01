@@ -4,6 +4,18 @@ import json
 from math import floor
 
 
+def get_position(x, y):
+    return (y - margin) // square_size, (x - margin) // square_size
+
+
+def flip_coord(x):
+    return 7 - x
+
+
+def flip_coords(row, column):
+    return flip_coord(row), flip_coord(column)
+
+
 def generate_images(asset: str):
     images = []
     for piece in piece_constants:

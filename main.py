@@ -6,12 +6,12 @@ from Game import Game
 from Pieces import *
 
 # TODO BUGS TO SOLVE :
-# en passant in the "to_literal()"
 # promotion pieces have not the skin
+# promotion is bugged
+# castling through checks
 # 3D pieces not centered
-
-def get_position(x, y):
-    return (y - margin) // constants.square_size, (x - margin) // constants.square_size
+# revamp en passant, promotion and flipped
+# board's image is not flipped, it should be
 
 def main():
     run = True
@@ -38,6 +38,7 @@ def main():
                     game.reset(constants.window)
                 if event.key == pygame.K_f:
                     game.board.flip_board()
+                    game.flipped *= -1
                     game.selected, game.valid_moves = None, []
                     game.highlightedSquares = {(7 - row, 7 - column): value for ((row, column), value) in game.highlightedSquares.items()}
                 if event.key == pygame.K_c:
@@ -51,8 +52,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
-                    location = pygame.mouse.get_pos()
-                    row, column = get_position(location[0], location[1])
+                    row, column = constants.get_position(*pygame.mouse.get_pos())
                     selected_piece = game.board.board[row][column]
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
@@ -66,7 +66,7 @@ def main():
                     game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
-                    row, column = get_position(*pygame.mouse.get_pos())
+                    row, column = constants.get_position(*pygame.mouse.get_pos())
                     if 0 <= row < constants.rows and 0 <= column < constants.columns: 
                         game.selected, game.valid_moves, keys = None, [], pygame.key.get_pressed()
                         highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
