@@ -55,7 +55,7 @@ class Game:
                         self.board.board[0][0].first_move = False
                 case 3:
                     if split[i] not in ['-', '–']:
-                        self.en_passant = (flip_coord(-self.flipped, int(split[i][1])) + self.turn + 1, ord(flip_coord(self.flipped, split[i][0])) - 97)
+                        self.en_passant = (flip_coords(-self.flipped, int(split[i][1])) + 1, flip_coords(self.flipped, ord(split[i][0]) - 97))
                 case 4:
                     self.halfMoves = int(split[i])
                 case 5:
@@ -140,7 +140,7 @@ class Game:
         for row in range(len(board)):
             for column in range(len(board[0])):
                 if board[row][column] != 0 and board[row][column].color == self.turn and isinstance(board[row][column], Pieces.King):
-                    possible_moves += self.flip_moves(board[row][column].get_available_moves(board, row, column))
+                    possible_moves += board[row][column].get_available_moves(board, row, column, self.flipped)
         return possible_moves
 
     def is_stalemate(self) -> bool:
@@ -230,4 +230,4 @@ class Game:
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-                self.valid_moves = [move for move in self.flip_moves(piece.get_available_moves(self.board.board, row, column)) if self.can_move(self.selected, move[0], move[1])]
+                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped) if self.can_move(self.selected, move[0], move[1])]

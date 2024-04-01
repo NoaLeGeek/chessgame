@@ -8,12 +8,8 @@ def get_position(x, y):
     return (y - margin) // square_size, (x - margin) // square_size
 
 
-def flip_coord(x):
-    return 7 - x
-
-
-def flip_coords(row, column):
-    return flip_coord(row), flip_coord(column)
+def flip_coords(flipped, *args):
+    return tuple([flipped * (7 - 2 * arg) + 7 for arg in args]) if len(args) > 1 else flipped * (7 - 2 * args[0]) + 7
 
 
 def generate_images(asset: str):
