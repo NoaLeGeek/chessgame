@@ -66,7 +66,7 @@ class Game:
         self.board.draw_background()
         self.board.draw_board()
         if self.history:
-            self.board.draw_highlightedSquares({flip_coords(self.flipped, *self.history[-1][0].from_): 3, flip_coords(self.flipped, *self.history[-1][0].to): 3})
+            self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
         if self.highlightedSquares:
             self.board.draw_highlightedSquares(self.highlightedSquares)
         self.board.draw_pieces(self.promotion)
