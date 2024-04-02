@@ -69,7 +69,7 @@ class Game:
             self.board.draw_highlightedSquares({flip_coords(self.flipped, *self.history[-1][0].from_): 3, flip_coords(self.flipped, *self.history[-1][0].to): 3})
         if self.highlightedSquares:
             self.board.draw_highlightedSquares(self.highlightedSquares)
-        self.board.draw_pieces()
+        self.board.draw_pieces(self.promotion)
         if self.valid_moves:
             self.board.draw_moves(self.valid_moves)
         if self.promotion:
@@ -198,7 +198,7 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(-x, row)])
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - self.selected.color * -self.flipped) // 2, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(-x, row)])
                     move.promote()
                     print(move.to_literal())
                 # Remove the promotion

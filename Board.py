@@ -23,13 +23,13 @@ class Board:
     def draw_rect(self, row, column):
         pygame.draw.rect(self.frame, (255, 0, 0), (row * square_size + margin, column * square_size + margin, square_size, square_size))
 
-    def draw_pieces(self):
+    def draw_pieces(self, promotion=None):
         for row in range(self.rows):
             for column in range(self.columns):
                 if self.debug:
                     self.frame.blit(pygame.font.SysFont("monospace", 15).render(f"({column},{row})", 1, (0, 0, 0)), (row*square_size+35, column*square_size+60))
                 piece = self.board[row][column]
-                if piece == 0 or (isinstance(piece, Pawn) and piece.promotion[0]):
+                if piece == 0 or (promotion and promotion[0] == piece):
                     continue
                 self.draw_piece(piece, self.frame)
 
@@ -43,10 +43,10 @@ class Board:
     def draw_promotion(self, promotion, offset, flipped):
         global pieces_asset
         # TODO add exit button with a X
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - (promotion.color * -flipped)) * square_size + margin, square_size, 4*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * -flipped) * square_size + margin, 2 * (1 - (promotion.color * -flipped)) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * -flipped))//2 + (promotion.color * -flipped) * i, promotion.column + offset)
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * -flipped)) // 2 + (promotion.color * -flipped) * i, promotion.column + offset * -flipped)
             render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
             self.frame.blit(render.image, (render.x, render.y))
             
