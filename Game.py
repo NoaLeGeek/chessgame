@@ -30,7 +30,7 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
-        split = customfen.split(' ')
+        split = defaultfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -56,7 +56,6 @@ class Game:
                 case 3:
                     if split[i] not in ['-', '–']:
                         self.en_passant = (flip_coords(-self.flipped, int(split[i][1]) - 1), flip_coords(self.flipped, ord(split[i][0]) - 97))
-                        print(self.en_passant)
                 case 4:
                     self.halfMoves = int(split[i])
                 case 5:
@@ -109,7 +108,7 @@ class Game:
         for row in range(len(self.board.board)):
             for column in range(len(self.board.board[0])):
                 if self.board.board[row][column] != 0 and self.board.board[row][column].color == color:
-                    color_moves += self.board.board[row][column].get_available_moves(self.board.board, row, column, self.flipped)
+                    color_moves += self.board.board[row][column].get_available_moves(self.board.board, row, column, self.flipped, self.en_passant)
         return color_moves
 
     def get_color_pieces(self, color: int):
@@ -139,11 +138,11 @@ class Game:
         for row in range(len(board)):
             for column in range(len(board[0])):
                 if board[row][column] != 0 and board[row][column].color == self.turn and isinstance(board[row][column], Pieces.King):
-                    possible_moves += board[row][column].get_available_moves(board, row, column, self.flipped)
+                    possible_moves += board[row][column].get_available_moves(board, row, column, self.flipped, self.en_passant)
         return possible_moves
 
     def is_stalemate(self) -> bool:
-        return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column)])
+        return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, self.en_passant)])
 
     def remove(self, row: int, column: int):
         piece = self.board.board[row][column]
@@ -156,8 +155,6 @@ class Game:
 
     def move(self, piece: Pieces.Piece, row: int, column: int):
         x = piece.color * -self.flipped
-        if isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2:
-            self.en_passant = (row - x, column)
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
             # Calculate old and new position of the rook for O-O and O-O-O
@@ -166,15 +163,15 @@ class Game:
             self.board.board[row][new_rook_pos].piece_move(row, new_rook_pos)
             piece.not_castled = False
         # En-passant
-        if isinstance(piece, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + (piece.color * -self.flipped)][column].en_passant:
+        if isinstance(piece, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.en_passant == (piece.row - x, column):
             self.board.board[row + x][column] = 0
+        self.en_passant = (row + x, column) if isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2 else None
+        print("en_passant", self.en_passant)
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
         piece.piece_move(row, column)
         # Update the first_move attribute of the piece if it moved
         if isinstance(piece, (Pieces.King, Pieces.Rook, Pieces.Pawn)) and piece.first_move:
             piece.first_move = False
-        # Remove the en-passant attribute
-        self.en_passant = None
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
@@ -227,4 +224,4 @@ class Game:
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped) if self.can_move(self.selected, *move)]
+                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped, self.en_passant) if self.can_move(self.selected, *move)]

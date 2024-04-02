@@ -12,7 +12,6 @@ class Move:
 
     def make_move(self):
         row, column = self.to
-        print(row, column)
         self.game.remove(row, column)
         self.game.move(self.piece, row, column)
         self.game.change_turn()

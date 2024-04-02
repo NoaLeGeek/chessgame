@@ -62,9 +62,8 @@ def main():
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
                     if isinstance(selected_piece, King) or isinstance(selected_piece, Rook):
-                        print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped))
+                        print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped, game.en_passant))
                         print("first_move", selected_piece.first_move)
-                        # print("avaible moves:", selected_piece.get_available_moves(game.get_board().board, row, column))
                     #if game.turn == 1:
                     if 0 <= row < constants.rows and 0 <= column < constants.columns:
                         game.select(row, column)
