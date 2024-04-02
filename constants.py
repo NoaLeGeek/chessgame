@@ -9,7 +9,7 @@ def get_position(x, y):
 
 
 def flip_coords(flipped, *args):
-    return tuple([flipped * (7 - 2 * arg) + 7 for arg in args]) if len(args) > 1 else flipped * (7 - 2 * args[0]) + 7
+    return tuple([(flipped * (7 - 2 * arg) + 7) // 2 for arg in args]) if len(args) > 1 else (flipped * (7 - 2 * args[0]) + 7) // 2
 
 
 def generate_images(asset: str):

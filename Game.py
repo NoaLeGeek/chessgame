@@ -9,7 +9,6 @@ class Game:
         self.window = window
         self.board = Board(width, height, rows, columns, window)
         self.turn = 0
-        self.create_board()
         self.selected = None
         self.promotion = None
         self.en_passant = None
@@ -22,6 +21,7 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
+        self.create_board()
         # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):
@@ -29,6 +29,7 @@ class Game:
         fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
+        en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
         split = customfen.split(' ')
         for i in range(len(split)):
             match i:
@@ -40,7 +41,6 @@ class Game:
                                 k += int(char)
                             else:
                                 self.board.board[j][k] = fen[char]((1 if ord(char) < 91 else -1), j, k)
-                                pie = self.board.board[j][k]
                                 k += 1
                 case 1:
                     self.turn = 1 if split[i] == 'w' else -1
@@ -55,7 +55,8 @@ class Game:
                         self.board.board[0][0].first_move = False
                 case 3:
                     if split[i] not in ['-', '–']:
-                        self.en_passant = (flip_coords(-self.flipped, int(split[i][1])) + 1, flip_coords(self.flipped, ord(split[i][0]) - 97))
+                        self.en_passant = (flip_coords(-self.flipped, int(split[i][1]) - 1), flip_coords(self.flipped, ord(split[i][0]) - 97))
+                        print(self.en_passant)
                 case 4:
                     self.halfMoves = int(split[i])
                 case 5:
@@ -71,10 +72,8 @@ class Game:
         self.board.draw_pieces()
         if self.valid_moves:
             self.board.draw_moves(self.valid_moves)
-        for row in range(len(self.board.board)):
-            for column in range(len(self.board.board[0])):
-                if isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].promotion[0]:
-                    self.board.draw_promotion(self.board.board[row][column], self.board.board[row][column].promotion[1], self.flipped)
+        if self.promotion:
+            self.board.draw_promotion(*self.promotion, self.flipped)
         pygame.display.update()
 
     def reset(self, frame):
@@ -156,7 +155,9 @@ class Game:
                 self.black_pieces_left -= 1
 
     def move(self, piece: Pieces.Piece, row: int, column: int):
-        piece.en_passant = (isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2)
+        x = piece.color * -self.flipped
+        if isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2:
+            self.en_passant = (row - x, column)
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
             # Calculate old and new position of the rook for O-O and O-O-O
@@ -165,18 +166,15 @@ class Game:
             self.board.board[row][new_rook_pos].piece_move(row, new_rook_pos)
             piece.not_castled = False
         # En-passant
-        if isinstance(piece, Pieces.Pawn) and isinstance(self.board.board[row + (piece.color * -self.flipped)][column], Pieces.Pawn) and self.board.board[row + (piece.color * -self.flipped)][column].en_passant:
-            self.board.board[row + (piece.color * -self.flipped)][column] = 0
+        if isinstance(piece, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + (piece.color * -self.flipped)][column].en_passant:
+            self.board.board[row + x][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
         piece.piece_move(row, column)
         # Update the first_move attribute of the piece if it moved
         if isinstance(piece, (Pieces.King, Pieces.Rook, Pieces.Pawn)) and piece.first_move:
             piece.first_move = False
         # Remove the en-passant attribute
-        for row in range(rows):
-            for column in range(columns):
-                if isinstance(self.board.board[row][column], Pieces.Pawn) and self.board.board[row][column].en_passant and self.board.board[row][column].color != piece.color:
-                    self.board.board[row][column].en_passant = False
+        self.en_passant = None
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
@@ -197,16 +195,15 @@ class Game:
         if self.selected:
             x = self.selected.color * -self.flipped
             # If in the state of promotion
-            if isinstance(self.selected, Pieces.Pawn) and self.selected.promotion[0]:
+            if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
-                if row in range(2*(1 - x), 2*(3 - x)) and column == self.selected.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if x == 1 else 7 - row)])
+                if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(-x, row)])
                     move.promote()
                     print(move.to_literal())
-                    return
                 # Remove the promotion
-                else:
-                    self.selected.promotion = (False, 0)
+                self.promotion = None
+                return
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color:
                 self.selected = None
@@ -219,7 +216,7 @@ class Game:
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
-                self.selected.promotion = (True, column - self.selected.column)
+                self.promotion = self.selected, column - self.selected.column
                 self.valid_moves = []
                 return
             move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (0 < row + x < len(self.board.board) - 1 and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + x][column].color != self.selected.color and self.board.board[row + x][column].en_passant)), False)
@@ -230,4 +227,4 @@ class Game:
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped) if self.can_move(self.selected, move[0], move[1])]
+                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped) if self.can_move(self.selected, *move)]

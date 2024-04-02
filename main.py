@@ -40,7 +40,9 @@ def main():
                     game.board.flip_board()
                     game.flipped *= -1
                     game.selected, game.valid_moves = None, []
-                    game.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in game.highlightedSquares.items()}
+                    if game.en_passant:
+                        game.en_passant = constants.flip_coords(game.flipped, *game.en_passant)
+                    game.highlightedSquares = {constants.flip_coords(game.flipped, row, column): value for ((row, column), value) in game.highlightedSquares.items()}
                 if event.key == pygame.K_c:
                     game.board.change_asset(random.choice(["lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]))
                     game.board.change_background(random.choice(["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]))

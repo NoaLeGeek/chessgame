@@ -327,4 +327,9 @@ class King(Piece):
                 self.available_moves.append((row, 2))
             if isinstance(board[row][7], Rook) and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0:
                 self.available_moves.append((row, 6))
+        if self.column == 3 and self.first_move:
+            if isinstance(board[row][7], Rook) and board[row][7].first_move and board[row][6] == 0 and board[row][5] == 0 and board[row][4] == 0:
+                self.available_moves.append((row, 6))
+            if isinstance(board[row][0], Rook) and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0:
+                self.available_moves.append((row, 2))
         return self.available_moves
