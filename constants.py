@@ -8,8 +8,9 @@ def get_position(x, y):
     return (y - margin) // square_size, (x - margin) // square_size
 
 
-def flip_coords(flipped, *args):
-    return tuple([(flipped * (7 - 2 * arg) + 7) // 2 for arg in args]) if len(args) > 1 else (flipped * (7 - 2 * args[0]) + 7) // 2
+def flip_coords(*args, **kwds):
+    coords = [((7 - 2 * arg) * kwds["flipped"] + 7) // 2 for arg in args] if kwds else tuple([7 - arg for arg in args])
+    return coords[0] if len(coords) == 1 else coords
 
 
 def generate_images(asset: str):

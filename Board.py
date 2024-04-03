@@ -12,7 +12,7 @@ class Board:
         self.columns = columns
         self.frame = frame
         self.board = []
-        self.debug = True
+        self.debug = False
 
     def draw_board(self):
         self.frame.blit(board_assets[board_asset], (margin, margin))

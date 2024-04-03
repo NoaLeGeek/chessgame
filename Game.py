@@ -55,7 +55,7 @@ class Game:
                         self.board.board[0][0].first_move = False
                 case 3:
                     if split[i] not in ['-', '–']:
-                        self.en_passant = (flip_coords(-self.flipped, int(split[i][1]) - 1), flip_coords(self.flipped, ord(split[i][0]) - 97))
+                        self.en_passant = (flip_coords(int(split[i][1]) - 1, flipped = -self.flipped), flip_coords(ord(split[i][0]) - 97, flipped = self.flipped))
                 case 4:
                     self.halfMoves = int(split[i])
                 case 5:
@@ -166,7 +166,6 @@ class Game:
         if isinstance(piece, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.en_passant == (piece.row - x, column):
             self.board.board[row + x][column] = 0
         self.en_passant = (row + x, column) if isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2 else None
-        print("en_passant", self.en_passant)
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
         piece.piece_move(row, column)
         # Update the first_move attribute of the piece if it moved
@@ -195,7 +194,7 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - self.selected.color * -self.flipped) // 2, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(-x, row)])
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - self.selected.color * -self.flipped) // 2, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)])
                     move.promote()
                     print(move.to_literal())
                 # Remove the promotion
@@ -225,3 +224,12 @@ class Game:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
                 self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped, self.en_passant) if self.can_move(self.selected, *move)]
+
+    def flip_game(self):
+        self.flipped *= -1
+        self.selected, self.valid_moves = None, []
+        if self.en_passant:
+            self.en_passant = flip_coords(*self.en_passant)
+        if self.history:
+            self.history[-1][0].from_, self.history[-1][0].to = flip_coords(*self.history[-1][0].from_), flip_coords(*self.history[-1][0].to)
+            self.highlightedSquares = {flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()} 

@@ -32,9 +32,6 @@ class Piece:
         if self.available_moves:
             self.available_moves = []
 
-    def flip_moves(moves: list[tuple[int, int]], flipped: bool):
-        return [flip_coords(flipped, row, column) for (row, column) in moves]
-
     def piece_to_index(piece):
         return {Pawn: 0, Knight: 1, Bishop: 2, Rook: 3, Queen: 4, King: 5}[type(piece)]
     
