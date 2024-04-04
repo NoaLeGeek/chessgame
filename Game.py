@@ -30,7 +30,7 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
-        split = defaultfen.split(' ')
+        split = customfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -215,7 +215,7 @@ class Game:
                 self.promotion = self.selected, column - self.selected.column
                 self.valid_moves = []
                 return
-            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (0 < row + x < len(self.board.board) - 1 and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.board.board[row + x][column].color != self.selected.color and self.board.board[row + x][column].en_passant)), False)
+            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (isinstance(self.selected, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column))), False)
             move.make_move()
             print(move.to_literal())
         else:

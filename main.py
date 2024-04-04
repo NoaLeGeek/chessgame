@@ -7,11 +7,8 @@ from Pieces import *
 
 # TODO BUGS TO SOLVE :
 # promotion pieces have not the skin
-# promotion is bugged
 # castling through checks
 # 3D pieces not centered
-# revamp en passant, promotion and flipped
-# board's image is not flipped, it should be
 
 def main():
     run = True
