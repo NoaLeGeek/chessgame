@@ -8,6 +8,8 @@ from Pieces import *
 # TODO BUGS TO SOLVE :
 # promotion pieces have not the skin
 # castling through checks
+# castling bugged when flipped
+# Move.py doesn't want to do promotion
 # 3D pieces not centered
 
 def main():

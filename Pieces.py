@@ -50,7 +50,7 @@ class Pawn(Piece):
 
     def get_available_moves(self, board, row, column, flipped: bool = False, *args):
         self.clear_available_moves()
-        # Here args[0] is the given en passant square
+        # args[0] is the given en passant square
         en_passant = args[0]
         x = self.color * -flipped
         if 0 < row < len(board) - 1:
@@ -304,26 +304,13 @@ class King(Piece):
 
     def get_available_moves(self, board, row, column, flipped: bool = False, *args):
         self.clear_available_moves()
-        if row > 0 and column > 0 and (
-                board[row - 1][column - 1] == 0 or board[row - 1][column - 1].color != self.color):
-            self.available_moves.append((row - 1, column - 1))
-        if row > 0 and (board[row - 1][column] == 0 or board[row - 1][column].color != self.color):
-            self.available_moves.append((row - 1, column))
-        if row > 0 and column < len(board[0]) - 1 and (
-                board[row - 1][column + 1] == 0 or board[row - 1][column + 1].color != self.color):
-            self.available_moves.append((row - 1, column + 1))
-        if column > 0 and (board[row][column - 1] == 0 or board[row][column - 1].color != self.color):
-            self.available_moves.append((row, column - 1))
-        if column < len(board[0]) - 1 and (board[row][column + 1] == 0 or board[row][column + 1].color != self.color):
-            self.available_moves.append((row, column + 1))
-        if row < len(board) - 1 and column > 0 and (
-                board[row + 1][column - 1] == 0 or board[row + 1][column - 1].color != self.color):
-            self.available_moves.append((row + 1, column - 1))
-        if row < len(board) - 1 and (board[row + 1][column] == 0 or board[row + 1][column].color != self.color):
-            self.available_moves.append((row + 1, column))
-        if row < len(board) - 1 and column < len(board[0]) - 1 and (
-                board[row + 1][column + 1] == 0 or board[row + 1][column + 1].color != self.color):
-            self.available_moves.append((row + 1, column + 1))
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                # TODO euhh here bugged
+                if ((0 < row and i == -1) or (row < len(board) - 1 and i == 1)) and ((0 < column and j == -1) or (column < len(board[0]) - 1 and j == 1)) and not (i == 0 and j == 0):
+                    self.available_moves.append((row + i, column + j))
+
+        # Castling
         if self.column == 4 and self.first_move:
             if isinstance(board[row][0], Rook) and board[row][0].first_move and board[row][1] == 0 and board[row][2] == 0 and board[row][3] == 0:
                 self.available_moves.append((row, 2))

@@ -5,33 +5,53 @@ import os
 import json
 from tkinter import filedialog, ttk, messagebox
 
+# La librarie ctypes permet ici de récupérer la taille de l'écran de l'utilisateur
+# 48 correspond à la hauteur de la barre de tâches de Windows
+# 23 correspond à la hauteur de la barre de titre de la fenêtre
 WIDTH, HEIGHT = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1) - 48 - 23
-# 1 is hiding -1 is showing
+# Si le mode est à 1 alors on est dans le mode où on veut cacher une image dans une image
+# Si le mode est à -1 alors on est dans le mode où on veut révéler une image cachée dans une image
 mode = 1
-# 1 is second image towards the first -1 is the first image towards the second
+# Si la flèche est à 1 alors on cache la deuxième image dans la première
+# Si la flèche est à -1 alors on cache la première image dans la deuxième
 arrow = 1
+# Correspond à la première image
 first_image = ""
+# Correspond à la deuxième image
 second_image = ""
+# Correspond à l'image sélectionnée pour révéler l'image cachée
 show_image = ""
+# Correspond à l'image cachée dans une image
 hidden_image = None
+# Correspond à l'image initiale révélée d'une image cachée dans une image
 initial_image = None
+# Correspond à l'image cachée révélée d'une image cachée dans une image
 revealed_image = None
 win = tk.Tk()
+# Sert à savoir quel langage est choisi
 language = tk.StringVar()
+# Sert à savoir si les images cachées doivent être de la même taille (oui par défaut)
 config_hide = tk.BooleanVar()
 
+# Permet de sélectionner un fichier
 def select_file(text, index):
     global first_image, second_image, show_image
     fileTypes = (('PNG files', '*.png'),)
     filePath = filedialog.askopenfilename(title=text, initialdir='~', filetypes=fileTypes)
+    # En fonction de l'index, on met à jour la première, la deuxième ou l'image à révéler
     match index:
         case 1:
             first_image = filePath
             if first_image == "":
                 return
+            # On met à jour le texte du label lorsque l'image est sélectionnée
             h_first_label.bindtags(("hide.h_first_label.selected",) + h_first_label.bindtags()[1:])
+            # On met à jour le texte du label en le traduisant
             update_widget(h_first_label)
+            # On active le bouton pour afficher l'image puisqu'on a sélectionné une image
             h_show_first_button.config(state=tk.NORMAL)
+
+            # On fait ce même processus pour l'index 2
         case 2:
             second_image = filePath
             if second_image == "":
@@ -45,25 +65,34 @@ def select_file(text, index):
                 return
             select_label.bindtags(("show.select_label.selected",) + select_label.bindtags()[1:])
             update_widget(select_label)
+            # On active les boutons pour afficher l'image initiale et révélée
             show_initial_button.config(state=tk.NORMAL)
             show_reveal_button.config(state=tk.NORMAL)
+            # On active les boutons pour obtenir l'image initiale et révélée
             reveal_button.config(state=tk.NORMAL)
             initial_button.config(state=tk.NORMAL)
+            # On active les boutons pour sauvegarder l'image initiale et révélée
             save_initial_button.config(state=tk.NORMAL)
             save_reveal_button.config(state=tk.NORMAL)
+            # On active les boutons pour afficher l'image sélectionnée
             show_select_button.config(state=tk.NORMAL)
     if first_image != "" and second_image != "":
         h_image_button.config(state=tk.NORMAL)
 
-
+# Permet de sauvegarder un fichier
 def save_file(text):
     fileTypes = (('PNG files', '*.png'),)
     fileName = filedialog.asksaveasfilename(title=text, initialdir='~', filetypes=fileTypes)
+    # On ajoute l'extension .png si elle n'est pas présente
+    if fileName and not fileName.endswith(".png"):
+        fileName += ".png"
     return fileName
 
+# Permet de combiner deux pixels pour cacher une image dans une autre
 def combine_pixels(pixel1, pixel2):
     return bin((pixel1 & 0b11110000) | (pixel2 >> 4))
 
+# Permet d'ouvrir une image en fonction de l'index donné
 def open_image(index):
     global first_image, second_image, initial_image, revealed_image
     try:
@@ -75,11 +104,13 @@ def open_image(index):
             case 3:
                 image = Image.open(show_image)
         return image
+    # On gère les erreurs qui peuvent survenir lors de l'ouverture d'une image
     except FileNotFoundError:
         messagebox.showerror(translate("error.error"), translate("error.file_not_found"))
     except Exception as e:
         messagebox.showerror(translate("error.error"), translate("error.load_image").format(e))
 
+# Permet de changer le mode
 def change_mode():
     global mode
     mode *= -1
@@ -87,10 +118,12 @@ def change_mode():
         widget.config(state=tk.NORMAL if widget['state'] == tk.DISABLED else tk.DISABLED)
     change_widgets(win, "hide" if mode == 1 else "show")
         
+# Permet de gérer la disparition/apparition des widgets propre à chacun des modes
 def change_widgets(widget, mode):
     for w in widget.winfo_children():
         if w.winfo_children():
             change_widgets(w, mode)
+        # Si le mode est "hide" alors on cache les widgets du mode "show" et on fait apparaître les widgets du mode "hide" et vice-versa
         if mode == "show":
             if w.bindtags()[0].startswith("hide"):
                 w.grid_remove()
@@ -102,11 +135,14 @@ def change_widgets(widget, mode):
             elif w.bindtags()[0].startswith("show"):
                 w.grid_remove()
 
+# Permet de cacher une image dans une autre image
 def get_hide_image():
     global hidden_image, first_image, second_image
     if first_image == "" or second_image == "":
         return
+    # Fonctions affines qui permettent de déterminer en fonction de la flèche laquelle des deux images est celle réceptrice et celle à cacher
     image1, image2 = open_image((-arrow+3)//2), open_image((arrow+3)//2)
+    # Si les deux images n'ont pas la même taille et que l'option est activée, on affiche une erreur
     if image1.size != image2.size and config_hide.get():
         messagebox.showerror(translate("error.error"), translate("error.not_same_size"))
         return
@@ -122,9 +158,11 @@ def get_hide_image():
                 hidden_image.putpixel((i, j), (r, g, b))
             else:
                 hidden_image.putpixel((i, j), pixels1[i, j])
+    # On active les boutons pour sauvegarder et afficher l'image cachée
     h_save_button.config(state=tk.NORMAL)
     h_show_button.config(state=tk.NORMAL)
 
+# Permet d'obtenir l'image initiale d'une image cachée
 def get_initial_image():
     global initial_image, show_image
     if show_image == "":
@@ -139,6 +177,7 @@ def get_initial_image():
             b = b & 0b11110000
             initial_image.putpixel((i, j), (r, g, b))
 
+# Permet d'obtenir l'image révélée d'une image cachée
 def get_reveal_image():
     global revealed_image, show_image
     if show_image == "":
@@ -153,11 +192,13 @@ def get_reveal_image():
             b = (b & 0b00001111) << 4
             revealed_image.putpixel((i, j), (r, g, b))
 
+# Permet de retourner la flèche pour changer quelle image sera cachée dans l'autre
 def flip_arrow():
     global arrow
     arrow *= -1
     h_arrow_button['text'] = ("<" if arrow == 1 else "") + "-"*10 + (">" if arrow == -1 else "")
 
+# Permet de traduire un texte en fonction de la langue choisie
 def translate(key):
     global language
     # On traduit le texte en fonction de la langue choisie.
@@ -165,21 +206,23 @@ def translate(key):
         data = json.load(file)
     return data.get(key, key)
 
+# Permet de mettre à jour le texte des widgets en fonction de la langue choisie
 def update_widget(widget):
-    # Si le widget a pour tag "noTranslation", on ne met pas à jour son texte.
+    # Si le widget a pour tag "noTranslation", on ne met pas à jour son texte
     if "noTranslation" not in widget.bindtags()[0]:
-        # On met à jour le texte des widgets en fonction de la langue choisie.
+        # Met à jour le texte des widgets en fonction de la langue choisie
         if "text" in widget.config():
             widget.config(text=translate(widget.bindtags()[0]))
         if isinstance(widget, tk.Tk):
             widget.title(translate("title"))
+        # Met à jour le widget s'il fait partie des widgets à formatter
         match widget.bindtags()[0]:
             case "hide.h_first_label.selected":
-                widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(first_image))
+                widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(first_image), *open_image(1).size)
             case "hide.h_second_label.selected":
-                widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(second_image))
+                widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(second_image), *open_image(2).size)
             case "show.select_label.selected":
-                widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(show_image))
+                widget['text'] = translate(widget.bindtags()[0]).format(os.path.basename(show_image), *open_image(3).size)
     # On met à jour les widgets enfants du widget.
     if widget.winfo_children():
         for child in widget.winfo_children():

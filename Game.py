@@ -21,6 +21,7 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
+        self.state = "menu"
         self.create_board()
         # TODO function that, from a certain position, generate the FEN if asked
 
@@ -30,7 +31,8 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
-        split = customfen.split(' ')
+        custom2fen = "8/2K5/8/8/8/8/2k5/8 w KQkq – 0 1"
+        split = custom2fen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -43,7 +45,7 @@ class Game:
                                 self.board.board[j][k] = fen[char]((1 if ord(char) < 91 else -1), j, k)
                                 k += 1
                 case 1:
-                    self.turn = 1 if split[i] == 'w' else -1
+                    self.turn = int((2 * ord(split[i])) / 21 - (31 / 3))
                 case 2:
                     if "K" not in split[i] and isinstance(self.board.board[7][7], Pieces.Rook):
                         self.board.board[7][7].first_move = False
@@ -194,8 +196,8 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - self.selected.color * -self.flipped) // 2, column), self.selected, (self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)])
-                    move.promote()
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, (self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
+                    move.make_move()
                     print(move.to_literal())
                 # Remove the promotion
                 self.promotion = None
@@ -227,7 +229,7 @@ class Game:
 
     def flip_game(self):
         self.flipped *= -1
-        self.selected, self.valid_moves = None, []
+        self.selected, self.valid_moves, self.promotion = None, [], None
         if self.en_passant:
             self.en_passant = flip_coords(*self.en_passant)
         if self.history:

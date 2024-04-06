@@ -43,10 +43,11 @@ class Board:
     def draw_promotion(self, promotion, offset, flipped):
         global pieces_asset
         # TODO add exit button with a X
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * -flipped) * square_size + margin, 2 * (1 - (promotion.color * -flipped)) * square_size + margin, square_size, 4*square_size))
+        x = (promotion.color * -flipped)
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * -flipped) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         for i in range(4):
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - (promotion.color * -flipped)) // 2 + (promotion.color * -flipped) * i, promotion.column + offset * -flipped)
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset * -flipped)
             render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
             self.frame.blit(render.image, (render.x, render.y))
             

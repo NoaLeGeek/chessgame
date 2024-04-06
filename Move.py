@@ -2,7 +2,7 @@ import Pieces
 from constants import *
 
 class Move:
-    def __init__(self, game, from_, to, piece, capture=False, promotion=False):
+    def __init__(self, game, from_, to, piece, capture=False, promotion: bool | tuple[Pieces.Piece, int] =False):
         self.game = game
         self.from_ = from_
         self.to = to
@@ -14,20 +14,12 @@ class Move:
         row, column = self.to
         self.game.remove(row, column)
         self.game.move(self.piece, row, column)
+        # Add the promoted piece to the board if there is one
+        if self.promotion:
+            self.game.board.board[row][column] = self.promotion
         self.game.change_turn()
         self.game.valid_moves, self.game.selected = [], None
-        if self.capture or isinstance(self.piece, Pieces.Pawn):
-            self.game.halfMoves = 0
-        self.game.history.append((self, self.to_literal()))
-        self.game.check_game()
-
-    def promote(self):
-        row, column = self.to
-        self.game.remove(row, column)
-        self.game.move(self.piece, row, column)
-        self.game.board.board[row][column] = self.promotion(self.piece.color, row, column)
-        self.game.change_turn()
-        self.game.valid_moves, self.game.selected = [], None
+        # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
             self.game.halfMoves = 0
         self.game.history.append((self, self.to_literal()))
