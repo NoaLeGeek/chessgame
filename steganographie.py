@@ -1,9 +1,11 @@
-from PIL import Image, ImageTk
+from PIL import Image
 import tkinter as tk
 import ctypes
 import os
 import json
 from tkinter import filedialog, ttk, messagebox
+
+# SI LE PROGRAMME NE FONCTIONNE PAS CORRECTEMENT A CAUSE DES LANGUES, IL FAUT METTRE LES FICHIERS .json DANS LE MEME DOSSIER QUE LE PROGRAMME.
 
 # La librarie ctypes permet ici de récupérer la taille de l'écran de l'utilisateur
 # 48 correspond à la hauteur de la barre de tâches de Windows
@@ -121,6 +123,13 @@ def change_mode():
 # Permet de gérer la disparition/apparition des widgets propre à chacun des modes
 def change_widgets(widget, mode):
     for w in widget.winfo_children():
+        # Si le widget est une fenêtre, on change sa couleur de fond
+        if isinstance(widget, tk.Tk):
+            if mode == "hide":
+                widget.config(bg="lightblue")
+            else:
+                widget.config(bg="coral")
+        # Si le widget possède des enfants, on réapplique la fonction sur ces enfants
         if w.winfo_children():
             change_widgets(w, mode)
         # Si le mode est "hide" alors on cache les widgets du mode "show" et on fait apparaître les widgets du mode "hide" et vice-versa
@@ -172,6 +181,7 @@ def get_initial_image():
     for i in range(image.size[0]):
         for j in range(image.size[1]):
             r, g, b = pixels[i, j][0:3]
+            # On garde les 4 bits de poids fort de chaque couleur pour obtenir l'image initiale
             r = r & 0b11110000
             g = g & 0b11110000
             b = b & 0b11110000
@@ -187,6 +197,7 @@ def get_reveal_image():
     for i in range(image.size[0]):
         for j in range(image.size[1]):
             r, g, b = pixels[i, j][0:3]
+            # On garde les 4 bits de poids faible de chaque couleur pour obtenir l'image révélée
             r = (r & 0b00001111) << 4
             g = (g & 0b00001111) << 4
             b = (b & 0b00001111) << 4
@@ -228,134 +239,168 @@ def update_widget(widget):
         for child in widget.winfo_children():
             update_widget(child)
 
+# Configure la hauteur et la largeur de la fenêtre principale
 win.geometry(f"{WIDTH}x{HEIGHT}")
+# Configure le titre de la fenêtre principale
 win.title("title")
-win.config(bg="white")
+# Configure la couleur de fond de la fenêtre principale
+win.config(bg="lightblue")
+# Configure le poids des colonnes et des lignes de la fenêtre principale
 win.columnconfigure(tuple(range(6)), weight=1)
 win.rowconfigure(tuple(range(6)), weight=1)
 
+# Texte qui dit que c'est une configuration pour la langue
+language_label = tk.Label(win, font=("Helvetica", 9))
+language_label.bindtags(("config.language_label",) + language_label.bindtags())
+language_label.grid(row=3, column=2, columnspan=2, sticky="s")
+
+# Permet de choisir la langue
+language_option = ttk.OptionMenu(win, language, "fr", "fr", "en", command=lambda _: update_widget(win))
+language_option.grid(row=4, column=2, columnspan=2, sticky="n")
+
+# En-dessous, tous les widgets servent au mode hide (cacher une image dans une autre image)
+
+# Permet de changer le mode vers le mode hide
 h_mode_button = tk.Button(win, command=change_mode)
 h_mode_button.bindtags(("button.hide",) + h_mode_button.bindtags())
 h_mode_button.grid(row=0, column=0, columnspan=3, sticky="new")
 h_mode_button.config(state=tk.DISABLED)
 
+# Permet de sélectionner la première image
 h_first_button = tk.Button(win, command=lambda: select_file(translate("hide.h_first_button"), 1), width=round(WIDTH/3))
 h_first_button.bindtags(("hide.h_first_button",) + h_first_button.bindtags())
 h_first_button.grid(row=0, column=0, columnspan=2, sticky="s")
 
+# Permet d'afficher le nom de la première image sélectionnée et ses dimensions
 h_first_label = tk.Label(win, justify=tk.CENTER, width=round(WIDTH/3))
 h_first_label.bindtags(("hide.h_first_label.not_selected",) + h_first_label.bindtags())
 h_first_label.grid(row=1, column=0, columnspan=2, sticky="n")
 
+# Permet d'afficher la première image sélectionnée
 h_show_first_button = tk.Button(win, command=lambda: open_image(1).show(), width=round(WIDTH/3))
 h_show_first_button.bindtags(("hide.h_show_first_button",) + h_show_first_button.bindtags())
 h_show_first_button.grid(row=1, column=0, columnspan=2, sticky="s")
 h_show_first_button.config(state=tk.DISABLED)
 
+# Permet de retourner la flèche pour changer quelle image sera cachée dans l'autre
 h_arrow_button = tk.Button(win, text="<" + "-"*10, command=flip_arrow, width=round(WIDTH/3))
 h_arrow_button.bindtags(("hide.noTranslation",) + h_arrow_button.bindtags())
 h_arrow_button.grid(row=0, column=2, columnspan=2, sticky="sew")
 
+# Permet de cacher l'image dans l'autre image
 h_image_button = tk.Button(win, command=lambda: get_hide_image(), width=round(WIDTH/3))
 h_image_button.bindtags(("hide.h_image_button",) + h_image_button.bindtags())
 h_image_button.grid(row=1, column=2, columnspan=2, sticky="sew")
 h_image_button.config(state=tk.DISABLED)
 
+# Permet de sauvegarder l'image cachée
 h_save_button = tk.Button(win, command=lambda: hidden_image.save(save_file(translate("hide.h_save_button")), "PNG"), width=round(WIDTH/3))
 h_save_button.bindtags(("hide.h_save_button",) + h_save_button.bindtags())
 h_save_button.grid(row=2, column=2, columnspan=2, sticky="new")
 h_save_button.config(state=tk.DISABLED)
 
+# Permet d'afficher l'image cachée
 h_show_button = tk.Button(win, command=lambda: hidden_image.show(), width=round(WIDTH/3))
 h_show_button.bindtags(("hide.h_show_button",) + h_show_button.bindtags())
 h_show_button.grid(row=2, column=2, columnspan=2, sticky="sew")
 h_show_button.config(state=tk.DISABLED)
 
+# Permet de choisir si les images sélectionnées doivent être de la même taille
 h_checkbutton = tk.Checkbutton(win, variable=config_hide, onvalue=True, offvalue=False)
 h_checkbutton.bindtags(("hide.h_checkbutton",) + h_checkbutton.bindtags())
 h_checkbutton.grid(row=3, column=2, columnspan=2, sticky="n")
 config_hide.set(True)
 
-language_label = tk.Label(win, font=("Helvetica", 9))
-language_label.bindtags(("config.language_label",) + language_label.bindtags())
-language_label.grid(row=3, column=2, columnspan=2, sticky="s")
-
-language_option = ttk.OptionMenu(win, language, "fr", "fr", "en", command=lambda _: update_widget(win))
-language_option.grid(row=4, column=2, columnspan=2, sticky="n")
-
+# Permet de sélectionner la deuxième image
 h_second_button = tk.Button(win, command=lambda: select_file(translate("hide.h_second_button"), 2), width=round(WIDTH/3))
 h_second_button.bindtags(("hide.h_second_button",) + h_second_button.bindtags())
 h_second_button.grid(row=0, column=4, columnspan=2, sticky="s")
 
+# Permet d'afficher le nom de la deuxième image sélectionnée et ses dimensions
 h_second_label = tk.Label(win, justify=tk.CENTER, width=round(WIDTH/3))
 h_second_label.bindtags(("hide.h_second_label.not_selected",) + h_second_label.bindtags())
 h_second_label.grid(row=1, column=4, columnspan=2, sticky="n")
 
+# Permet d'afficher la deuxième image sélectionnée
 h_show_second_button = tk.Button(win, command=lambda: open_image(2).show(), width=round(WIDTH/3))
 h_show_second_button.bindtags(("hide.h_show_second_button",) + h_show_second_button.bindtags())
 h_show_second_button.grid(row=1, column=4, columnspan=2, sticky="s")
 h_show_second_button.config(state=tk.DISABLED)
 
+# En-dessous, tous les widgets servent au mode show (révéler une image cachée dans une image)
+
+# Permet de changer le mode vers le mode show
 show_button = tk.Button(win, command=change_mode)
 show_button.bindtags(("button.show",) + show_button.bindtags())
 show_button.grid(row=0, column=3, columnspan=3, sticky="new")
 
+# Permet de sélectionner l'image à révéler
 select_button = tk.Button(win, command=lambda: select_file(translate("show.select_button"), 3))
 select_button.bindtags(("show.select_button",) + select_button.bindtags())
 select_button.grid(row=0, column=2, columnspan=2, sticky="sew")
 select_button.grid_remove()
 
+# Permet d'afficher le nom de l'image à révéler et ses dimensions
 select_label = tk.Label(win, justify=tk.CENTER)
 select_label.bindtags(("show.select_label.not_selected",) + select_label.bindtags())
 select_label.grid(row=1, column=2, columnspan=2, sticky="new")
 select_label.grid_remove()
 
+# Permet d'afficher l'image sélectionnée
 show_select_button = tk.Button(win, command=lambda: open_image(3).show())
 show_select_button.bindtags(("show.show_select_button",) + show_select_button.bindtags())
 show_select_button.grid(row=1, column=2, columnspan=2, sticky="sew")
 show_select_button.grid_remove()
 show_select_button.config(state=tk.DISABLED)
 
+# Permet d'obtenir l'image initiale d'une image cachée
 initial_button = tk.Button(win, command=get_initial_image)
 initial_button.bindtags(("show.initial_button",) + initial_button.bindtags())
 initial_button.grid(row=2, column=1, columnspan=2, sticky="new")
 initial_button.grid_remove()
 initial_button.config(state=tk.DISABLED)
 
+# Permet d'afficher l'image initiale d'une image cachée
 show_initial_button = tk.Button(win, command=lambda: initial_image.show())
 show_initial_button.bindtags(("show.show_initial_button",) + show_initial_button.bindtags())
 show_initial_button.grid(row=2, column=1, columnspan=2, sticky="sew")
 show_initial_button.grid_remove()
 show_initial_button.config(state=tk.DISABLED)
 
+# Permet de sauvegarder l'image initiale d'une image cachée
 save_initial_button = tk.Button(win, command=lambda: initial_image.save(save_file(translate("show.save_initial_image")), "PNG"))
 save_initial_button.bindtags(("show.save_initial_button",) + save_initial_button.bindtags())
 save_initial_button.grid(row=3, column=1, columnspan=2, sticky="new")
 save_initial_button.grid_remove()
 save_initial_button.config(state=tk.DISABLED)
 
+# Permet d'obtenir l'image révélée d'une image cachée
 reveal_button = tk.Button(win, command=get_reveal_image)
 reveal_button.bindtags(("show.reveal_button",) + reveal_button.bindtags())
 reveal_button.grid(row=2, column=3, columnspan=2, sticky="new")
 reveal_button.grid_remove()
 reveal_button.config(state=tk.DISABLED)
 
+# Permet d'afficher l'image révélée d'une image cachée
 show_reveal_button = tk.Button(win, command=lambda: revealed_image.show())
 show_reveal_button.bindtags(("show.show_reveal_button",) + show_reveal_button.bindtags())
 show_reveal_button.grid(row=2, column=3, columnspan=2, sticky="sew")
 show_reveal_button.grid_remove()
 show_reveal_button.config(state=tk.DISABLED)
 
+# Permet de sauvegarder l'image révélée d'une image cachée
 save_reveal_button = tk.Button(win, command=lambda: revealed_image.save(save_file(translate("show.save_reveal_image")), "PNG"))
 save_reveal_button.bindtags(("show.save_reveal_button",) + save_reveal_button.bindtags())
 save_reveal_button.grid(row=3, column=3, columnspan=2, sticky="new")
 save_reveal_button.grid_remove()
 save_reveal_button.config(state=tk.DISABLED)
 
+# Permet de quitter le programme
 quit_button = tk.Button(win, text="Quit", command=win.destroy)
 quit_button.bindtags(("button.quit",) + quit_button.bindtags())
 quit_button.grid(row=5, column=0, columnspan=6, sticky="sew")
 
+# Permet de mettre à jour les widgets en fonction de la langue choisie
 update_widget(win)
 
 win.mainloop()
