@@ -306,8 +306,8 @@ class King(Piece):
         self.clear_available_moves()
         for i in range(-1, 2):
             for j in range(-1, 2):
-                # TODO euhh here bugged
-                if ((0 < row and i == -1) or (row < len(board) - 1 and i == 1)) and ((0 < column and j == -1) or (column < len(board[0]) - 1 and j == 1)) and not (i == 0 and j == 0):
+                print(i, j)
+                if (-1 < row + i < len(board) and -1 < column + j < len(board[0])) and not (i == 0 and j == 0):
                     self.available_moves.append((row + i, column + j))
 
         # Castling
