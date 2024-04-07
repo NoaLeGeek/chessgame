@@ -31,7 +31,7 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
-        custom2fen = "8/2K5/8/8/8/8/2k5/8 w KQkq – 0 1"
+        custom2fen = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq – 0 1"
         split = custom2fen.split(' ')
         for i in range(len(split)):
             match i:
@@ -144,7 +144,7 @@ class Game:
         return possible_moves
 
     def is_stalemate(self) -> bool:
-        return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, self.en_passant)])
+        return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
 
     def remove(self, row: int, column: int):
         piece = self.board.board[row][column]
@@ -196,9 +196,8 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, (self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color), [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board.board[7 * (1 - x) // 2][column] if self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
                     move.make_move()
-                    print(move.to_literal())
                 # Remove the promotion
                 self.promotion = None
                 return
@@ -217,9 +216,13 @@ class Game:
                 self.promotion = self.selected, column - self.selected.column
                 self.valid_moves = []
                 return
-            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, ((self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color) or (isinstance(self.selected, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column))), False)
+            captured = False
+            if self.board.board[row][column] != 0 and self.board.board[row][column].color != self.selected.color:
+                captured = self.board.board[row][column]
+            elif isinstance(self.selected, Pieces.Pawn) and isinstance(self.board.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column):
+                captured = self.board.board[row + x][column]
+            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, False)
             move.make_move()
-            print(move.to_literal())
         else:
             piece = self.board.board[row][column]
             if piece != 0 and self.turn == piece.color:

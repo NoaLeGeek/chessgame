@@ -305,7 +305,7 @@ class King(Piece):
         self.clear_available_moves()
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if (-1 < row + i < len(board) and -1 < column + j < len(board[0])) and not (i == 0 and j == 0):
+                if (-1 < row + i < len(board) and -1 < column + j < len(board[0])) and not (i == 0 and j == 0) and (board[row + i][column + j] == 0 or board[row + i][column + j].color != self.color):
                     self.available_moves.append((row + i, column + j))
 
         # Castling
