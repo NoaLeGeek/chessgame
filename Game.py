@@ -110,7 +110,7 @@ class Game:
         for row in range(len(self.board.board)):
             for column in range(len(self.board.board[0])):
                 if self.board.board[row][column] != 0 and self.board.board[row][column].color == color:
-                    color_moves += self.board.board[row][column].get_available_moves(self.board.board, row, column, self.flipped, self.en_passant)
+                    color_moves += self.board.board[row][column].get_available_moves(self.board.board, row, column, self.flipped, en_passant = self.en_passant)
         return color_moves
 
     def get_color_pieces(self, color: int):
@@ -225,7 +225,7 @@ class Game:
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped, self.en_passant) if self.can_move(self.selected, *move)]
+                self.valid_moves = [move for move in piece.get_available_moves(self.board.board, row, column, self.flipped, en_passant = self.en_passant) if self.can_move(self.selected, *move)]
 
     def flip_game(self):
         self.flipped *= -1

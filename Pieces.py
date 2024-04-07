@@ -48,10 +48,9 @@ class Pawn(Piece):
         # Contains a tuple with (is in state of promotion boolean, the offset: -1 if it was a capture from the left, 0 if there's no offset, 1 if it was a capture from the right)
         self.promotion = (False, None)
 
-    def get_available_moves(self, board, row, column, flipped: bool = False, *args):
+    def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
-        # args[0] is the given en passant square
-        en_passant = args[0]
+        en_passant = kwds["en_passant"]
         x = self.color * -flipped
         if 0 < row < len(board) - 1:
             if board[row - x][column] == 0:
@@ -78,7 +77,7 @@ class Rook(Piece):
         self.first_move = True
         self.value = 5
 
-    def get_available_moves(self, board, row, column, flipped: bool = False, *args):
+    def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         for i in range(row + 1, len(board)):
             if board[i][column] == 0:
@@ -120,7 +119,7 @@ class Bishop(Piece):
         super().__init__(color, row, column)
         self.value = 3
 
-    def get_available_moves(self, board, row, column, flipped: bool = False, *args):
+    def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         row_temp = row + 1
         column_temp = column + 1
@@ -178,7 +177,7 @@ class Knight(Piece):
         super().__init__(color, row, column)
         self.value = 3
 
-    def get_available_moves(self, board, row, column, flipped: bool = False, *args):
+    def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         if row > 1 and column > 0 and (
                 board[row - 2][column - 1] == 0 or board[row - 2][column - 1].color != self.color):
@@ -212,7 +211,7 @@ class Queen(Piece):
         super().__init__(color, row, column)
         self.value = 9
 
-    def get_available_moves(self, board, row, column, flipped: bool = False, *args):
+    def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         row_temp = row + 1
         column_temp = column + 1
@@ -302,11 +301,10 @@ class King(Piece):
         self.first_move = True
         self.not_castled = True
 
-    def get_available_moves(self, board, row, column, flipped: bool = False, *args):
+    def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         for i in range(-1, 2):
             for j in range(-1, 2):
-                print(i, j)
                 if (-1 < row + i < len(board) and -1 < column + j < len(board[0])) and not (i == 0 and j == 0):
                     self.available_moves.append((row + i, column + j))
 
