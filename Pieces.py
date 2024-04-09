@@ -311,15 +311,9 @@ class King(Piece):
         # Castling
         if self.column == (7 - flipped) // 2 and self.first_move:
             # O-O-O
-            if isinstance(board[row][(7 + 7 * flipped) // 2], Rook) and board[row][(7 + 7 * flipped) // 2].first_move:
-                for i in range((5 + 3 * flipped) // 2, (9 - 3 * flipped) // 2):
-                    if board[row][i] != 0:
-                        break
+            if isinstance(board[row][(7 + 7 * flipped) // 2], Rook) and board[row][(7 + 7 * flipped) // 2].first_move and all(board[row][i] == 0 for i in range((5 + 3 * flipped) // 2, (9 + 3 * flipped) // 2)):
                 self.available_moves.append((row, (7 + 3 * flipped) // 2))
             # O-O
-            if isinstance(board[row][(7 - 7 * flipped) // 2], Rook) and board[row][(7 - 7 * flipped) // 2].first_move:
-                for i in range(3 - 2 * flipped, 4 - 2 * flipped):
-                    if board[row][i] != 0:
-                        break
+            if isinstance(board[row][(7 - 7 * flipped) // 2], Rook) and board[row][(7 - 7 * flipped) // 2].first_move and all(board[row][i] == 0 for i in range(3 - 2 * flipped, 4 - 2 * flipped)):
                 self.available_moves.append((row, (7 - 5 * flipped) // 2))
         return self.available_moves

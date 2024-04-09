@@ -32,7 +32,7 @@ class Game:
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
         custom2fen = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq – 0 1"
-        split = custom2fen.split(' ')
+        split = customfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -160,7 +160,7 @@ class Game:
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
             # Calculate old and new position of the rook for O-O and O-O-O
-            new_rook_pos, old_rook_pos = (column + 4) // 2, 7 * (column - 2) // 4
+            new_rook_pos, old_rook_pos = (2 * column + 7 - self.flipped) // 4, (7 * (2 * column - 3 + self.flipped)) // 8
             self.board.board[row][new_rook_pos], self.board.board[row][old_rook_pos] = self.board.board[row][old_rook_pos], self.board.board[row][new_rook_pos]
             self.board.board[row][new_rook_pos].piece_move(row, new_rook_pos)
             piece.not_castled = False
