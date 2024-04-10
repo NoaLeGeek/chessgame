@@ -9,7 +9,6 @@ from Pieces import *
 # promotion pieces have not the skin
 # castling through checks
 # 3D pieces not centered
-# pawns capture is bugged
 
 def main():
     run = True
@@ -52,8 +51,8 @@ def main():
                     selected_piece = game.board.board[row][column]
                     print("clicked on:", selected_piece if selected_piece != 0 else 0)
                     print("cRow", row, "cColumn", column)
-                    if isinstance(selected_piece, King) or isinstance(selected_piece, Rook):
-                        print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped))
+                    if isinstance(selected_piece, King) or isinstance(selected_piece, Rook) or isinstance(selected_piece, Pawn):
+                        print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped, en_passant=game.en_passant))
                         print("first_move", selected_piece.first_move)
                     #if game.turn == 1:
                     if 0 <= row < constants.rows and 0 <= column < constants.columns:

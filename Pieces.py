@@ -43,21 +43,18 @@ class Pawn(Piece):
     def __init__(self, color, row, column):
         super().__init__(color, row, column)
         self.first_move = True
-        self.en_passant = False
         self.value = 1
-        # Contains a tuple with (is in state of promotion boolean, the offset: -1 if it was a capture from the left, 0 if there's no offset, 1 if it was a capture from the right)
-        self.promotion = (False, None)
 
     def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         en_passant = kwds["en_passant"]
         x = self.color * -flipped
-        if 0 < row < len(board) - 1:
+        if -1 < row - x < len(board):
             if board[row - x][column] == 0:
                 self.available_moves.append((row - x, column))
-                if self.first_move and ((x > 0 and 1 < row) or (x < 0 and row < len(board) - 2)) and board[row - 2 * x][column] == 0:
+                if self.first_move and ((x > 0 and -1 < row - 2 * x) or (x < 0 and row - 2 * x < len(board))) and board[row - 2 * x][column] == 0:
                     self.available_moves.append((row - 2 * x, column))
-            if 0 < column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != x:
+            if 0 < column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
                 self.available_moves.append((row - x, column - 1))
             if column < len(board[0]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
                 self.available_moves.append((row - x, column + 1))

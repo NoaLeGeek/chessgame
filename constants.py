@@ -8,6 +8,13 @@ def get_position(x, y):
     return (y - margin) // square_size, (x - margin) // square_size
 
 
+def draw_text(frame, text, color, size, center) :
+    text_surface = pygame.font.Font("Comic sans MS", size).render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.center = center
+    frame.blit(text_surface, text_rect)
+
+
 def flip_coords(*args, **kwds):
     coords = [((7 - 2 * arg) * kwds["flipped"] + 7) // 2 for arg in args] if kwds else tuple([7 - arg for arg in args])
     return coords[0] if len(coords) == 1 else coords

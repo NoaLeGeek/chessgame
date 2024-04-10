@@ -31,8 +31,8 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
-        custom2fen = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq – 0 1"
-        split = customfen.split(' ')
+        custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
+        split = custom2fen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -176,7 +176,10 @@ class Game:
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
-            return (row, column + (piece.column - column > 0) - (piece.column - column < 0)) not in self.get_color_moves(-piece.color) and not self.is_king_checked()
+            print("castling", row, column, "+", ((piece.column - column) * -self.flipped // 2), "=", column + ((piece.column - column) * -self.flipped // 2))
+            print((row, column + ((piece.column - column) * -self.flipped // 2)) not in self.get_color_moves(-piece.color) and not self.is_king_checked())
+            print(self.get_color_moves(-piece.color))
+            return (row, column + ((piece.column - column) * -self.flipped // 2)) not in self.get_color_moves(-piece.color) and not self.is_king_checked()
         else:
             piece_row, piece_column = piece.row, piece.column
             save_piece = self.board.board[row][column]
