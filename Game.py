@@ -176,6 +176,7 @@ class Game:
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
+            print("king", piece.row, piece.column)
             print("castling", row, column, "+", ((piece.column - column) * -self.flipped // 2), "=", column + ((piece.column - column) * -self.flipped // 2))
             print((row, column + ((piece.column - column) * -self.flipped // 2)) not in self.get_color_moves(-piece.color) and not self.is_king_checked())
             print(self.get_color_moves(-piece.color))
