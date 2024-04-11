@@ -57,7 +57,7 @@ def main():
                             if isinstance(selected_piece, King) or isinstance(selected_piece, Rook) or isinstance(selected_piece, Pawn):
                                 print("first_move", selected_piece.first_move)
                         #if game.turn == 1:
-                            game.select(row, column)
+                        game.select(row, column)
                     game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:

@@ -178,7 +178,7 @@ class Game:
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
-            return False
+            return True
         else:
             piece_row, piece_column = piece.row, piece.column
             save_piece = self.board.board[row][column]
