@@ -177,19 +177,26 @@ class Game:
             piece.first_move = False
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
+        piece_row, piece_column = piece.row, piece.column
+        save_piece = self.board.board[row][column]
+        if self.board.board[row][column] != 0:
+            self.board.board[row][column] = 0
+        self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
+        is_checked = self.is_king_checked()
+        piece.row, piece.column = piece_row, piece_column
+        self.board.board[piece_row][piece_column] = piece
+        self.board.board[row][column] = save_piece
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
-            return True
-        else:
             piece_row, piece_column = piece.row, piece.column
-            save_piece = self.board.board[row][column]
-            if self.board.board[row][column] != 0:
-                self.board.board[row][column] = 0
-            self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
-            is_checked = self.is_king_checked()
+            save_piece = self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)]
+            if self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] != 0:
+                self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = 0
+            self.board.board[piece.row][piece.column], self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)], self.board.board[piece.row][piece.column]
+            is_checked = is_checked or self.is_king_checked()
             piece.row, piece.column = piece_row, piece_column
             self.board.board[piece_row][piece_column] = piece
-            self.board.board[row][column] = save_piece
-            return not is_checked
+            self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = save_piece
+        return not is_checked
 
     def select(self, row, column):
         if self.selected:
