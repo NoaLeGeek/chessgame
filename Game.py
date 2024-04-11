@@ -66,6 +66,8 @@ class Game:
     def update_window(self):
         self.board.draw_background()
         self.board.draw_board()
+        #for move in self.get_color_moves(-self.turn):
+            #self.board.draw_rect(*move)
         if self.history:
             self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
         if self.highlightedSquares:
@@ -176,11 +178,7 @@ class Game:
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
-            print("king", piece.row, piece.column)
-            print("castling", row, column, "+", ((piece.column - column) * -self.flipped // 2), "=", column + ((piece.column - column) * -self.flipped // 2))
-            print((row, column + ((piece.column - column) * -self.flipped // 2)) not in self.get_color_moves(-piece.color) and not self.is_king_checked())
-            print(self.get_color_moves(-piece.color))
-            return (row, column + ((piece.column - column) * -self.flipped // 2)) not in self.get_color_moves(-piece.color) and not self.is_king_checked()
+            return False
         else:
             piece_row, piece_column = piece.row, piece.column
             save_piece = self.board.board[row][column]

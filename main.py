@@ -48,15 +48,16 @@ def main():
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
                     row, column = constants.get_position(*pygame.mouse.get_pos())
-                    selected_piece = game.board.board[row][column]
-                    print("clicked on:", selected_piece if selected_piece != 0 else 0)
-                    print("cRow", row, "cColumn", column)
-                    if isinstance(selected_piece, King) or isinstance(selected_piece, Rook) or isinstance(selected_piece, Pawn):
-                        print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped, en_passant=game.en_passant))
-                        print("first_move", selected_piece.first_move)
-                    #if game.turn == 1:
                     if 0 <= row < constants.rows and 0 <= column < constants.columns:
-                        game.select(row, column)
+                        selected_piece = game.board.board[row][column]
+                        print("clicked on:", selected_piece if selected_piece != 0 else 0)
+                        print("cRow", row, "cColumn", column)
+                        if selected_piece != 0:
+                            print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped, en_passant=game.en_passant))
+                            if isinstance(selected_piece, King) or isinstance(selected_piece, Rook) or isinstance(selected_piece, Pawn):
+                                print("first_move", selected_piece.first_move)
+                        #if game.turn == 1:
+                            game.select(row, column)
                     game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:

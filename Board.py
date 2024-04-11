@@ -21,7 +21,7 @@ class Board:
         window.blit(piece.image, (piece.x, piece.y))
 
     def draw_rect(self, row, column):
-        pygame.draw.rect(self.frame, (255, 0, 0), (row * square_size + margin, column * square_size + margin, square_size, square_size))
+        pygame.draw.rect(self.frame, (255, 0, 0), (column * square_size + margin, row * square_size + margin, square_size, square_size))
 
     def draw_pieces(self, promotion=None):
         for row in range(self.rows):
