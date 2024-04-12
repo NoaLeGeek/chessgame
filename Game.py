@@ -66,13 +66,12 @@ class Game:
     def update_window(self):
         self.board.draw_background()
         self.board.draw_board()
-        #for move in self.get_color_moves(-self.turn):
-            #self.board.draw_rect(*move)
         if self.history:
             self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
         if self.highlightedSquares:
             self.board.draw_highlightedSquares(self.highlightedSquares)
-        self.board.draw_pieces(self.promotion)
+        if pieces_asset != "blindfold":
+            self.board.draw_pieces(self.promotion)
         if self.valid_moves:
             self.board.draw_moves(self.valid_moves)
         if self.promotion:

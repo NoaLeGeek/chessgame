@@ -46,10 +46,11 @@ class Board:
         x = (promotion.color * -flipped)
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * -flipped) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
-        for i in range(4):
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset * -flipped)
-            render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
-            self.frame.blit(render.image, (render.x, render.y))
+        if pieces_asset != "blindfold":
+            for i in range(4):
+                render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset * -flipped)
+                render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
+                self.frame.blit(render.image, (render.x, render.y))
             
     def draw_highlightedSquares(self, highlightedSquares):
         for ((row, column), highlight) in highlightedSquares.items():
@@ -80,8 +81,10 @@ class Board:
 
     def change_asset(self, asset):
         global pieces_asset
-        piece_assets[asset] = generate_images(asset)
         pieces_asset = asset
+        if pieces_asset == "blindfold":
+            return
+        piece_assets[pieces_asset] = generate_images(asset)
         for row in range(self.rows):
             for column in range(self.columns):
                 piece = self.board[row][column]

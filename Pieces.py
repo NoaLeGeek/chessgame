@@ -9,13 +9,15 @@ class Piece:
         self.x = 0
         self.y = 0
         self.available_moves = []
-        self.image = piece_assets[pieces_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
-        self.calc_pos(self.image)
+        if pieces_asset != "blindfold":
+            self.image = piece_assets[pieces_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
+            self.calc_pos(self.image)
 
     def piece_move(self, row, column):
         self.row = row
         self.column = column
-        self.calc_pos(self.image)
+        if pieces_asset != "blindfold":
+            self.calc_pos(self.image)
 
     def calc_pos(self, image):
         self.x = margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()

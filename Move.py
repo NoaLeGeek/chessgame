@@ -11,11 +11,14 @@ class Move:
         self.promotion = promotion
 
     def make_move(self):
+        global pieces_asset
         row, column = self.to
         self.game.remove(row, column)
         self.game.move(self.piece, row, column)
         # Add the promoted piece to the board if there is one
         if self.promotion:
+            print(pieces_asset)
+            self.promotion.image = piece_assets[pieces_asset][Pieces.Piece.piece_to_index(self.promotion) + 3 * (1 - self.promotion.color)]
             self.game.board.board[row][column] = self.promotion
         self.game.change_turn()
         self.game.valid_moves, self.game.selected = [], None

@@ -1,6 +1,6 @@
 {
     "board_asset": "green",
-    "pieces_asset": "wood",
+    "pieces_asset": "neo_wood",
     "background_asset": "wood",
     "sounds_asset": "metal",
     "margin": 32,
