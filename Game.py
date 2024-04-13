@@ -198,13 +198,16 @@ class Game:
         return not is_checked
 
     def select(self, row, column):
+        global pieces_asset
         if self.selected:
             x = self.selected.color * -self.flipped
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board.board[7 * (1 - x) // 2][column] if self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
+                    promotion = [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column)
+                    promotion.image = piece_assets[pieces_asset][Pieces.Piece.piece_to_index(promotion) + 3 * (1 - promotion.color)]
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board.board[7 * (1 - x) // 2][column] if self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color else False, promotion)
                     move.make_move()
                 # Remove the promotion
                 self.promotion = None

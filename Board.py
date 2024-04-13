@@ -44,11 +44,11 @@ class Board:
         global pieces_asset
         # TODO add exit button with a X
         x = (promotion.color * -flipped)
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * -flipped) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * flipped) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4*square_size))
         # [Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][(row if self.selected.color == 1 else 7 - row)]
         if pieces_asset != "blindfold":
             for i in range(4):
-                render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset * -flipped)
+                render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset * flipped)
                 render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
                 self.frame.blit(render.image, (render.x, render.y))
             
@@ -82,6 +82,7 @@ class Board:
     def change_asset(self, asset):
         global pieces_asset
         pieces_asset = asset
+        print(pieces_asset)
         if pieces_asset == "blindfold":
             return
         piece_assets[pieces_asset] = generate_images(asset)

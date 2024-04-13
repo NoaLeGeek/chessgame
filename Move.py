@@ -2,7 +2,7 @@ import Pieces
 from constants import *
 
 class Move:
-    def __init__(self, game, from_, to, piece, capture=False, promotion: bool | tuple[Pieces.Piece, int] =False):
+    def __init__(self, game, from_, to, piece, capture=False, promotion: bool | tuple[Pieces.Piece, int] = False):
         self.game = game
         self.from_ = from_
         self.to = to
