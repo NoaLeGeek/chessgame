@@ -1,27 +1,27 @@
-from constants import square_size, piece_assets, pieces_asset, margin, flip_coords
+import constants
 
 class Piece:
     def __init__(self, color, row, column):
-        self.square_size = square_size
+        self.square_size = constants.square_size
         self.color = color
         self.row = row
         self.column = column
         self.x = 0
         self.y = 0
         self.available_moves = []
-        if pieces_asset != "blindfold":
-            self.image = piece_assets[pieces_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
+        if constants.selected_piece_asset != "blindfold":
+            self.image = constants.piece_assets[constants.selected_piece_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
             self.calc_pos(self.image)
 
     def piece_move(self, row, column):
         self.row = row
         self.column = column
-        if pieces_asset != "blindfold":
+        if constants.selected_piece_asset != "blindfold":
             self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
-        self.y = margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if pieces_asset.startswith("3d") else 0.5*image.get_height())
+        self.x = constants.margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
+        self.y = constants.margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if constants.selected_piece_asset.startswith("3d") else 0.5*image.get_height())
         if isinstance(self, King):
             #print("margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()")
             #print(f"{margin} + ({self.column} + 0.5) * {self.square_size} - 0.5*{image.get_width()}")

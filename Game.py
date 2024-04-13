@@ -1,6 +1,7 @@
 import Pieces
 from Board import Board
-from constants import *
+import constants
+import pygame
 import Move
 
 
@@ -26,7 +27,7 @@ class Game:
         # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):
-        self.board.board = [[0] * columns for _ in range(rows)]
+        self.board.board = [[0] * constants.columns for _ in range(constants.rows)]
         fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
@@ -57,7 +58,7 @@ class Game:
                         self.board.board[0][0].first_move = False
                 case 3:
                     if split[i] not in ['-', '–']:
-                        self.en_passant = (flip_coords(int(split[i][1]) - 1, flipped = -self.flipped), flip_coords(ord(split[i][0]) - 97, flipped = self.flipped))
+                        self.en_passant = (constants.flip_coords(int(split[i][1]) - 1, flipped = -self.flipped), constants.flip_coords(ord(split[i][0]) - 97, flipped = self.flipped))
                 case 4:
                     self.halfMoves = int(split[i])
                 case 5:
@@ -70,7 +71,7 @@ class Game:
             self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
         if self.highlightedSquares:
             self.board.draw_highlightedSquares(self.highlightedSquares)
-        if pieces_asset != "blindfold":
+        if constants.selected_piece_asset != "blindfold":
             self.board.draw_pieces(self.promotion)
         if self.valid_moves:
             self.board.draw_moves(self.valid_moves)
@@ -79,7 +80,7 @@ class Game:
         pygame.display.update()
 
     def reset(self, frame):
-        self.board = Board(width, height, rows, columns, frame)
+        self.board = Board(constants.width, constants.height, constants.rows, constants.columns, frame)
         self.selected = None
 
     def is_king_checked(self):
@@ -198,16 +199,13 @@ class Game:
         return not is_checked
 
     def select(self, row, column):
-        global pieces_asset
         if self.selected:
             x = self.selected.color * -self.flipped
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    promotion = [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column)
-                    promotion.image = piece_assets[pieces_asset][Pieces.Piece.piece_to_index(promotion) + 3 * (1 - promotion.color)]
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board.board[7 * (1 - x) // 2][column] if self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color else False, promotion)
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board.board[7 * (1 - x) // 2][column] if self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][constants.flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
                     move.make_move()
                 # Remove the promotion
                 self.promotion = None
@@ -245,7 +243,7 @@ class Game:
         self.flipped *= -1
         self.selected, self.valid_moves, self.promotion = None, [], None
         if self.en_passant:
-            self.en_passant = flip_coords(*self.en_passant)
+            self.en_passant = constants.flip_coords(*self.en_passant)
         if self.history:
-            self.history[-1][0].from_, self.history[-1][0].to = flip_coords(*self.history[-1][0].from_), flip_coords(*self.history[-1][0].to)
-            self.highlightedSquares = {flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()} 
+            self.history[-1][0].from_, self.history[-1][0].to = constants.flip_coords(*self.history[-1][0].from_), constants.flip_coords(*self.history[-1][0].to)
+            self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()} 

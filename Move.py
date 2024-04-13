@@ -15,8 +15,8 @@ class Move:
         self.game.remove(row, column)
         self.game.move(self.piece, row, column)
         # Add the promoted piece to the board if there is one
-        if self.promotion:
-            self.promotion.image = constants.piece_assets[constants.pieces_asset][Pieces.Piece.piece_to_index(self.promotion) + 3 * (1 - self.promotion.color)]
+        if self.promotion and constants.selected_piece_asset != "blindfold":
+            self.promotion.image = constants.piece_assets[constants.selected_piece_asset][Pieces.Piece.piece_to_index(self.promotion) + 3 * (1 - self.promotion.color)]
             self.game.board.board[row][column] = self.promotion
         self.game.change_turn()
         self.game.valid_moves, self.game.selected = [], None

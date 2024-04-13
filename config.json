@@ -1,8 +1,8 @@
 {
-    "board_asset": "green",
-    "pieces_asset": "neo_wood",
-    "background_asset": "wood",
-    "sounds_asset": "metal",
+    "selected_board_asset": "green",
+    "selected_piece_asset": "neo_wood",
+    "selected_background_asset": "wood",
+    "selected_sound_asset": "metal",
     "margin": 32,
     "taskbar_height": 48,
     "rows": 8,

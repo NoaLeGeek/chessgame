@@ -5,11 +5,6 @@ import random
 from Game import Game
 from Pieces import *
 
-# TODO BUGS TO SOLVE :
-# promotion pieces have not the skin
-# castling through checks
-# 3D pieces not centered
-
 def main():
     run = True
     game_over = False
