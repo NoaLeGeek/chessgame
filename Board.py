@@ -1,7 +1,8 @@
 import pygame.draw
+import os
 
 from Pieces import *
-from constants import *
+import constants
 
 
 class Board:
@@ -15,7 +16,7 @@ class Board:
         self.debug = False
 
     def draw_board(self):
-        self.frame.blit(board_assets[board_asset], (margin, margin))
+        self.frame.blit(constants.board_assets[constants.board_asset], (margin, margin))
 
     def draw_piece(self, piece, window):
         window.blit(piece.image, (piece.x, piece.y))
@@ -41,7 +42,6 @@ class Board:
             self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
     def draw_promotion(self, promotion, offset, flipped):
-        global pieces_asset
         # TODO add exit button with a X
         x = (promotion.color * -flipped)
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset * flipped) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4*square_size))
@@ -49,7 +49,7 @@ class Board:
         if pieces_asset != "blindfold":
             for i in range(4):
                 render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset * flipped)
-                render.image = piece_assets[pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
+                render.image = constants.piece_assets[constants.pieces_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
                 self.frame.blit(render.image, (render.x, render.y))
             
     def draw_highlightedSquares(self, highlightedSquares):
@@ -80,12 +80,11 @@ class Board:
         self.board.reverse()
 
     def change_asset(self, asset):
-        global pieces_asset
-        pieces_asset = asset
-        print(pieces_asset)
+        constants.pieces_asset = asset
+        print(constants.pieces_asset)
         if pieces_asset == "blindfold":
             return
-        piece_assets[pieces_asset] = generate_images(asset)
+        constants.piece_assets[constants.pieces_asset] = constants.generate_images(asset)
         for row in range(self.rows):
             for column in range(self.columns):
                 piece = self.board[row][column]
@@ -94,9 +93,8 @@ class Board:
                     piece.calc_pos(piece.image)
     
     def draw_background(self):
-        self.frame.blit(background_assets[background_asset], (0, 0))
+        self.frame.blit(constants.background_assets[constants.background_asset], (0, 0))
 
     def change_background(self, asset):
-        global background_asset
-        background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (self.width, self.height))
-        background_asset = asset
+        constants.background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (self.width, self.height))
+        constants.background_asset = asset
