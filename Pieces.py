@@ -1,8 +1,9 @@
+from constants import *
 import constants
 
 class Piece:
     def __init__(self, color, row, column):
-        self.square_size = constants.square_size
+        self.square_size = square_size
         self.color = color
         self.row = row
         self.column = column
@@ -10,7 +11,7 @@ class Piece:
         self.y = 0
         self.available_moves = []
         if constants.selected_piece_asset != "blindfold":
-            self.image = constants.piece_assets[constants.selected_piece_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
+            self.image = piece_assets[selected_piece_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
             self.calc_pos(self.image)
 
     def piece_move(self, row, column):
@@ -20,15 +21,8 @@ class Piece:
             self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = constants.margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
-        self.y = constants.margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if constants.selected_piece_asset.startswith("3d") else 0.5*image.get_height())
-        if isinstance(self, King):
-            #print("margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()")
-            #print(f"{margin} + ({self.column} + 0.5) * {self.square_size} - 0.5*{image.get_width()}")
-            #print("margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if pieces_asset.startswith(\"3d\") else 0.5*image.get_height())")
-            #print(f"{margin} + ({self.row} + 0.5) * {self.square_size} - ({image.get_height()} - 0.5*{image.get_width()} if {pieces_asset}.startswith(\"3d\") else 0.5*{image.get_height()})")
-            #print(self.x, self.y)
-            pass
+        self.x = margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
+        self.y = margin + (self.row + 0.5) * self.square_size - (image.get_height() - 0.5*image.get_width() if constants.selected_piece_asset.startswith("3d") else 0.5*image.get_height())
 
     def clear_available_moves(self):
         if self.available_moves:

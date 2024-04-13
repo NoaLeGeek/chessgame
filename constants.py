@@ -28,8 +28,6 @@ def generate_images(asset: str):
         if asset in ["lichess"]:
             size = (square_size * (6 - int(piece.endswith("P"))) / 8, square_size * 3 / 4)
         if asset.startswith("3d"):
-            if piece.endswith("K"):
-                print("HEIGHT", image.get_height())
             size = (square_size, image.get_height() * square_size / image.get_width())
         if asset in ["fancy"]:
             size = (square_size * 3 / 4, square_size * 3 / 4)
