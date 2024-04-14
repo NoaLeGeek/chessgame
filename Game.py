@@ -3,6 +3,7 @@ from Board import Board
 import constants
 import pygame
 import Move
+import Menu
 
 
 class Game:
@@ -22,8 +23,9 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
-        self.state = "menu"
-        self.create_board()
+        self.state = "main_menu"
+        if self.state == "game":
+            self.create_board()
         # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):
@@ -66,17 +68,21 @@ class Game:
 
     def update_window(self):
         self.board.draw_background()
-        self.board.draw_board()
-        if self.history:
-            self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
-        if self.highlightedSquares:
-            self.board.draw_highlightedSquares(self.highlightedSquares)
-        if constants.selected_piece_asset != "blindfold":
-            self.board.draw_pieces(self.promotion)
-        if self.valid_moves:
-            self.board.draw_moves(self.valid_moves)
-        if self.promotion:
-            self.board.draw_promotion(*self.promotion, self.flipped)
+        match self.state:
+            case "main_menu":
+                Menu.MAIN_MENU.draw_menu(self.window)
+            case "game":
+                self.board.draw_board()
+                if self.history:
+                    self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
+                if self.highlightedSquares:
+                    self.board.draw_highlightedSquares(self.highlightedSquares)
+                if constants.selected_piece_asset != "blindfold":
+                    self.board.draw_pieces(self.promotion)
+                if self.valid_moves:
+                    self.board.draw_moves(self.valid_moves)
+                if self.promotion:
+                    self.board.draw_promotion(*self.promotion, self.flipped)
         pygame.display.update()
 
     def reset(self, frame):
@@ -105,6 +111,11 @@ class Game:
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
             return True
+        elif all(not isinstance(self.board.board[row][column], Pieces.Pawn) for column in range(len(self.board.board[0])) for row in range(len(self.board.board))):
+            print("No PAWNS")
+        else:
+            pass
+            #get the last move that is irreversible
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
 
     def get_color_moves(self, color: int):

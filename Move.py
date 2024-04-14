@@ -23,7 +23,7 @@ class Move:
         # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
             self.game.halfMoves = 0
-        self.game.history.append((self, self.to_literal()))
+        self.game.history.append((self, self.to_literal(), self.game.board.board))
         self.game.check_game()
 
     def to_literal(self):
