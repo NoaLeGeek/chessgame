@@ -35,7 +35,7 @@ class Game:
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
         custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-        split = custom2fen.split(' ')
+        split = defaultfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -112,19 +112,15 @@ class Game:
             print("Draw by the 50 moves rule")
             return True
         elif all(not isinstance(self.board.board[row][column], Pieces.Pawn) for column in range(len(self.board.board[0])) for row in range(len(self.board.board))):
-            print("No PAWNS")
+            if self.get_color_pieces(self.turn):
+                pass
         else:
             pass
             #get the last move that is irreversible
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
 
     def get_color_moves(self, color: int):
-        color_moves = []
-        for row in range(len(self.board.board)):
-            for column in range(len(self.board.board[0])):
-                if self.board.board[row][column] != 0 and self.board.board[row][column].color == color:
-                    color_moves += self.board.board[row][column].get_available_moves(self.board.board, row, column, self.flipped, en_passant = self.en_passant)
-        return color_moves
+        return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, en_passant=self.en_passant)]
 
     def get_color_pieces(self, color: int):
         color_pieces = []
@@ -257,4 +253,36 @@ class Game:
             self.en_passant = constants.flip_coords(*self.en_passant)
         if self.history:
             self.history[-1][0].from_, self.history[-1][0].to = constants.flip_coords(*self.history[-1][0].from_), constants.flip_coords(*self.history[-1][0].to)
-            self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()} 
+            self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
+
+    def get_fen(self):
+        fen = ""
+        for row in range(len(self.board.board)):
+            empty_squares = 0
+            for column in range(len(self.board.board[0])):
+                piece = self.board.board[row][column]
+                if piece == 0:
+                    empty_squares += 1
+                else:
+                    if empty_squares > 0:
+                        fen += str(empty_squares)
+                        empty_squares = 0
+                    fen += ["P", "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(self.piece)]
+            if empty_squares > 0:
+                fen += str(empty_squares)
+            if row < len(self.board.board) - 1:
+                fen += "/"
+        fen += " " + ("w" if self.turn == 1 else "b") + " "
+        castle_rights = ""
+        if isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
+            castle_rights += "K"
+        if isinstance(self.board.board[7][0], Pieces.Rook) and self.board.board[7][0].first_move:
+            castle_rights += "Q"
+        if isinstance(self.board.board[0][7], Pieces.Rook) and self.board.board[0][7].first_move:
+            castle_rights += "k"
+        if isinstance(self.board.board[0][0], Pieces.Rook) and self.board.board[0][0].first_move:
+            castle_rights += "q"
+        fen += castle_rights if castle_rights else "-"
+        fen += " " + (constants.coords_to_algebraic(self.en_passant) if self.en_passant else "-")
+        fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
+        return fen

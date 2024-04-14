@@ -64,6 +64,7 @@ def main():
                                     print("first_move", selected_piece.first_move)
                             #if game.turn == 1:
                             game.select(row, column)
+                            print("fen:", game.get_fen())
                         game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
