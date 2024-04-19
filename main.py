@@ -17,12 +17,20 @@ def main():
         game_over = game.game_over
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
+                print(pygame.display.Info().current_w, pygame.display.Info().current_h)
                 if pygame.display.Info().current_h != height:
                     pygame.display.set_mode((pygame.display.Info().current_w, height), pygame.RESIZABLE)
                 if pygame.display.Info().current_w > width:
                     pygame.display.set_mode((width, pygame.display.Info().current_h), pygame.RESIZABLE)
                 if pygame.display.Info().current_w < height:
                     pygame.display.set_mode((height, pygame.display.Info().current_h), pygame.RESIZABLE)
+                for button in Menu.MAIN_MENU.buttons:
+                    button.rect = pygame.Rect(pygame.display.Info().current_w * (button.c_x - 0.5 * button.c_width), pygame.display.Info().current_h * (button.c_y - 0.5 * button.c_height), button.c_width * pygame.display.Info().current_w, button.c_height * pygame.display.Info().current_h)
+                    button.label.x = button.c_x * pygame.display.Info().current_w
+                    button.label.y = button.c_y * pygame.display.Info().current_h
+                for label in Menu.MAIN_MENU.labels:
+                    label.x = label.c_x * pygame.display.Info().current_w
+                    label.y = label.c_y * pygame.display.Info().current_h
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
@@ -52,7 +60,7 @@ def main():
                         if Menu.MAIN_MENU.buttons[3].is_clicked():
                             run = False
                             pygame.quit()
-                    if game.state == "game":
+                    elif game.state == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
                         if 0 <= row < rows and 0 <= column < columns:
                             selected_piece = game.board.board[row][column]
@@ -64,7 +72,6 @@ def main():
                                     print("first_move", selected_piece.first_move)
                             #if game.turn == 1:
                             game.select(row, column)
-                            print("fen:", game.get_fen())
                         game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
