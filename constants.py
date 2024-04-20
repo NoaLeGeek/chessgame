@@ -36,6 +36,10 @@ def generate_images(asset: str):
 
 
 pygame.init()
+pygame.display.set_caption("Chesspy")
+pygame.mixer.init()
+#TODO config volume
+pygame.mixer.music.set_volume(0.2)
 with open("config.json", "r") as file:
     config = json.load(file)
 # Chess without 8x8 board is not supported actually
@@ -68,10 +72,14 @@ clock = pygame.time.Clock()
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 window = pygame.display.set_mode((height, height), pygame.RESIZABLE)
 square_size = floor((height - 2 * margin) / columns)
-# ["green", "checkers", "8_bit", "dark_wood", "glass", "brown", "icy_sea", "newspaper", "walnut", "sky", "lolz", "stone", "bases", "marble", "purple", "translucent", "metal", "tournament", "dash", "burled_wood", "blue", "bubblegum", "graffiti", "light", "neon", "orange", "overlay", "parchment", "red", "sand", "tan"]
+available_board_assets = ["green", "checkers", "8_bit", "dark_wood", "glass", "brown", "icy_sea", "newspaper", "walnut", "sky", "lolz", "stone", "bases", "marble", "purple", "translucent", "metal", "tournament", "dash", "burled_wood", "blue", "bubblegum", "graffiti", "light", "neon", "orange", "overlay", "parchment", "red", "sand", "tan"]
 board_assets = {selected_board_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", selected_board_asset + ".png")), (square_size*8, square_size*8))}
-# ["blindfold", "lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]
+available_piece_assets = ["blindfold", "lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]
 piece_assets = {selected_piece_asset: generate_images(selected_piece_asset)} if selected_piece_asset != "blindfold" else {}
-# ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
+available_background_assets = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 background_assets = {selected_background_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", selected_background_asset + ".png")), (width, height))}
+available_sound_assets = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]
+sound_assets = {"all": pygame.mixer.music.load(os.path.join("assets", "sounds", sound + ".mp3")) for sound in ["illegal", "notify", "tenseconds"]}
+sound_assets.update({selected_sound_asset: pygame.mixer.music.load(os.path.join("assets", "sounds", selected_sound_asset, sound + ".webm")) for sound in ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]})
+print(sound_assets)
 

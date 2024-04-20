@@ -2,9 +2,18 @@ from constants import *
 import pygame
 import random
 import Menu
+import urllib.request
 
 from Game import Game
 from Pieces import *
+
+def download_sounds(style: str):
+    url = "https://images.chesscomfiles.com/chess-themes/sounds/_WEBM_/{}/{}.webm"
+    if not os.path.exists(f"assets/sounds/{style}"):
+        os.makedirs(f"assets/sounds/{style}")
+    for asset in ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]:
+        urllib.request.urlretrieve(url.format(style, asset), f"assets/sounds/{style}/{asset}.webm")
+        
 
 def main():
     run = True
@@ -17,7 +26,6 @@ def main():
         game_over = game.game_over
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
-                print(pygame.display.Info().current_w, pygame.display.Info().current_h)
                 if pygame.display.Info().current_h != height:
                     pygame.display.set_mode((pygame.display.Info().current_w, height), pygame.RESIZABLE)
                 if pygame.display.Info().current_w > width:
@@ -41,8 +49,12 @@ def main():
                     game.board.flip_board()
                     game.flip_game()
                 if event.key == pygame.K_c:
-                    game.board.change_asset(random.choice(["blindfold", "lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]))
-                    game.board.change_background(random.choice(["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]))
+                    game.board.change_piece(random.choice(available_piece_assets))
+                    game.board.change_background(random.choice(available_background_assets))
+                    game.board.change_sound(random.choice(available_sound_assets))
+                if event.key == pygame.K_r:
+                    for sound in available_sound_assets:
+                        download_sounds(sound)
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)

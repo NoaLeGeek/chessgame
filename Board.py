@@ -80,7 +80,7 @@ class Board:
             row.reverse()
         self.board.reverse()
 
-    def change_asset(self, asset):
+    def change_piece(self, asset):
         constants.selected_piece_asset = asset
         if selected_piece_asset == "blindfold":
             return
