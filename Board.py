@@ -106,3 +106,6 @@ class Board:
     def change_board(self, asset):
         board_assets[asset] = generate_board(asset)
         constants.selected_board_asset = asset
+
+    def play_sound(self, sound):
+        sound_assets[constants.selected_sound_asset][sound].play()

@@ -92,5 +92,5 @@ background_assets = {selected_background_asset: pygame.transform.scale(pygame.im
 
 available_sound_assets = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]
 types_sound_asset = ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]
-sound_assets = {sound: pygame.mixer.Sound(os.path.join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}
+sound_assets = {("all", sound): pygame.mixer.Sound(os.path.join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}
 sound_assets.update({selected_sound_asset: generate_sounds(selected_sound_asset)})
