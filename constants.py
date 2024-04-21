@@ -39,6 +39,10 @@ def generate_sounds(asset: str):
     return [pygame.mixer.Sound(os.path.join("assets", "sounds", asset, sound + ".ogg")) for sound in types_sound_asset]
 
 
+def generate_board(asset: str):
+    return pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", asset + ".png")), (square_size*8, square_size*8))
+
+
 pygame.init()
 pygame.display.set_caption("Chesspy")
 pygame.mixer.init()
@@ -76,12 +80,16 @@ clock = pygame.time.Clock()
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 window = pygame.display.set_mode((height, height), pygame.RESIZABLE)
 square_size = floor((height - 2 * margin) / columns)
+
 available_board_assets = ["green", "checkers", "8_bit", "dark_wood", "glass", "brown", "icy_sea", "newspaper", "walnut", "sky", "lolz", "stone", "bases", "marble", "purple", "translucent", "metal", "tournament", "dash", "burled_wood", "blue", "bubblegum", "graffiti", "light", "neon", "orange", "overlay", "parchment", "red", "sand", "tan"]
-board_assets = {selected_board_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", selected_board_asset + ".png")), (square_size*8, square_size*8))}
+board_assets = {selected_board_asset: generate_board(selected_board_asset)}
+
 available_piece_assets = ["blindfold", "lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]
 piece_assets = {selected_piece_asset: generate_images(selected_piece_asset)} if selected_piece_asset != "blindfold" else {}
+
 available_background_assets = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 background_assets = {selected_background_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", selected_background_asset + ".png")), (width, height))}
+
 available_sound_assets = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]
 types_sound_asset = ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]
 sound_assets = {sound: pygame.mixer.Sound(os.path.join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}

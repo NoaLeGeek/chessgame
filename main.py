@@ -43,6 +43,7 @@ def main():
                     game.board.change_piece(random.choice(available_piece_assets))
                     game.board.change_background(random.choice(available_background_assets))
                     game.board.change_sound(random.choice(available_sound_assets))
+                    game.board.change_board(random.choice(available_board_assets))
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
