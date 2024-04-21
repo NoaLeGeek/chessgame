@@ -2,19 +2,10 @@ from constants import *
 import pygame
 import random
 import Menu
-import urllib.request
 
 from Game import Game
 from Pieces import *
-
-def download_sounds(style: str):
-    url = "https://images.chesscomfiles.com/chess-themes/sounds/_WEBM_/{}/{}.webm"
-    if not os.path.exists(f"assets/sounds/{style}"):
-        os.makedirs(f"assets/sounds/{style}")
-    for asset in ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]:
-        urllib.request.urlretrieve(url.format(style, asset), f"assets/sounds/{style}/{asset}.webm")
         
-
 def main():
     run = True
     game_over = False
@@ -52,9 +43,6 @@ def main():
                     game.board.change_piece(random.choice(available_piece_assets))
                     game.board.change_background(random.choice(available_background_assets))
                     game.board.change_sound(random.choice(available_sound_assets))
-                if event.key == pygame.K_r:
-                    for sound in available_sound_assets:
-                        download_sounds(sound)
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
