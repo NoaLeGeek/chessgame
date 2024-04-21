@@ -17,7 +17,7 @@ class Board:
         self.debug = False
 
     def draw_board(self):
-        self.frame.blit(board_assets[selected_board_asset], (margin, margin))
+        self.frame.blit(board_assets[constants.selected_board_asset], (margin, margin))
 
     def draw_piece(self, piece, window):
         window.blit(piece.image, (piece.x, piece.y))
@@ -71,7 +71,7 @@ class Board:
             self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
     def draw_background(self):
-        self.frame.blit(background_assets[selected_background_asset], (0, 0))
+        self.frame.blit(background_assets[constants.selected_background_asset], (0, 0))
 
     def flip_board(self):
         for row in range(self.rows):
@@ -85,7 +85,7 @@ class Board:
 
     def change_piece(self, asset):
         constants.selected_piece_asset = asset
-        if selected_piece_asset == "blindfold":
+        if constants.selected_piece_asset == "blindfold":
             return
         piece_assets[selected_piece_asset] = generate_images(asset)
         for row in range(self.rows):
