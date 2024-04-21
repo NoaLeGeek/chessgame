@@ -2,7 +2,6 @@ import os
 import pygame
 import json
 from math import floor
-import time
 
 
 def get_position(x, y):
@@ -34,6 +33,10 @@ def generate_images(asset: str):
             size = (square_size * 3 / 4, square_size * 3 / 4)
         images.append(pygame.transform.scale(image, size))
     return images
+
+
+def generate_sounds(asset: str):
+    return [pygame.mixer.Sound(os.path.join("assets", "sounds", asset, sound + ".ogg")) for sound in types_sound_asset]
 
 
 pygame.init()
@@ -80,5 +83,6 @@ piece_assets = {selected_piece_asset: generate_images(selected_piece_asset)} if 
 available_background_assets = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 background_assets = {selected_background_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", selected_background_asset + ".png")), (width, height))}
 available_sound_assets = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]
+types_sound_asset = ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]
 sound_assets = {sound: pygame.mixer.Sound(os.path.join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}
-sound_assets.update({selected_sound_asset: [pygame.mixer.Sound(os.path.join("assets", "sounds", selected_sound_asset, sound + ".ogg")) for sound in ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]]})
+sound_assets.update({selected_sound_asset: generate_sounds(selected_sound_asset)})

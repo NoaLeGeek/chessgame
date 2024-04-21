@@ -70,6 +70,9 @@ class Board:
             transparent_surface.fill((r, g, b, 75))
             self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
+    def draw_background(self):
+        self.frame.blit(background_assets[selected_background_asset], (0, 0))
+
     def flip_board(self):
         for row in range(self.rows):
             for column in range(self.columns):
@@ -91,10 +94,11 @@ class Board:
                 if piece != 0:
                     piece.image = piece_assets[selected_piece_asset][Piece.piece_to_index(piece) + 3 * (1 - piece.color)]
                     piece.calc_pos(piece.image)
-    
-    def draw_background(self):
-        self.frame.blit(background_assets[selected_background_asset], (0, 0))
 
     def change_background(self, asset):
         background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (self.width, self.height))
         constants.selected_background_asset = asset
+
+    def change_sound(self, asset):
+        sound_assets[selected_sound_asset] = generate_sounds(asset) 
+        constants.selected_sound_asset = asset
