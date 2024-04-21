@@ -33,7 +33,7 @@ def main():
                 if pygame.display.Info().current_w < height:
                     pygame.display.set_mode((height, pygame.display.Info().current_h), pygame.RESIZABLE)
                 for button in Menu.MAIN_MENU.buttons:
-                    button.rect = pygame.Rect(pygame.display.Info().current_w * (button.c_x - 0.5 * button.c_width), pygame.display.Info().current_h * (button.c_y - 0.5 * button.c_height), button.c_width * pygame.display.Info().current_w, button.c_height * pygame.display.Info().current_h)
+                    button.rect = pygame.Rect(round(pygame.display.Info().current_w * (button.c_x - 0.5 * button.c_width)), round(pygame.display.Info().current_h * (button.c_y - 0.5 * button.c_height)), round(button.c_width * pygame.display.Info().current_w), round(button.c_height * pygame.display.Info().current_h))
                     button.label.x = button.c_x * pygame.display.Info().current_w
                     button.label.y = button.c_y * pygame.display.Info().current_h
                 for label in Menu.MAIN_MENU.labels:

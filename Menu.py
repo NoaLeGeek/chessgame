@@ -1,5 +1,6 @@
 import pygame
-from constants import draw_text, square_size
+from math import ceil
+from constants import draw_text
 
 class Menu:
     def __init__(self, buttons = [], labels = []) -> None:
@@ -18,7 +19,7 @@ class Button:
         self.c_y = c_y
         self.c_width = c_width
         self.c_height = c_height
-        self.rect = pygame.Rect(pygame.display.Info().current_w * (c_x - 0.5 * c_width), pygame.display.Info().current_h * (c_y - 0.5 * c_height), self.c_width * pygame.display.Info().current_w, self.c_height * pygame.display.Info().current_h)
+        self.rect = pygame.Rect(round(pygame.display.Info().current_w * (c_x - 0.5 * c_width)), round(pygame.display.Info().current_h * (c_y - 0.5 * c_height)), round(self.c_width * pygame.display.Info().current_w), round(self.c_height * pygame.display.Info().current_h))
         self.color = color
         self.label = Label(c_x, c_y, text, text_color, c_text_size)
 
