@@ -100,7 +100,7 @@ class Board:
         constants.selected_background_asset = asset
 
     def change_sound(self, asset):
-        sound_assets[selected_sound_asset] = generate_sounds(asset) 
+        sound_assets.update(generate_sounds(asset))
         constants.selected_sound_asset = asset
 
     def change_board(self, asset):
@@ -108,4 +108,4 @@ class Board:
         constants.selected_board_asset = asset
 
     def play_sound(self, sound):
-        sound_assets[constants.selected_sound_asset][sound].play()
+        sound_assets[("all" if sound in ["illegal", "notify", "tenseconds"] else constants.selected_sound_asset, sound)].play()

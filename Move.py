@@ -25,6 +25,19 @@ class Move:
             self.game.halfMoves = 0
         self.game.history.append((self, self.to_literal(), self.game.board.board))
         self.game.check_game()
+        if abs(self.to[1] - self.from_[1]) == 2:
+            self.game.board.play_sound("castle")
+        elif self.game.is_king_checked():
+            self.game.board.play_sound("move-check")
+        elif self.promotion:
+            self.game.board.play_sound("promote")
+        elif self.capture:
+            self.game.board.play_sound("capture")
+        else:
+            if -self.game.turn * self.game.flipped == 1:
+                self.game.board.play_sound("move-opponent")
+            else:
+                self.game.board.play_sound("move-self")
 
     def to_literal(self):
         # TODO DONT FORGET TO ADD THE LITERAL IN THE HISTORIC AFTER DOING THE MOVE

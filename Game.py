@@ -65,6 +65,7 @@ class Game:
                     self.halfMoves = int(split[i])
                 case 5:
                     self.fullMoves = int(split[i])
+        self.board.play_sound("game-start")
 
     def update_window(self):
         self.board.draw_background()
@@ -98,19 +99,19 @@ class Game:
     def check_game(self):
         if self.black_pieces_left == 0:
             print("Whites win")
-            return True
+            self.game_over = True
         elif self.white_pieces_left == 0:
             print("Blacks win")
-            return True
+            self.game_over = True
         elif self.is_checkmate():
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
-            return True
+            self.game_over = True
         elif self.is_stalemate():
             print("Stalemate")
-            return True
+            self.game_over = True
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
-            return True
+            self.game_over = True
         elif all(not isinstance(self.board.board[row][column], Pieces.Pawn) for column in range(len(self.board.board[0])) for row in range(len(self.board.board))):
             if self.get_color_pieces(self.turn):
                 pass
@@ -118,6 +119,8 @@ class Game:
             pass
             #get the last move that is irreversible
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
+        if self.game_over:
+            self.board.play_sound("game-end")
 
     def get_color_moves(self, color: int):
         return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, en_passant=self.en_passant)]
@@ -218,12 +221,20 @@ class Game:
                 self.promotion = None
                 return
             # If the player clicks on one of his pieces, it will change the selected piece
-            if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color:
+            if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color and (row, column) != (self.selected.row, self.selected.column):
                 self.selected = None
                 self.select(row, column)
                 return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
-            if (row, column) not in self.valid_moves or (row, column) == (self.selected.row, self.selected.column):
+            if (row, column) not in self.valid_moves:
+                self.valid_moves = []
+                self.selected = None
+                # TODO ehhhh not sure if this is the moment you play this song
+                if self.is_king_checked():
+                    self.board.play_sound("illegal")
+                return
+            # If the play clicks on the selected piece, the selection is removed
+            if (row, column) == (self.selected.row, self.selected.column):
                 self.valid_moves = []
                 self.selected = None
                 return
