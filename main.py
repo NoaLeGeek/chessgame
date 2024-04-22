@@ -14,7 +14,7 @@ def main():
     while run:
         clock.tick(fps)
         game.update_window()
-        game_over = game.game_over
+        game_over = False
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
                 if pygame.display.Info().current_h != height:
