@@ -7,7 +7,7 @@ import Menu
 
 
 class Game:
-    def __init__(self, width, height, rows, columns, window):
+    def __init__(self, width: int, height: int, rows: int, columns: int, window: pygame.Surface):
         self.window = window
         self.board = Board(width, height, rows, columns, window)
         self.turn = 0
@@ -86,7 +86,7 @@ class Game:
                     self.board.draw_promotion(*self.promotion, self.flipped)
         pygame.display.update()
 
-    def reset(self, frame):
+    def reset(self, frame: pygame.Surface):
         self.board = Board(constants.width, constants.height, constants.rows, constants.columns, frame)
         self.selected = None
 
@@ -208,7 +208,7 @@ class Game:
             self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = save_piece
         return not is_checked
 
-    def select(self, row, column):
+    def select(self, row: int, column: int):
         if self.selected:
             x = self.selected.color * -self.flipped
             # If in the state of promotion
@@ -219,7 +219,6 @@ class Game:
                     move.make_move()
                 # Remove the promotion
                 self.promotion = None
-                return
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color and (row, column) != (self.selected.row, self.selected.column):
                 self.selected = None
@@ -229,7 +228,6 @@ class Game:
             if (row, column) not in self.valid_moves:
                 self.valid_moves = []
                 self.selected = None
-                # TODO ehhhh not sure if this is the moment you play this song
                 if self.is_king_checked():
                     self.board.play_sound("illegal")
                 return
@@ -266,7 +264,7 @@ class Game:
             self.history[-1][0].from_, self.history[-1][0].to = constants.flip_coords(*self.history[-1][0].from_), constants.flip_coords(*self.history[-1][0].to)
             self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
 
-    def get_fen(self):
+    """ def get_fen(self):
         fen = ""
         for row in range(len(self.board.board)):
             empty_squares = 0
@@ -296,4 +294,4 @@ class Game:
         fen += castle_rights if castle_rights else "-"
         fen += " " + (constants.coords_to_algebraic(self.en_passant) if self.en_passant else "-")
         fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
-        return fen
+        return fen """

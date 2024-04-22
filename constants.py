@@ -4,12 +4,12 @@ import json
 from math import floor
 
 
-def get_position(x, y):
+def get_position(x: int, y: int):
     return (y - margin) // square_size, (x - margin) // square_size
 
 
-def draw_text(frame, text, color, size, center):
-    text_surface = pygame.font.SysFont("comicsansms", size).render(text, True, color)
+def draw_text(frame: pygame.Surface, text: str, color: tuple[int, int, int], size: int, center: tuple[int, int]):
+    text_surface = pygame.font.SysFont("CourierNew", size).render(text, True, color)
     text_rect = text_surface.get_rect()
     text_rect.center = center
     frame.blit(text_surface, text_rect)

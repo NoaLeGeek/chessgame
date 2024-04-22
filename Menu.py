@@ -41,8 +41,8 @@ class Label:
     def draw(self, frame):
         draw_text(frame, self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h))
 
-MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, "blue", "PLAY", (255, 255, 255), 1/13),
-                  Button(1/2 - 2/13, 1/2 + 2/13, 4/13, 2/13, "blue", "SETTINGS", (255, 255, 255), 1/26),
-                  Button(1/2 + 2/13, 1/2 + 2/13, 4/13, 2/13, "blue", "CREDITS", (255, 255, 255), 1/26),
-                  Button(1/2, 1/2 + 4/13, 8/13, 2/13, "red", "QUIT", (255, 255, 255), 1/13)],
+MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 255), 1/13),
+                  Button(1/2 - 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "SETTINGS", (255, 255, 255), 1/26),
+                  Button(1/2 + 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "CREDITS", (255, 255, 255), 1/26),
+                  Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", (255, 255, 255), 1/13)],
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
