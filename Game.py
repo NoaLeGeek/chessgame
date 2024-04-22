@@ -74,6 +74,8 @@ class Game:
                 Menu.MAIN_MENU.draw_menu(self.window)
             case "game":
                 self.board.draw_board()
+                if self.selected:
+                    self.board.draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
                 if self.history:
                     self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
                 if self.highlightedSquares:

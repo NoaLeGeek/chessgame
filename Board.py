@@ -57,14 +57,21 @@ class Board:
     def draw_highlightedSquares(self, highlightedSquares):
         for ((row, column), highlight) in highlightedSquares.items():
             match highlight:
+                # Right click
                 case 0:
                     r, g, b = 255, 0, 0
+                # Shift + Right click
                 case 1:
                     r, g, b = 0, 255, 0
+                # Ctrl + Right click
                 case 2:
                     r, g, b = 255, 165, 0
+                # History move
                 case 3:
                     r, g, b = 255, 255, 0
+                # Selected piece
+                case 4:
+                    r, g, b = 0, 255, 255
                 case _:
                     continue
             transparent_surface = pygame.Surface((square_size, square_size), pygame.SRCALPHA)
