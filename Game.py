@@ -219,6 +219,8 @@ class Game:
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
                     move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board.board[7 * (1 - x) // 2][column] if self.board.board[7 * (1 - x) // 2][column] != 0 and self.board.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][constants.flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
                     move.make_move()
+                    self.promotion = None
+                    return
                 # Remove the promotion
                 self.promotion = None
             # If the player clicks on one of his pieces, it will change the selected piece
