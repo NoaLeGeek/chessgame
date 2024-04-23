@@ -35,7 +35,7 @@ class Game:
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
         custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-        split = defaultfen.split(' ')
+        split = customfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -200,14 +200,15 @@ class Game:
         self.board.board[row][column] = save_piece
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
             piece_row, piece_column = piece.row, piece.column
-            save_piece = self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)]
-            if self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] != 0:
-                self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = 0
-            self.board.board[piece.row][piece.column], self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)], self.board.board[piece.row][piece.column]
+            next_column = column + (((piece.column - column) * -self.flipped) // 2)
+            save_piece = self.board.board[row][next_column]
+            if self.board.board[row][next_column] != 0:
+                self.board.board[row][next_column] = 0
+            self.board.board[piece.row][piece.column], self.board.board[row][next_column] = self.board.board[row][next_column], self.board.board[piece.row][piece.column]
             is_checked = is_checked or self.is_king_checked()
             piece.row, piece.column = piece_row, piece_column
             self.board.board[piece_row][piece_column] = piece
-            self.board.board[row][column + (((piece.column - column) * -self.flipped) // 2)] = save_piece
+            self.board.board[row][next_column] = save_piece
         return not is_checked
 
     def select(self, row: int, column: int):
@@ -223,6 +224,11 @@ class Game:
                     return
                 # Remove the promotion
                 self.promotion = None
+                # Reselect the pawn if clicked
+                if (row, column) == (self.selected.row, self.selected.column):
+                    self.selected = None
+                    self.select(row, column)
+                    return
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board.board[row][column] != 0 and self.board.board[row][column].color == self.selected.color and (row, column) != (self.selected.row, self.selected.column):
                 self.selected = None
