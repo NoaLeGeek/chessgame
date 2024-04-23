@@ -62,6 +62,8 @@ def main():
                             run = False
                             pygame.quit()
                     elif game.state == "game":
+                        if Menu.PROMOTE_CROSS_BUTTON.is_clicked():
+                            game.state = "e"
                         row, column = get_position(*pygame.mouse.get_pos())
                         if 0 <= row < rows and 0 <= column < columns:
                             selected_piece = game.board.board[row][column]

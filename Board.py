@@ -51,13 +51,21 @@ class Board:
             return
         for i in range(5):
             if i < 4:
+                continue
                 render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset)
                 render.image = piece_assets[selected_piece_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
                 self.frame.blit(render.image, (render.x, render.y))
             else:
                 # i = 4
-                PROMOTE_CROSS_BUTTON.c_x = ((promotion.column + offset + 1/2) * square_size + margin) / pygame.display.Info().current_w
-                PROMOTE_CROSS_BUTTON.c_y = ((7 * (1 - x) / 4 + 1/2 + x * i) * square_size + margin) / pygame.display.Info().current_h
+                x, y = ((promotion.column + offset + 1/2) * square_size + margin), ((7 * (1 - x) // 4 + 3/4) * square_size + margin)
+                print("x", x)
+                print("y", y)
+                #pygame.draw.circle(self.frame, (0, 0, 0), (x, y), square_size // 8)
+                PROMOTE_CROSS_BUTTON.c_x = x / pygame.display.Info().current_w
+                PROMOTE_CROSS_BUTTON.c_y = y / pygame.display.Info().current_h
+                print("c_x", PROMOTE_CROSS_BUTTON.c_x)
+                print("c_y", PROMOTE_CROSS_BUTTON.c_y)
+                
                 PROMOTE_CROSS_BUTTON.draw(self.frame)
             
     def draw_highlightedSquares(self, highlightedSquares):
