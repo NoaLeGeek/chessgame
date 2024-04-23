@@ -33,9 +33,8 @@ class Game:
         fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
-        en_passant_fen = "r5k1/2R2p1p/1pP3p1/2qP4/pP6/K1PQ2P1/P7/8 b - b3 0 29"
         custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-        split = customfen.split(' ')
+        split = custom2fen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -199,6 +198,8 @@ class Game:
         self.board.board[piece_row][piece_column] = piece
         self.board.board[row][column] = save_piece
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
+            if self.is_king_checked():
+                return False
             piece_row, piece_column = piece.row, piece.column
             next_column = column + (((piece.column - column) * -self.flipped) // 2)
             save_piece = self.board.board[row][next_column]

@@ -4,6 +4,7 @@ import os
 from Pieces import *
 from constants import *
 import constants
+from Menu import PROMOTE_CROSS_BUTTON
 
 
 class Board:
@@ -45,8 +46,7 @@ class Board:
     def draw_promotion(self, promotion, offset, flipped):
         # TODO add exit button with a X
         x = (promotion.color * -flipped)
-        pygame.draw.rect(self.frame, (99, 33, 65), (200, 200, 100, 43))
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4.5*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, (7 * (1 - x) / 4) * square_size + margin, square_size, 4.5*square_size))
         if constants.selected_piece_asset == "blindfold":
             return
         for i in range(5):
@@ -55,8 +55,10 @@ class Board:
                 render.image = piece_assets[selected_piece_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
                 self.frame.blit(render.image, (render.x, render.y))
             else:
-                pygame.draw.line(self.frame, (0, 0, 0), (200, 200), (300, 300), 3)
-                pygame.draw.line(self.frame, (0, 0, 0), (300, 200), (200, 300), 3)
+                # i = 4
+                PROMOTE_CROSS_BUTTON.c_x = ((promotion.column + offset + 1/2) * square_size + margin) / pygame.display.Info().current_w
+                PROMOTE_CROSS_BUTTON.c_y = ((7 * (1 - x) / 4 + 1/2 + x * i) * square_size + margin) / pygame.display.Info().current_h
+                PROMOTE_CROSS_BUTTON.draw(self.frame)
             
     def draw_highlightedSquares(self, highlightedSquares):
         for ((row, column), highlight) in highlightedSquares.items():
