@@ -24,6 +24,12 @@ class Button:
 
     def is_clicked(self):
         return self.rect.collidepoint(pygame.mouse.get_pos())
+    
+    def refresh(self):
+        self.rect = pygame.Rect(round(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), round(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height)), round(self.c_width * pygame.display.Info().current_w), round(self.c_height * pygame.display.Info().current_h))
+        self.label.c_x = self.c_x
+        self.label.c_y = self.c_y
+        self.label.refresh()
 
     def draw(self, frame): 
         if self.c_x <= 0 or self.c_y <= 0:
@@ -40,10 +46,13 @@ class Label:
         self.c_size = c_size
         self.font = font
 
+    def refresh(self):
+        self.x = self.c_x * pygame.display.Info().current_w
+        self.y = self.c_y * pygame.display.Info().current_h
+
     def draw(self, frame):
         draw_text(frame, self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
-PROMOTE_CROSS_BUTTON = Button(-1, -1, square_size / pygame.display.Info().current_w, square_size / (pygame.display.Info().current_h * 2), (255, 0, 0), "X", (0, 255, 0), square_size / pygame.display.Info().current_h, "CourierNew")
 MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 255), 1/13),
                   Button(1/2 - 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "SETTINGS", (255, 255, 255), 1/26),
                   Button(1/2 + 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "CREDITS", (255, 255, 255), 1/26),

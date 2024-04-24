@@ -4,7 +4,6 @@ import os
 from Pieces import *
 from constants import *
 import constants
-from Menu import PROMOTE_CROSS_BUTTON
 
 
 class Board:
@@ -20,8 +19,8 @@ class Board:
     def draw_board(self):
         self.frame.blit(board_assets[constants.selected_board_asset], (margin, margin))
 
-    def draw_piece(self, piece, window):
-        window.blit(piece.image, (piece.x, piece.y))
+    def draw_piece(self, piece, frame):
+        frame.blit(piece.image, (piece.x, piece.y))
 
     def draw_rect(self, row, column):
         pygame.draw.rect(self.frame, (255, 0, 0), (column * square_size + margin, row * square_size + margin, square_size, square_size))
@@ -44,29 +43,25 @@ class Board:
             self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
     def draw_promotion(self, promotion, offset, flipped):
-        # TODO add exit button with a X
+        # TODO make the X transparent
         x = (promotion.color * -flipped)
+        # Draw the promotion rectangle
         pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, (7 * (1 - x) / 4) * square_size + margin, square_size, 4.5*square_size))
+        # Draw the X
+        # i think that the coords aren't the same
+        transparent_surface = pygame.Surface((square_size, square_size / 2), pygame.SRCALPHA)
+        center_x, center_y = (promotion.column + offset + 1/2) * square_size + margin, ((14 - x) / 4) * square_size + margin
+        pygame.draw.line(transparent_surface, (0, 0, 0, 75), (center_x - square_size / 8, center_y - square_size / 8), (center_x + square_size / 8, center_y + square_size / 8), round(square_size / 15))
+        pygame.draw.line(transparent_surface, (0, 0, 0, 75), (center_x + square_size / 8, center_y - square_size / 8), (center_x - square_size / 8, center_y + square_size / 8), round(square_size / 15))
+        self.frame.blit(transparent_surface, (center_x - square_size / 2, center_y - square_size / 4))
         if constants.selected_piece_asset == "blindfold":
             return
         for i in range(5):
             if i < 4:
-                continue
                 render = [Queen, Knight, Rook, Bishop][i](promotion.color, 7 * (1 - x) // 2 + x * i, promotion.column + offset)
                 render.image = piece_assets[selected_piece_asset][Piece.piece_to_index(render) + 3 * (1 - render.color)]
                 self.frame.blit(render.image, (render.x, render.y))
-            else:
-                # i = 4
-                x, y = ((promotion.column + offset + 1/2) * square_size + margin), ((7 * (1 - x) // 4 + 3/4) * square_size + margin)
-                print("x", x)
-                print("y", y)
-                #pygame.draw.circle(self.frame, (0, 0, 0), (x, y), square_size // 8)
-                PROMOTE_CROSS_BUTTON.c_x = x / pygame.display.Info().current_w
-                PROMOTE_CROSS_BUTTON.c_y = y / pygame.display.Info().current_h
-                print("c_x", PROMOTE_CROSS_BUTTON.c_x)
-                print("c_y", PROMOTE_CROSS_BUTTON.c_y)
                 
-                PROMOTE_CROSS_BUTTON.draw(self.frame)
             
     def draw_highlightedSquares(self, highlightedSquares):
         for ((row, column), highlight) in highlightedSquares.items():
