@@ -1,5 +1,6 @@
 import pygame
-from constants import draw_text, square_size
+from constants import draw_text
+from math import ceil
 
 class Menu:
     def __init__(self, buttons = [], labels = []) -> None:
@@ -13,7 +14,7 @@ class Menu:
             label.draw(frame)
 
 class Button:
-    def __init__(self, c_x: float, c_y: float, c_width: float, c_height: float, color: tuple[int, int, int], text: str, text_color: tuple[int, int, int], c_text_size: float, font: str = "CourierNew") -> None:
+    def __init__(self, c_x: float, c_y: float, c_width: float, c_height: float, color: tuple[int, int, int], text: str, text_color: tuple[int, int, int], c_text_size: float, font: str = "ocraextended") -> None:
         self.c_x = c_x
         self.c_y = c_y
         self.c_width = c_width
@@ -38,7 +39,7 @@ class Button:
         self.label.draw(frame)
 
 class Label:
-    def __init__(self, c_x: float, c_y: float, text: str, color: tuple[int, int, int], c_size: float, font: str = "CourierNew") -> None:
+    def __init__(self, c_x: float, c_y: float, text: str, color: tuple[int, int, int], c_size: float, font: str = "ocraextended") -> None:
         self.c_x = c_x
         self.c_y = c_y
         self.text = text
