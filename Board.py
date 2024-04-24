@@ -43,17 +43,15 @@ class Board:
             self.frame.blit(transparent_surface, (column * square_size + margin, row * square_size + margin))
 
     def draw_promotion(self, promotion, offset, flipped):
-        # TODO make the X transparent
         x = (promotion.color * -flipped)
         # Draw the promotion rectangle
-        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, (7 * (1 - x) / 4) * square_size + margin, square_size, 4.5*square_size))
+        pygame.draw.rect(self.frame, (255, 255, 255), ((promotion.column + offset) * square_size + margin, 2 * (1 - x) * square_size + margin, square_size, 4*square_size))
+        # Draw the X rectangle
+        pygame.draw.rect(self.frame, (241, 241, 241), ((promotion.column + offset) * square_size + margin, ((15 + x) / 4) * square_size + margin, square_size, .5*square_size))
         # Draw the X
-        # i think that the coords aren't the same
-        transparent_surface = pygame.Surface((square_size, square_size / 2), pygame.SRCALPHA)
-        center_x, center_y = (promotion.column + offset + 1/2) * square_size + margin, ((14 - x) / 4) * square_size + margin
-        pygame.draw.line(transparent_surface, (0, 0, 0, 75), (center_x - square_size / 8, center_y - square_size / 8), (center_x + square_size / 8, center_y + square_size / 8), round(square_size / 15))
-        pygame.draw.line(transparent_surface, (0, 0, 0, 75), (center_x + square_size / 8, center_y - square_size / 8), (center_x - square_size / 8, center_y + square_size / 8), round(square_size / 15))
-        self.frame.blit(transparent_surface, (center_x - square_size / 2, center_y - square_size / 4))
+        center_x, center_y = (promotion.column + offset + 1/2) * square_size + margin, ((16 + x) / 4) * square_size + margin
+        pygame.draw.line(self.frame, (139, 137, 135), (center_x - square_size / 8, center_y - square_size / 8), (center_x + square_size / 8, center_y + square_size / 8), round(square_size / 15))
+        pygame.draw.line(self.frame, (139, 137, 135), (center_x + square_size / 8, center_y - square_size / 8), (center_x - square_size / 8, center_y + square_size / 8), round(square_size / 15))
         if constants.selected_piece_asset == "blindfold":
             return
         for i in range(5):
