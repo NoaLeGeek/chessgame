@@ -33,7 +33,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     game.reset(window)
-                if event.key == pygame.K_f:
+                if event.key == pygame.K_f and game.state == "game":
                     game.board.flip_board()
                     game.flip_game()
                 if event.key == pygame.K_c:
