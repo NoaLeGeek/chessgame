@@ -1,5 +1,6 @@
 import Pieces
 from constants import *
+from copy import deepcopy
 
 class Move:
     def __init__(self, game, from_, to, piece, capture=False, promotion: bool | tuple[Pieces.Piece, int] = False):
@@ -23,7 +24,7 @@ class Move:
         # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
             self.game.halfMoves = 0
-        self.game.history.append((self, self.to_literal(), self.game.board.board))
+        self.game.history.append(self, self.to_literal(), self.game.generate_fen())
         self.game.check_game()
         if abs(self.to[1] - self.from_[1]) == 2:
             self.game.board.play_sound("castle")

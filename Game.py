@@ -26,7 +26,6 @@ class Game:
         self.state = "main_menu"
         if self.state == "game":
             self.create_board()
-        # TODO function that, from a certain position, generate the FEN if asked
 
     def create_board(self):
         self.board.board = [[0] * constants.columns for _ in range(constants.rows)]
@@ -34,7 +33,7 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-        split = custom2fen.split(' ')
+        split = defaultfen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -122,7 +121,7 @@ class Game:
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
         if self.game_over:
             self.board.play_sound("game-end")
-
+            
     def get_color_moves(self, color: int):
         return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, en_passant=self.en_passant)]
 
@@ -275,7 +274,7 @@ class Game:
             self.history[-1][0].from_, self.history[-1][0].to = constants.flip_coords(*self.history[-1][0].from_), constants.flip_coords(*self.history[-1][0].to)
             self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
 
-    """ def get_fen(self):
+    """ def generate_fen(self):
         fen = ""
         for row in range(len(self.board.board)):
             empty_squares = 0
