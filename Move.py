@@ -42,7 +42,6 @@ class Move:
                 self.game.board.play_sound("move-self")
 
     def to_literal(self):
-        # TODO DONT FORGET TO ADD THE LITERAL IN THE HISTORIC AFTER DOING THE MOVE
         string = ""
         # The move is O-O or O-O-O
         if isinstance(self.piece, Pieces.King) and abs(self.from_[1] - self.to[1]) == 2:

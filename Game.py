@@ -90,8 +90,9 @@ class Game:
         self.board = Board(constants.width, constants.height, constants.rows, constants.columns, frame)
         self.selected = None
 
-    def is_king_checked(self):
-        return self.get_king_position(self.turn) in self.get_color_moves(-self.turn)
+    def is_king_checked(self) -> bool:
+        king = self.get_king(self.turn)
+        return (king.row, king.column) in self.get_color_moves(-self.turn)
     
     def is_checkmate(self):
         return self.is_king_checked() and self.is_stalemate()
@@ -123,7 +124,7 @@ class Game:
             self.board.play_sound("game-end")
             
     def get_color_moves(self, color: int):
-        return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, en_passant=self.en_passant)]
+        return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)]
 
     def get_color_pieces(self, color: int):
         color_pieces = []
@@ -141,11 +142,11 @@ class Game:
         self.halfMoves += 1
         print("turn", self.turn)
 
-    def get_king_position(self, color: int):
+    def get_king(self, color: int):
         for row in range(len(self.board.board)):
             for column in range(len(self.board.board[0])):
                 if isinstance(self.board.board[row][column], Pieces.King) and self.board.board[row][column].color == color:
-                    return row, column
+                    return self.board.board[row][column]
 
     def possible_moves(self, board: list[list[int | Pieces.Piece]]):
         possible_moves = []
@@ -170,7 +171,7 @@ class Game:
     def move(self, piece: Pieces.Piece, row: int, column: int):
         x = piece.color * -self.flipped
         # Castling
-        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
+        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked(piece.color):
             # Calculate old and new position of the rook for O-O and O-O-O
             new_rook_pos, old_rook_pos = (2 * column + 7 - self.flipped) // 4, (7 * (2 * column - 3 + self.flipped)) // 8
             self.board.board[row][new_rook_pos], self.board.board[row][old_rook_pos] = self.board.board[row][old_rook_pos], self.board.board[row][new_rook_pos]
@@ -192,24 +193,24 @@ class Game:
         if self.board.board[row][column] != 0:
             self.board.board[row][column] = 0
         self.board.board[piece.row][piece.column], self.board.board[row][column] = self.board.board[row][column], self.board.board[piece.row][piece.column]
-        is_checked = self.is_king_checked()
+        piece.row, piece.column = row, column
+        can_move = not self.is_king_checked()
         piece.row, piece.column = piece_row, piece_column
         self.board.board[piece_row][piece_column] = piece
         self.board.board[row][column] = save_piece
-        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2:
-            if self.is_king_checked():
-                return False
+        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and can_move:
             piece_row, piece_column = piece.row, piece.column
             next_column = column + (((piece.column - column) * -self.flipped) // 2)
             save_piece = self.board.board[row][next_column]
             if self.board.board[row][next_column] != 0:
                 self.board.board[row][next_column] = 0
             self.board.board[piece.row][piece.column], self.board.board[row][next_column] = self.board.board[row][next_column], self.board.board[piece.row][piece.column]
-            is_checked = is_checked or self.is_king_checked()
+            piece.row, piece.column = row, next_column
+            can_move = can_move and not self.is_king_checked()
             piece.row, piece.column = piece_row, piece_column
             self.board.board[piece_row][piece_column] = piece
             self.board.board[row][next_column] = save_piece
-        return not is_checked
+        return can_move
 
     def select(self, row: int, column: int):
         if self.selected:
@@ -234,17 +235,17 @@ class Game:
                 self.selected = None
                 self.select(row, column)
                 return
+            # If the play clicks on the selected piece, the selection is removed
+            if (row, column) == (self.selected.row, self.selected.column):
+                self.valid_moves = []
+                self.selected = None
+                return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
             if (row, column) not in self.valid_moves:
                 self.valid_moves = []
                 self.selected = None
                 if self.is_king_checked():
                     self.board.play_sound("illegal")
-                return
-            # If the play clicks on the selected piece, the selection is removed
-            if (row, column) == (self.selected.row, self.selected.column):
-                self.valid_moves = []
-                self.selected = None
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
@@ -295,13 +296,13 @@ class Game:
         # "b" if self.turn == -1
         fen += chr((21 * self.turn + 217) // 2)
         castle_rights = " "
-        if isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
+        if self.get_king(1) and isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
             castle_rights += "K"
-        if isinstance(self.board.board[7][0], Pieces.Rook) and self.board.board[7][0].first_move:
+        if self.get_king(1) and isinstance(self.board.board[7][0], Pieces.Rook) and self.board.board[7][0].first_move:
             castle_rights += "Q"
-        if isinstance(self.board.board[0][7], Pieces.Rook) and self.board.board[0][7].first_move:
+        if self.get_king(-1) and isinstance(self.board.board[0][7], Pieces.Rook) and self.board.board[0][7].first_move:
             castle_rights += "k"
-        if isinstance(self.board.board[0][0], Pieces.Rook) and self.board.board[0][0].first_move:
+        if self.get_king(-1) and isinstance(self.board.board[0][0], Pieces.Rook) and self.board.board[0][0].first_move:
             castle_rights += "q"
         fen += castle_rights if castle_rights else "-"
         fen += " " + (chr(97 + constants.flip_coords(self.en_passant[1], flipped = self.flipped)) + str(constants.flip_coords(self.en_passant[0], flipped = -self.flipped) + 1)) if self.en_passant else "-"
