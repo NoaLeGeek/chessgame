@@ -33,7 +33,7 @@ class Game:
         defaultfen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
         customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
         custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-        split = defaultfen.split(' ')
+        split = custom2fen.split(' ')
         for i in range(len(split)):
             match i:
                 case 0:
@@ -171,7 +171,7 @@ class Game:
     def move(self, piece: Pieces.Piece, row: int, column: int):
         x = piece.color * -self.flipped
         # Castling
-        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked(piece.color):
+        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
             # Calculate old and new position of the rook for O-O and O-O-O
             new_rook_pos, old_rook_pos = (2 * column + 7 - self.flipped) // 4, (7 * (2 * column - 3 + self.flipped)) // 8
             self.board.board[row][new_rook_pos], self.board.board[row][old_rook_pos] = self.board.board[row][old_rook_pos], self.board.board[row][new_rook_pos]
@@ -202,8 +202,6 @@ class Game:
             piece_row, piece_column = piece.row, piece.column
             next_column = column + (((piece.column - column) * -self.flipped) // 2)
             save_piece = self.board.board[row][next_column]
-            if self.board.board[row][next_column] != 0:
-                self.board.board[row][next_column] = 0
             self.board.board[piece.row][piece.column], self.board.board[row][next_column] = self.board.board[row][next_column], self.board.board[piece.row][piece.column]
             piece.row, piece.column = row, next_column
             can_move = can_move and not self.is_king_checked()
@@ -296,13 +294,13 @@ class Game:
         # "b" if self.turn == -1
         fen += chr((21 * self.turn + 217) // 2)
         castle_rights = " "
-        if self.get_king(1) and isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
+        if self.get_king(1).first_move and isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
             castle_rights += "K"
-        if self.get_king(1) and isinstance(self.board.board[7][0], Pieces.Rook) and self.board.board[7][0].first_move:
+        if self.get_king(1).first_move and isinstance(self.board.board[7][0], Pieces.Rook) and self.board.board[7][0].first_move:
             castle_rights += "Q"
-        if self.get_king(-1) and isinstance(self.board.board[0][7], Pieces.Rook) and self.board.board[0][7].first_move:
+        if self.get_king(-1).first_move and isinstance(self.board.board[0][7], Pieces.Rook) and self.board.board[0][7].first_move:
             castle_rights += "k"
-        if self.get_king(-1) and isinstance(self.board.board[0][0], Pieces.Rook) and self.board.board[0][0].first_move:
+        if self.get_king(-1).first_move and isinstance(self.board.board[0][0], Pieces.Rook) and self.board.board[0][0].first_move:
             castle_rights += "q"
         fen += castle_rights if castle_rights else "-"
         fen += " " + (chr(97 + constants.flip_coords(self.en_passant[1], flipped = self.flipped)) + str(constants.flip_coords(self.en_passant[0], flipped = -self.flipped) + 1)) if self.en_passant else "-"
