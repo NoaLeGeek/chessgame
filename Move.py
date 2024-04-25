@@ -24,7 +24,8 @@ class Move:
         # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
             self.game.halfMoves = 0
-        self.game.history.append(self, self.to_literal(), self.game.generate_fen())
+        self.game.history.append((self, self.to_literal(), self.game.generate_fen()))
+        print(self.game.history[-1])
         self.game.check_game()
         if abs(self.to[1] - self.from_[1]) == 2:
             self.game.board.play_sound("castle")

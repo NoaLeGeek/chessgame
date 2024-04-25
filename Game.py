@@ -14,7 +14,7 @@ class Game:
         self.selected = None
         self.promotion = None
         self.en_passant = None
-        self.flipped = -1
+        self.flipped = 1
         self.valid_moves = []
         self.black_pieces_left = 16
         self.white_pieces_left = 16
@@ -38,7 +38,7 @@ class Game:
             match i:
                 case 0:
                     for j, rang in enumerate(split[i].split('/')):
-                        k = 0
+                        empty_squares = 0
                         for char in rang:
                             if char.isdigit():
                                 k += int(char)
@@ -274,7 +274,7 @@ class Game:
             self.history[-1][0].from_, self.history[-1][0].to = constants.flip_coords(*self.history[-1][0].from_), constants.flip_coords(*self.history[-1][0].to)
             self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
 
-    """ def generate_fen(self):
+    def generate_fen(self):
         fen = ""
         for row in range(len(self.board.board)):
             empty_squares = 0
@@ -286,13 +286,13 @@ class Game:
                     if empty_squares > 0:
                         fen += str(empty_squares)
                         empty_squares = 0
-                    fen += ["P", "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(self.piece)]
+                    fen += ord(["P", "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(piece)])
             if empty_squares > 0:
                 fen += str(empty_squares)
             if row < len(self.board.board) - 1:
                 fen += "/"
-        fen += " " + ("w" if self.turn == 1 else "b") + " "
-        castle_rights = ""
+        fen += chr((21 * self.turn + 217) // 2)
+        castle_rights = " "
         if isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
             castle_rights += "K"
         if isinstance(self.board.board[7][0], Pieces.Rook) and self.board.board[7][0].first_move:
@@ -304,4 +304,4 @@ class Game:
         fen += castle_rights if castle_rights else "-"
         fen += " " + (constants.coords_to_algebraic(self.en_passant) if self.en_passant else "-")
         fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
-        return fen """
+        return fen
