@@ -14,7 +14,7 @@ class Game:
         self.selected = None
         self.promotion = None
         self.en_passant = None
-        self.flipped = 1
+        self.flipped = -1
         self.valid_moves = []
         self.black_pieces_left = 16
         self.white_pieces_left = 16
@@ -38,7 +38,7 @@ class Game:
             match i:
                 case 0:
                     for j, rang in enumerate(split[i].split('/')):
-                        empty_squares = 0
+                        k = 0
                         for char in rang:
                             if char.isdigit():
                                 k += int(char)
@@ -286,11 +286,13 @@ class Game:
                     if empty_squares > 0:
                         fen += str(empty_squares)
                         empty_squares = 0
-                    fen += ord(["P", "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(piece)])
+                    fen += chr([96, 94, 82, 98, 97, 91][Pieces.Piece.piece_to_index(piece)] - 16 * piece.color)
             if empty_squares > 0:
                 fen += str(empty_squares)
             if row < len(self.board.board) - 1:
                 fen += "/"
+        # "w" if self.turn == 1
+        # "b" if self.turn == -1
         fen += chr((21 * self.turn + 217) // 2)
         castle_rights = " "
         if isinstance(self.board.board[7][7], Pieces.Rook) and self.board.board[7][7].first_move:
@@ -302,6 +304,6 @@ class Game:
         if isinstance(self.board.board[0][0], Pieces.Rook) and self.board.board[0][0].first_move:
             castle_rights += "q"
         fen += castle_rights if castle_rights else "-"
-        fen += " " + (constants.coords_to_algebraic(self.en_passant) if self.en_passant else "-")
+        fen += " " + (chr(97 + constants.flip_coords(self.en_passant[1], flipped = self.flipped)) + str(constants.flip_coords(self.en_passant[0] - self.flipped, flipped = -self.flipped))) if self.en_passant else "-"
         fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
         return fen
