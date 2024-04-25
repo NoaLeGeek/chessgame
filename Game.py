@@ -201,13 +201,12 @@ class Game:
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and can_move:
             piece_row, piece_column = piece.row, piece.column
             next_column = column + (((piece.column - column) * -self.flipped) // 2)
-            save_piece = self.board.board[row][next_column]
             self.board.board[piece.row][piece.column], self.board.board[row][next_column] = self.board.board[row][next_column], self.board.board[piece.row][piece.column]
             piece.row, piece.column = row, next_column
             can_move = can_move and not self.is_king_checked()
             piece.row, piece.column = piece_row, piece_column
             self.board.board[piece_row][piece_column] = piece
-            self.board.board[row][next_column] = save_piece
+            self.board.board[row][next_column] = 0
         return can_move
 
     def select(self, row: int, column: int):
