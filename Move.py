@@ -1,6 +1,6 @@
 import Pieces
 
-from constants import *
+from constants import flip_coords, config, piece_assets
 from Config import play_sound
 
 class Move:
@@ -27,6 +27,7 @@ class Move:
             self.game.halfMoves = 0
         self.game.history.append((self, self.to_literal(), self.game.generate_fen()))
         print(self.game.history[-1])
+        # TODO the rook dispapears to line 31
         self.game.check_game()
         if abs(self.to[1] - self.from_[1]) == 2:
             play_sound("castle")
@@ -41,6 +42,11 @@ class Move:
                 play_sound("move-opponent")
             else:
                 play_sound("move-self")
+        print("=====================================")
+        for row1 in range(len(self.game.board)):
+            test = self.game.board[row1].copy()
+            test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
+            print(flip_coords(row1, flipped=self.game.flipped), test)
 
     def to_literal(self):
         string = ""

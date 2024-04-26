@@ -52,14 +52,14 @@ class Pawn(Piece):
                     self.available_moves.append((row - 2 * x, column))
             if 0 < column and board[row - x][column - 1] != 0 and board[row - x][column - 1].color != self.color:
                 self.available_moves.append((row - x, column - 1))
-            if column < len(board[0]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
+            if column < len(board[row]) - 1 and board[row - x][column + 1] != 0 and board[row - x][column + 1].color != self.color:
                 self.available_moves.append((row - x, column + 1))
             
             # Check for en passant
             if en_passant and en_passant[0] == row - x:
                 if 0 < column and en_passant[1] == column - 1:
                     self.available_moves.append((row - x, column - 1))
-                if column < len(board[0]) - 1 and en_passant[1] == column + 1:
+                if column < len(board[row]) - 1 and en_passant[1] == column + 1:
                     self.available_moves.append((row - x, column + 1))
         return self.available_moves
 
@@ -88,7 +88,7 @@ class Rook(Piece):
                 break
             else:
                 break
-        for i in range(column + 1, len(board[0])):
+        for i in range(column + 1, len(board[row])):
             if board[row][i] == 0:
                 self.available_moves.append((row, i))
             elif board[row][i].color != self.color:
@@ -116,7 +116,7 @@ class Bishop(Piece):
         self.clear_available_moves()
         row_temp = row + 1
         column_temp = column + 1
-        while row_temp < len(board) and column_temp < len(board[0]):
+        while row_temp < len(board) and column_temp < len(board[row]):
             if board[row_temp][column_temp] == 0:
                 self.available_moves.append((row_temp, column_temp))
                 row_temp += 1
@@ -152,7 +152,7 @@ class Bishop(Piece):
                 break
         row_temp = row - 1
         column_temp = column + 1
-        while row_temp > -1 and column_temp < len(board[0]):
+        while row_temp > -1 and column_temp < len(board[row]):
             if board[row_temp][column_temp] == 0:
                 self.available_moves.append((row_temp, column_temp))
                 row_temp -= 1
@@ -175,25 +175,25 @@ class Knight(Piece):
         if row > 1 and column > 0 and (
                 board[row - 2][column - 1] == 0 or board[row - 2][column - 1].color != self.color):
             self.available_moves.append((row - 2, column - 1))
-        if row > 1 and column < len(board[0]) - 1 and (
+        if row > 1 and column < len(board[row]) - 1 and (
                 board[row - 2][column + 1] == 0 or board[row - 2][column + 1].color != self.color):
             self.available_moves.append((row - 2, column + 1))
         if row < len(board) - 2 and column > 0 and (
                 board[row + 2][column - 1] == 0 or board[row + 2][column - 1].color != self.color):
             self.available_moves.append((row + 2, column - 1))
-        if row < len(board) - 2 and column < len(board[0]) - 1 and (
+        if row < len(board) - 2 and column < len(board[row]) - 1 and (
                 board[row + 2][column + 1] == 0 or board[row + 2][column + 1].color != self.color):
             self.available_moves.append((row + 2, column + 1))
         if row > 0 and column > 1 and (
                 board[row - 1][column - 2] == 0 or board[row - 1][column - 2].color != self.color):
             self.available_moves.append((row - 1, column - 2))
-        if row > 0 and column < len(board[0]) - 2 and (
+        if row > 0 and column < len(board[row]) - 2 and (
                 board[row - 1][column + 2] == 0 or board[row - 1][column + 2].color != self.color):
             self.available_moves.append((row - 1, column + 2))
         if row < len(board) - 1 and column > 1 and (
                 board[row + 1][column - 2] == 0 or board[row + 1][column - 2].color != self.color):
             self.available_moves.append((row + 1, column - 2))
-        if row < len(board) - 1 and column < len(board[0]) - 2 and (
+        if row < len(board) - 1 and column < len(board[row]) - 2 and (
                 board[row + 1][column + 2] == 0 or board[row + 1][column + 2].color != self.color):
             self.available_moves.append((row + 1, column + 2))
         return self.available_moves
@@ -208,7 +208,7 @@ class Queen(Piece):
         self.clear_available_moves()
         row_temp = row + 1
         column_temp = column + 1
-        while row_temp < len(board) and column_temp < len(board[0]):
+        while row_temp < len(board) and column_temp < len(board[row]):
             if board[row_temp][column_temp] == 0:
                 self.available_moves.append((row_temp, column_temp))
                 row_temp += 1
@@ -244,7 +244,7 @@ class Queen(Piece):
                 break
         row_temp = row - 1
         column_temp = column + 1
-        while row_temp > -1 and column_temp < len(board[0]):
+        while row_temp > -1 and column_temp < len(board[row]):
             if board[row_temp][column_temp] == 0:
                 self.available_moves.append((row_temp, column_temp))
                 row_temp -= 1
@@ -270,7 +270,7 @@ class Queen(Piece):
                 break
             else:
                 break
-        for i in range(column + 1, len(board[0])):
+        for i in range(column + 1, len(board[row])):
             if board[row][i] == 0:
                 self.available_moves.append((row, i))
             elif board[row][i].color != self.color:
@@ -298,7 +298,7 @@ class King(Piece):
         self.clear_available_moves()
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if (-1 < row + i < len(board) and -1 < column + j < len(board[0])) and not (i == 0 and j == 0) and (board[row + i][column + j] == 0 or board[row + i][column + j].color != self.color):
+                if (-1 < row + i < len(board) and -1 < column + j < len(board[row])) and not (i == 0 and j == 0) and (board[row + i][column + j] == 0 or board[row + i][column + j].color != self.color):
                     self.available_moves.append((row + i, column + j))
 
         # Castling

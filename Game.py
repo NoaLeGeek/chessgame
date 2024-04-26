@@ -144,7 +144,7 @@ class Game:
     def possible_moves(self, board: list[list[int | Pieces.Piece]]):
         possible_moves = []
         for row in range(len(board)):
-            for column in range(len(board[0])):
+            for column in range(len(board[row])):
                 if board[row][column] != 0 and board[row][column].color == self.turn and isinstance(board[row][column], Pieces.King):
                     possible_moves += board[row][column].get_available_moves(board, row, column, self.flipped, self.en_passant)
         return possible_moves
@@ -192,6 +192,8 @@ class Game:
         self.board[piece_row][piece_column] = piece
         self.board[row][column] = save_piece
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and can_move:
+            if self.is_king_checked():
+                return False
             piece_row, piece_column = piece.row, piece.column
             next_column = column + (((piece.column - column) * -self.flipped) // 2)
             self.board[piece.row][piece.column], self.board[row][next_column] = self.board[row][next_column], self.board[piece.row][piece.column]
@@ -266,8 +268,8 @@ class Game:
             self.highlightedSquares = {flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
             
     def flip_board(self):
-        for row in range(config["rows"]):
-            for column in range(config["columns"]):
+        for row in range(len(self.board)):
+            for column in range(len(self.board[0])):
                 piece = self.board[row][column]
                 if piece != 0:
                     piece.piece_move(7 - piece.row, 7 - piece.column)

@@ -69,7 +69,7 @@ def main():
                             pygame.quit()
                     elif config["state"] == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
-                        if 0 <= row < config["rows"] and 0 <= column < config["columns"]:
+                        if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
                             selected_piece = game.board[row][column]
                             print("clicked on:", selected_piece if selected_piece != 0 else 0)
                             print("cRow", row, "cColumn", column)
@@ -83,7 +83,7 @@ def main():
                 elif pygame.mouse.get_pressed()[2]:
                     if config["state"] == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
-                        if 0 <= row < config["rows"] and 0 <= column < config["columns"]:
+                        if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
                             game.selected, game.valid_moves, keys = None, [], pygame.key.get_pressed()
                             highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
                             if game.highlightedSquares.get((row, column)) != highlight:

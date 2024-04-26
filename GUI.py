@@ -20,8 +20,8 @@ def draw_rect(row, column):
     pygame.draw.rect(window, (255, 0, 0), (column * square_size + config["margin"], row * square_size + config["margin"], square_size, square_size))
 
 def draw_pieces(board, promotion=None, debug: bool = False):
-    for row in range(config["rows"]):
-        for column in range(config["columns"]):
+    for row in range(len(board)):
+        for column in range(len(board[row])):
             if debug:
                 window.blit(pygame.font.SysFont("monospace", 15).render(f"({column},{row})", 1, (0, 0, 0)), (row*square_size+35, column*square_size+60))
             piece =  board[row][column]
