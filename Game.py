@@ -181,6 +181,11 @@ class Game:
             piece.first_move = False
 
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
+        print("===============BEFORE CAN MOVE===============", piece, row, column)
+        for row1 in range(len(self.board)):
+            test = self.board[row1].copy()
+            test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
+            print(flip_coords(row1, flipped=self.flipped), test)
         piece_row, piece_column = piece.row, piece.column
         save_piece = self.board[row][column]
         if self.board[row][column] != 0:
@@ -202,6 +207,16 @@ class Game:
             piece.row, piece.column = piece_row, piece_column
             self.board[piece_row][piece_column] = piece
             self.board[row][next_column] = 0
+            print("===============AFTER CAN MOVE CASTLING===============")
+            for row1 in range(len(self.board)):
+                test = self.board[row1].copy()
+                test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
+                print(flip_coords(row1, flipped=self.flipped), test)
+        print("===============AFTER CAN MOVE===============")
+        for row1 in range(len(self.board)):
+            test = self.board[row1].copy()
+            test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
+            print(flip_coords(row1, flipped=self.flipped), test)
         return can_move
 
     def select(self, row: int, column: int):
