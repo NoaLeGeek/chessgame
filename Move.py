@@ -42,11 +42,6 @@ class Move:
                 play_sound("move-opponent")
             else:
                 play_sound("move-self")
-        print("=====================================")
-        for row1 in range(len(self.game.board)):
-            test = self.game.board[row1].copy()
-            test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-            print(flip_coords(row1, flipped=self.game.flipped), test)
 
     def to_literal(self):
         string = ""

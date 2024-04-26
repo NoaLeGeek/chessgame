@@ -144,13 +144,13 @@ class Game:
     def possible_moves(self, board: list[list[int | Pieces.Piece]]):
         possible_moves = []
         for row in range(len(board)):
-            for column in range(len(board[row])):
+            for column in range(len(board[0])):
                 if board[row][column] != 0 and board[row][column].color == self.turn and isinstance(board[row][column], Pieces.King):
                     possible_moves += board[row][column].get_available_moves(board, row, column, self.flipped, self.en_passant)
         return possible_moves
 
     def is_stalemate(self) -> bool:
-        return not any([self.can_move(piece, move[0], move[1]) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
+        return not any([self.can_move(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
 
     def remove(self, row: int, column: int):
         piece = self.board[row][column]
@@ -269,7 +269,7 @@ class Game:
             
     def flip_board(self):
         for row in range(len(self.board)):
-            for column in range(len(self.board[0])):
+            for column in range(len(self.board[row])):
                 piece = self.board[row][column]
                 if piece != 0:
                     piece.piece_move(7 - piece.row, 7 - piece.column)
