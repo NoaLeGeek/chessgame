@@ -283,6 +283,8 @@ class Game:
                     if empty_squares > 0:
                         fen += str(empty_squares)
                         empty_squares = 0
+                    # Lowercase characters if piece.color == -1
+                    # Uppercase characters if piece.color == 1
                     fen += chr([96, 94, 82, 98, 97, 91][Pieces.Piece.piece_to_index(piece)] - 16 * piece.color)
             if empty_squares > 0:
                 fen += str(empty_squares)

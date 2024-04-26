@@ -10,19 +10,20 @@ def main():
     run = True
     game_over = False
     fps = 60
-    game = Game(width, height, rows, columns, window)
+    game = None
     while run:
         clock.tick(fps)
-        game.update_window()
+        if config["state"] == "game":
+            game.update_window()
         game_over = False
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
-                if pygame.display.Info().current_h != height:
-                    pygame.display.set_mode((pygame.display.Info().current_w, height), pygame.RESIZABLE)
-                if pygame.display.Info().current_w > width:
-                    pygame.display.set_mode((width, pygame.display.Info().current_h), pygame.RESIZABLE)
-                if pygame.display.Info().current_w < height:
-                    pygame.display.set_mode((height, pygame.display.Info().current_h), pygame.RESIZABLE)
+                if pygame.display.Info().current_h != config["height"]:
+                    pygame.display.set_mode((pygame.display.Info().current_w, config["height"]), pygame.RESIZABLE)
+                if pygame.display.Info().current_w > config["width"]:
+                    pygame.display.set_mode((config["width"], pygame.display.Info().current_h), pygame.RESIZABLE)
+                if pygame.display.Info().current_w < config["height"]:
+                    pygame.display.set_mode((config["height"], pygame.display.Info().current_h), pygame.RESIZABLE)
                 for button in Menu.MAIN_MENU.buttons:
                     button.refresh()
                 for label in Menu.MAIN_MENU.labels:
@@ -33,7 +34,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     game.reset(window)
-                if event.key == pygame.K_f and game.state == "game":
+                if event.key == pygame.K_f and config["state"] == "game":
                     game.board.flip_board()
                     game.flip_game()
                 if event.key == pygame.K_c:
@@ -49,18 +50,18 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
-                    if game.state == "main_menu":
+                    if config["state"] == "main_menu":
                         if Menu.MAIN_MENU.buttons[0].is_clicked():
-                            game.state = "game"
-                            game.create_board()
+                            config["state"] = "game"
+                            game = Game(config["width"], config["height"], config["rows"], config["columns"], window)
                         if Menu.MAIN_MENU.buttons[1].is_clicked():
                             game.state = "settings"
                         if Menu.MAIN_MENU.buttons[3].is_clicked():
                             run = False
                             pygame.quit()
-                    elif game.state == "game":
+                    elif config["state"] == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
-                        if 0 <= row < rows and 0 <= column < columns:
+                        if 0 <= row < config["rows"] and 0 <= column < config["columns"]:
                             selected_piece = game.board.board[row][column]
                             print("clicked on:", selected_piece if selected_piece != 0 else 0)
                             print("cRow", row, "cColumn", column)
@@ -72,9 +73,9 @@ def main():
                         game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
-                    if game.state == "game":
+                    if config["state"] == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
-                        if 0 <= row < rows and 0 <= column < columns:
+                        if 0 <= row < config["rows"] and 0 <= column < config["columns"]:
                             game.selected, game.valid_moves, keys = None, [], pygame.key.get_pressed()
                             highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
                             if game.highlightedSquares.get((row, column)) != highlight:

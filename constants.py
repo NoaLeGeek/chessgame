@@ -5,7 +5,7 @@ from math import floor
 
 
 def get_position(x: int, y: int):
-    return (y - margin) // square_size, (x - margin) // square_size
+    return (y - config["margin"]) // square_size, (x - config["margin"]) // square_size
 
 
 def draw_text(frame: pygame.Surface, text: str, color: tuple[int, int, int], size: int, center: tuple[int, int], font: str):
@@ -46,51 +46,44 @@ def generate_board(asset: str):
 pygame.init()
 pygame.display.set_caption("Chesspy")
 pygame.mixer.init()
+config = {"volume": 0.2,
+          "taskbar_height": 48,
+          "rows": 8,
+          "columns": 8,
+          "margin": 32,
+          "selected_board_asset": "green",
+          "selected_piece_asset": "chesscom",
+          "selected_background_asset": "standard",
+          "selected_sound_asset": "default",
+          "width": pygame.display.Info().current_w,
+          "height": pygame.display.Info().current_h - 23 - 48,
+          "state": "main_menu"}
 #TODO config volume
 pygame.mixer.music.set_volume(0.2)
 with open("config.json", "r") as file:
-    config = json.load(file)
+    data = json.load(file)
 # Chess without 8x8 board is not supported actually
-if config["rows"] != 8 or config["columns"] != 8 or config["rows"] != config["columns"]:
+if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
     raise ValueError("Rows and columns must be 8 and equal to each other.")
-for key in list(config.keys()):
-    match key:
-        case "taskbar_height":
-            taskbar_height = config[key] if config[key] else 48
-        case "rows":
-            rows = config[key] if config[key] else 8
-        case "columns":
-            columns = config[key] if config[key] else 8
-        case "margin":
-            margin = config[key] if config[key] else 16
-        case "selected_board_asset":
-            selected_board_asset = config[key] if config[key] else "green"
-        case "selected_piece_asset":
-            selected_piece_asset = config[key] if config[key] else "chesscom"
-        case "selected_background_asset":
-            selected_background_asset = config[key] if config[key] else "standard"
-        case "selected_sound_asset":
-            selected_sound_asset = config[key] if config[key] else "default"
-        case "width":
-            width = config[key] if config[key] else pygame.display.Info().current_w
-        case "height":
-            height = config[key] if config[key] else pygame.display.Info().current_h - 23 - taskbar_height
+for key in data.keys():
+    if key in config.keys():
+        config[key] = data[key]
 clock = pygame.time.Clock()
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
-window = pygame.display.set_mode((height, height), pygame.RESIZABLE)
-square_size = floor((height - 2 * margin) / columns)
+window = pygame.display.set_mode((config["height"],) * 2, pygame.RESIZABLE)
+square_size = floor((config["height"] - 2 * config["margin"]) / config["columns"])
 
 available_board_assets = ["green", "checkers", "8_bit", "dark_wood", "glass", "brown", "icy_sea", "newspaper", "walnut", "sky", "lolz", "stone", "bases", "marble", "purple", "translucent", "metal", "tournament", "dash", "burled_wood", "blue", "bubblegum", "graffiti", "light", "neon", "orange", "overlay", "parchment", "red", "sand", "tan"]
-board_assets = {selected_board_asset: generate_board(selected_board_asset)}
+board_assets = {config["selected_board_asset"]: generate_board(config["selected_board_asset"])}
 
 available_piece_assets = ["blindfold", "lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]
-piece_assets = {selected_piece_asset: generate_images(selected_piece_asset)} if selected_piece_asset != "blindfold" else {}
+piece_assets = {config["selected_piece_asset"]: generate_images(config["selected_piece_asset"])} if config["selected_piece_asset"] != "blindfold" else {}
 
 available_background_assets = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
-background_assets = {selected_background_asset: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", selected_background_asset + ".png")), (width, height))}
+background_assets = {config["selected_background_asset"]: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", config["selected_background_asset"] + ".png")), (config["width"], config["height"]))}
 
 available_sound_assets = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]
 types_sound_asset = ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]
 sound_assets = {("all", sound): pygame.mixer.Sound(os.path.join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}
-sound_assets.update(generate_sounds(selected_sound_asset))
+sound_assets.update(generate_sounds(config["selected_sound_asset"]))
