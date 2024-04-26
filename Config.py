@@ -4,14 +4,14 @@ import constants
 from Pieces import *
 from constants import *
 
-def change_piece(self, asset):
+def change_piece(board, asset):
         config["selected_piece_asset"] = asset
         if config["selected_piece_asset"] == "blindfold":
             return
         piece_assets[config["selected_piece_asset"]] = generate_images(asset)
-        for row in range(self.rows):
-            for column in range(self.columns):
-                piece = self.board[row][column]
+        for row in range(config["rows"]):
+            for column in range(config["columns"]):
+                piece = board[row][column]
                 if piece != 0:
                     piece.image = piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(piece) + 3 * (1 - piece.color)]
                     piece.calc_pos(piece.image)

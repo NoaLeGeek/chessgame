@@ -41,14 +41,15 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     game.reset()
-                if event.key == pygame.K_f and config["state"] == "game":
-                    game.flip_board()
-                    game.flip_game()
-                if event.key == pygame.K_c:
-                    change_piece(random.choice(available_piece_assets))
-                    change_background(random.choice(available_background_assets))
-                    change_sound(random.choice(available_sound_assets))
-                    change_board(random.choice(available_board_assets))
+                if config["state"] == "game":
+                    if event.key == pygame.K_f:
+                        game.flip_board()
+                        game.flip_game()
+                    if event.key == pygame.K_c:
+                        change_piece(game.board, random.choice(available_piece_assets))
+                        change_background(random.choice(available_background_assets))
+                        change_sound(random.choice(available_sound_assets))
+                        change_board(random.choice(available_board_assets))
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
