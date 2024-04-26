@@ -4,7 +4,6 @@ from constants import config, square_size
 
 class Piece:
     def __init__(self, color, row, column):
-        self.square_size = square_size
         self.color = color
         self.row = row
         self.column = column
@@ -22,8 +21,8 @@ class Piece:
             self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = config["margin"] + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
-        self.y = config["margin"] + (self.row + 0.5) * self.square_size - image.get_height() + 0.5*image.get_width()
+        self.x = config["margin"] + (self.column + 0.5) * square_size - 0.5*image.get_width()
+        self.y = config["margin"] + (self.row + 0.5) * square_size - (image.get_height() - 0.5*image.get_width() if config["selected_piece_asset"].startswith("3d") else 0.5*image.get_height())
 
     def clear_available_moves(self):
         if self.available_moves:

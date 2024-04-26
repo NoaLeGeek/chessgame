@@ -17,7 +17,9 @@ def generate_images(asset: str):
         image = pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
         size = (square_size * 7/8, square_size * 7/8)
         if asset in ["lichess"]:
-            size = (square_size * (6 - int(piece.endswith("P"))) / 8, square_size * 3 / 4)
+            size = (square_size * 3 / 4, square_size * 3 / 4)
+            if piece.endswith("P"):
+                size = (square_size * 5 / 8, square_size * 3 / 4)
         if asset.startswith("3d"):
             size = (square_size, image.get_height() * square_size / image.get_width())
         if asset in ["fancy"]:
