@@ -52,18 +52,18 @@ config = {"volume": 0.2,
           "state": "main_menu",
           "width": pygame.display.Info().current_w,
           "height": pygame.display.Info().current_h - 23 - 48}
-
 with open("config.json", "r") as file:
-    data = json.load(file)
-# Chess without 8x8 board is not supported actually
-if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
-    raise ValueError("Rows and columns must be 8 and equal to each other.")
-for key in data.keys():
-    if key in config.keys():
-        config[key] = data[key]
+        data = json.load(file)
+        # Chess without 8x8 board is not supported actually
+        if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
+            raise ValueError("Rows and columns must be 8 and equal to each other.")
+        for key in data.keys():
+            if key in config.keys():
+                config[key] = data[key]
 
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
+game_modes = ["classic", "koth", "+3_checks", "giveaway", "960"]
 window = pygame.display.set_mode((config["height"],) * 2, pygame.RESIZABLE)
 square_size = floor((config["height"] - 2 * config["margin"]) / config["columns"])
 

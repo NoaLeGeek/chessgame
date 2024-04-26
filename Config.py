@@ -30,6 +30,3 @@ def change_board(asset):
 
 def play_sound(sound):
     constants.sound_assets[("all" if sound in ["illegal", "notify", "tenseconds"] else config["selected_sound_asset"], sound)].play()
-
-
-

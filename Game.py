@@ -22,11 +22,12 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
+        self.game_mode = "classic"
         self.debug = True
         if config["state"] == "game":
             customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
             custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-            self.create_board()
+            self.create_board(custom2fen)
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
@@ -297,14 +298,16 @@ class Game:
         # "b" if self.turn == -1
         fen += chr((21 * self.turn + 217) // 2)
         castle_rights = " "
-        if self.get_king(1).first_move and isinstance(self.board[7][7], Pieces.Rook) and self.board[7][7].first_move:
-            castle_rights += "K"
-        if self.get_king(1).first_move and isinstance(self.board[7][0], Pieces.Rook) and self.board[7][0].first_move:
-            castle_rights += "Q"
-        if self.get_king(-1).first_move and isinstance(self.board[0][7], Pieces.Rook) and self.board[0][7].first_move:
-            castle_rights += "k"
-        if self.get_king(-1).first_move and isinstance(self.board[0][0], Pieces.Rook) and self.board[0][0].first_move:
-            castle_rights += "q"
+        if self.get_king(1).first_move:
+            if isinstance(self.board[7][7], Pieces.Rook) and self.board[7][7].first_move:
+                castle_rights += "K"
+            if isinstance(self.board[7][0], Pieces.Rook) and self.board[7][0].first_move:
+                castle_rights += "Q"
+        if self.get_king(-1).first_move:
+            if isinstance(self.board[0][7], Pieces.Rook) and self.board[0][7].first_move:
+                castle_rights += "k"
+            if isinstance(self.board[0][0], Pieces.Rook) and self.board[0][0].first_move:
+                castle_rights += "q"
         fen += castle_rights if castle_rights else "-"
         fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1)) if self.en_passant else "-"
         fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
