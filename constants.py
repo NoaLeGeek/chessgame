@@ -7,18 +7,9 @@ from math import floor
 def get_position(x: int, y: int):
     return (y - config["margin"]) // square_size, (x - config["margin"]) // square_size
 
-
-def draw_text(frame: pygame.Surface, text: str, color: tuple[int, int, int], size: int, center: tuple[int, int], font: str):
-    text_surface = pygame.font.SysFont(font, size).render(text, True, color)
-    text_rect = text_surface.get_rect()
-    text_rect.center = center
-    frame.blit(text_surface, text_rect)
-
-
 def flip_coords(*args, **kwds):
     coords = [((7 - 2 * arg) * kwds["flipped"] + 7) // 2 for arg in args] if kwds else tuple([7 - arg for arg in args])
     return coords[0] if len(coords) == 1 else coords
-
 
 def generate_images(asset: str):
     images = []
@@ -34,18 +25,19 @@ def generate_images(asset: str):
         images.append(pygame.transform.scale(image, size))
     return images
 
-
 def generate_sounds(asset: str):
     return {(asset, sound): pygame.mixer.Sound(os.path.join("assets", "sounds", asset, sound + ".ogg")) for sound in types_sound_asset}
-
 
 def generate_board(asset: str):
     return pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", asset + ".png")), (square_size*8, square_size*8))
 
-
 pygame.init()
 pygame.display.set_caption("Chesspy")
 pygame.mixer.init()
+#TODO config volume
+pygame.mixer.music.set_volume(0.2)
+clock = pygame.time.Clock()
+
 config = {"volume": 0.2,
           "taskbar_height": 48,
           "rows": 8,
@@ -55,11 +47,10 @@ config = {"volume": 0.2,
           "selected_piece_asset": "chesscom",
           "selected_background_asset": "standard",
           "selected_sound_asset": "default",
+          "state": "main_menu",
           "width": pygame.display.Info().current_w,
-          "height": pygame.display.Info().current_h - 23 - 48,
-          "state": "main_menu"}
-#TODO config volume
-pygame.mixer.music.set_volume(0.2)
+          "height": pygame.display.Info().current_h - 23 - 48}
+
 with open("config.json", "r") as file:
     data = json.load(file)
 # Chess without 8x8 board is not supported actually
@@ -68,7 +59,7 @@ if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
 for key in data.keys():
     if key in config.keys():
         config[key] = data[key]
-clock = pygame.time.Clock()
+
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 window = pygame.display.set_mode((config["height"],) * 2, pygame.RESIZABLE)

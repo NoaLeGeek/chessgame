@@ -2,6 +2,7 @@ from constants import *
 import pygame
 import random
 import Menu
+import GUI
 
 from Game import Game
 from Pieces import *
@@ -13,8 +14,13 @@ def main():
     game = None
     while run:
         clock.tick(fps)
-        if config["state"] == "game":
-            game.update_window()
+        GUI.draw_background()
+        match config["state"]:
+            case "main_menu":
+                Menu.MAIN_MENU.draw_menu()
+            case "game":
+                game.update_window()
+        pygame.display.update()
         game_over = False
         for event in pygame.event.get():
             if event.type == pygame.VIDEORESIZE:
@@ -53,7 +59,7 @@ def main():
                     if config["state"] == "main_menu":
                         if Menu.MAIN_MENU.buttons[0].is_clicked():
                             config["state"] = "game"
-                            game = Game(config["width"], config["height"], config["rows"], config["columns"], window)
+                            game = Game()
                         if Menu.MAIN_MENU.buttons[1].is_clicked():
                             game.state = "settings"
                         if Menu.MAIN_MENU.buttons[3].is_clicked():

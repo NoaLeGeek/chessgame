@@ -1,5 +1,6 @@
 import pygame
-from constants import draw_text
+from constants import window
+from GUI import draw_text
 from math import ceil
 
 class Menu:
@@ -7,11 +8,11 @@ class Menu:
         self.buttons = buttons
         self.labels = labels
 
-    def draw_menu(self, frame):
+    def draw_menu(self):
         for button in self.buttons:
-            button.draw(frame)
+            button.draw()
         for label in self.labels:
-            label.draw(frame)
+            label.draw()
 
 class Button:
     def __init__(self, c_x: float, c_y: float, c_width: float, c_height: float, color: tuple[int, int, int], text: str, text_color: tuple[int, int, int], c_text_size: float, font: str = "ocraextended") -> None:
@@ -32,11 +33,11 @@ class Button:
         self.label.c_y = self.c_y
         self.label.refresh()
 
-    def draw(self, frame): 
+    def draw(self): 
         if self.c_x <= 0 or self.c_y <= 0:
             raise ValueError("Button position not set")
-        pygame.draw.rect(frame, self.color, self.rect)
-        self.label.draw(frame)
+        pygame.draw.rect(window, self.color, self.rect)
+        self.label.draw()
 
 class Label:
     def __init__(self, c_x: float, c_y: float, text: str, color: tuple[int, int, int], c_size: float, font: str = "ocraextended") -> None:
@@ -51,8 +52,8 @@ class Label:
         self.x = self.c_x * pygame.display.Info().current_w
         self.y = self.c_y * pygame.display.Info().current_h
 
-    def draw(self, frame):
-        draw_text(frame, self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
+    def draw(self):
+        draw_text(self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
 MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 255), 1/13),
                   Button(1/2 - 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "SETTINGS", (255, 255, 255), 1/26),

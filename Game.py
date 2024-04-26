@@ -3,13 +3,12 @@ from Board import Board
 import constants
 import pygame
 import Move
-import Menu
-
+from constants import config, window
 
 class Game:
-    def __init__(self, width: int, height: int, rows: int, columns: int, window: pygame.Surface):
+    def __init__(self):
         self.window = window
-        self.board = Board(width, height, rows, columns, window)
+        self.board = []
         self.turn = 0
         self.selected = None
         self.promotion = None
@@ -23,15 +22,15 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
-        self.state = "main_menu"
-        if self.state == "game":
+        self.debug = True
+        if config["state"] == "game":
             customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
             custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
             self.create_board()
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
-        self.board.board = [[0] * constants.columns for _ in range(constants.rows)]
-        fen = {(['p', 'n', 'b', 'r', 'q', 'k'] if i > 5 else ['P', 'N', 'B', 'R', 'Q', 'K'])[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
+        self.board = [[0] * constants.columns for _ in range(constants.rows)]
+        fen = {(chr([96, 94, 82, 98, 97, 91] - 16 * (i > 5)))[i%6]: Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         split = fen.split(' ')
         for i in range(len(split)):
             match i:
@@ -65,25 +64,19 @@ class Game:
         self.board.play_sound("game-start")
 
     def update_window(self):
-        self.board.draw_background()
-        match self.state:
-            case "main_menu":
-                Menu.MAIN_MENU.draw_menu(self.window)
-            case "game":
-                self.board.draw_board()
-                if self.selected:
-                    self.board.draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
-                if self.history:
-                    self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
-                if self.highlightedSquares:
-                    self.board.draw_highlightedSquares(self.highlightedSquares)
-                if constants.selected_piece_asset != "blindfold":
-                    self.board.draw_pieces(self.promotion)
-                if self.valid_moves:
-                    self.board.draw_moves(self.valid_moves)
-                if self.promotion:
-                    self.board.draw_promotion(*self.promotion, self.flipped)
-        pygame.display.update()
+        self.board.draw_board()
+        if self.selected:
+            self.board.draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
+        if self.history:
+            self.board.draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
+        if self.highlightedSquares:
+            self.board.draw_highlightedSquares(self.highlightedSquares)
+        if config["selected_piece_asset"] != "blindfold":
+            self.board.draw_pieces(self.promotion)
+        if self.valid_moves:
+            self.board.draw_moves(self.valid_moves)
+        if self.promotion:
+            self.board.draw_promotion(*self.promotion, self.flipped)
 
     def reset(self, frame: pygame.Surface):
         self.board = Board(constants.width, constants.height, constants.rows, constants.columns, frame)
@@ -270,6 +263,19 @@ class Game:
         if self.history:
             self.history[-1][0].from_, self.history[-1][0].to = constants.flip_coords(*self.history[-1][0].from_), constants.flip_coords(*self.history[-1][0].to)
             self.highlightedSquares = {constants.flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
+            
+    def flip_board(self):
+        for row in range(config["rows"]):
+            for column in range(config["columns"]):
+                piece = self.board[row][column]
+                if piece != 0:
+                    piece.piece_move(7 - piece.row, 7 - piece.column)
+        for row in self.board:
+            row.reverse()
+        self.board.reverse()
+
+    def play_sound(self, sound):
+        constants.sound_assets[("all" if sound in ["illegal", "notify", "tenseconds"] else config["selected_sound_asset"], sound)].play()
 
     def generate_fen(self):
         fen = ""
