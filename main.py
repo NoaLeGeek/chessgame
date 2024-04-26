@@ -1,4 +1,3 @@
-from constants import *
 import pygame
 import random
 import Menu
@@ -6,7 +5,9 @@ import GUI
 
 from Game import Game
 from Pieces import *
-        
+from constants import *
+from Config import change_background, change_board, change_piece, change_sound
+
 def main():
     run = True
     game_over = False
@@ -39,15 +40,15 @@ def main():
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    game.reset(window)
+                    game.reset()
                 if event.key == pygame.K_f and config["state"] == "game":
-                    game.board.flip_board()
+                    game.flip_board()
                     game.flip_game()
                 if event.key == pygame.K_c:
-                    game.board.change_piece(random.choice(available_piece_assets))
-                    game.board.change_background(random.choice(available_background_assets))
-                    game.board.change_sound(random.choice(available_sound_assets))
-                    game.board.change_board(random.choice(available_board_assets))
+                    change_piece(random.choice(available_piece_assets))
+                    change_background(random.choice(available_background_assets))
+                    change_sound(random.choice(available_sound_assets))
+                    change_board(random.choice(available_board_assets))
             #if game.turn == -1:
                 #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
                 #game.select(randomPiece.row, randomPiece.column)
@@ -68,11 +69,11 @@ def main():
                     elif config["state"] == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
                         if 0 <= row < config["rows"] and 0 <= column < config["columns"]:
-                            selected_piece = game.board.board[row][column]
+                            selected_piece = game.board[row][column]
                             print("clicked on:", selected_piece if selected_piece != 0 else 0)
                             print("cRow", row, "cColumn", column)
                             #if selected_piece != 0 and isinstance(selected_piece, King):
-                                #print(selected_piece.get_available_moves(game.board.board, row, column, game.flipped, en_passant=game.en_passant))
+                                #print(selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
                                 #print("first_move", selected_piece.first_move)
                             #if game.turn == 1:
                             game.select(row, column)

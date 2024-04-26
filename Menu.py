@@ -1,4 +1,5 @@
 import pygame
+
 from constants import window
 from GUI import draw_text
 from math import ceil

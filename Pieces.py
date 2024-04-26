@@ -1,5 +1,6 @@
-from constants import *
 import constants
+
+from constants import config, square_size
 
 class Piece:
     def __init__(self, color, row, column):
@@ -10,19 +11,19 @@ class Piece:
         self.x = 0
         self.y = 0
         self.available_moves = []
-        if constants.selected_piece_asset != "blindfold":
-            self.image = piece_assets[selected_piece_asset][Piece.piece_to_index(self) + 3 * (1 - self.color)]
+        if config["selected_piece_asset"] != "blindfold":
+            self.image = constants.piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(self) + 3 * (1 - self.color)]
             self.calc_pos(self.image)
 
     def piece_move(self, row, column):
         self.row = row
         self.column = column
-        if constants.selected_piece_asset != "blindfold":
+        if config["selected_piece_asset"] != "blindfold":
             self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = margin + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
-        self.y = margin + (self.row + 0.5) * self.square_size - image.get_height() + 0.5*image.get_width()
+        self.x = config["margin"] + (self.column + 0.5) * self.square_size - 0.5*image.get_width()
+        self.y = config["margin"] + (self.row + 0.5) * self.square_size - image.get_height() + 0.5*image.get_width()
 
     def clear_available_moves(self):
         if self.available_moves:

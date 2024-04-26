@@ -1,6 +1,7 @@
 import Pieces
+
 from constants import *
-from copy import deepcopy
+from Config import play_sound
 
 class Move:
     def __init__(self, game, from_, to, piece, capture=False, promotion: bool | tuple[Pieces.Piece, int] = False):
@@ -16,9 +17,9 @@ class Move:
         self.game.remove(row, column)
         self.game.move(self.piece, row, column)
         # Add the promoted piece to the board if there is one
-        if self.promotion and selected_piece_asset != "blindfold":
-            self.promotion.image = piece_assets[selected_piece_asset][Pieces.Piece.piece_to_index(self.promotion) + 3 * (1 - self.promotion.color)]
-            self.game.board.board[row][column] = self.promotion
+        if self.promotion and config["selected_piece_asset"] != "blindfold":
+            self.promotion.image = piece_assets[config["selected_piece_asset"]][Pieces.Piece.piece_to_index(self.promotion) + 3 * (1 - self.promotion.color)]
+            self.game.board[row][column] = self.promotion
         self.game.change_turn()
         self.game.valid_moves, self.game.selected = [], None
         # Reset halfMoves if it's a capture or a pawn move
@@ -28,18 +29,18 @@ class Move:
         print(self.game.history[-1])
         self.game.check_game()
         if abs(self.to[1] - self.from_[1]) == 2:
-            self.game.board.play_sound("castle")
+            play_sound("castle")
         elif self.game.is_king_checked():
-            self.game.board.play_sound("move-check")
+            play_sound("move-check")
         elif self.promotion:
-            self.game.board.play_sound("promote")
+            play_sound("promote")
         elif self.capture:
-            self.game.board.play_sound("capture")
+            play_sound("capture")
         else:
             if self.game.turn * -self.game.flipped == 1:
-                self.game.board.play_sound("move-opponent")
+                play_sound("move-opponent")
             else:
-                self.game.board.play_sound("move-self")
+                play_sound("move-self")
 
     def to_literal(self):
         string = ""

@@ -1,8 +1,8 @@
 import os
 import pygame
 import json
-from math import floor
 
+from math import floor
 
 def get_position(x: int, y: int):
     return (y - config["margin"]) // square_size, (x - config["margin"]) // square_size
