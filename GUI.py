@@ -10,8 +10,8 @@ def draw_text(text: str, color: tuple[int, int, int], size: int, center: tuple[i
     text_rect.center = center
     window.blit(text_surface, text_rect)
 
-def draw_board():
-    window.blit(board_assets[config["selected_board_asset"]], (config["margin"], config["margin"]))
+def draw_board(flipped: int = -1):
+    window.blit(pygame.transform.rotate(board_assets[config["selected_board_asset"]], 90 * (1 - flipped)), (config["margin"], config["margin"]))
 
 def draw_piece(piece):
     window.blit(piece.image, (piece.x, piece.y))
@@ -37,7 +37,7 @@ def draw_moves(moves):
         window.blit(transparent_surface, (column * square_size + config["margin"], row * square_size + config["margin"]))
 
 def draw_promotion(promotion, offset, flipped):
-    x = (promotion.color * -flipped)
+    x = (promotion.color * flipped)
     # Draw the promotion rectangle
     pygame.draw.rect(window, (255, 255, 255), ((promotion.column + offset) * square_size + config["margin"], 2 * (1 - x) * square_size + config["margin"], square_size, 4*square_size))
     # Draw the X rectangle

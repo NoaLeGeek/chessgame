@@ -4,6 +4,7 @@ import Move
 from constants import config, window, flip_coords
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
+from random import randint
 
 class Game:
     def __init__(self):
@@ -13,7 +14,7 @@ class Game:
         self.selected = None
         self.promotion = None
         self.en_passant = None
-        self.flipped = -1
+        self.flipped = 1
         self.valid_moves = []
         self.black_pieces_left = 16
         self.white_pieces_left = 16
@@ -32,6 +33,8 @@ class Game:
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
         pieces_fen = {chr([80, 78, 66, 82, 81, 75][i%6] + 32 * (i > 5)): Pieces.Piece.index_to_piece(i%6) for i in range(12)}
+        if self.game_mode == "960":
+            randint(0, config["columns"])
         split = fen.split(' ')
         for i in range(len(split)):
             match i:
@@ -57,7 +60,7 @@ class Game:
                         self.board[0][0].first_move = False
                 case 3:
                     if split[i] not in ['-', '–']:
-                        self.en_passant = (flip_coords(int(split[i][1]) - 1, flipped = -self.flipped), flip_coords(ord(split[i][0]) - 97, flipped = self.flipped))
+                        self.en_passant = (flip_coords(int(split[i][1]) - 1, flipped = self.flipped), flip_coords(ord(split[i][0]) - 97, flipped = -self.flipped))
                 case 4:
                     self.halfMoves = int(split[i])
                 case 5:
@@ -65,7 +68,7 @@ class Game:
         play_sound("game-start")
 
     def update_window(self):
-        draw_board()
+        draw_board(self.flipped)
         if self.selected:
             draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
         if self.history:
@@ -162,7 +165,7 @@ class Game:
                 self.black_pieces_left -= 1
 
     def move(self, piece: Pieces.Piece, row: int, column: int):
-        x = piece.color * -self.flipped
+        x = piece.color * self.flipped
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
             # Calculate old and new position of the rook for O-O and O-O-O
@@ -196,11 +199,12 @@ class Game:
         piece.row, piece.column = piece_row, piece_column
         self.board[piece_row][piece_column] = piece
         self.board[row][column] = save_piece
+
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and can_move:
             if self.is_king_checked():
                 return False
             piece_row, piece_column = piece.row, piece.column
-            next_column = column + (((piece.column - column) * -self.flipped) // 2)
+            next_column = column + (((piece.column - column) * self.flipped) // 2)
             self.board[piece.row][piece.column], self.board[row][next_column] = self.board[row][next_column], self.board[piece.row][piece.column]
             piece.row, piece.column = row, next_column
             can_move = can_move and not self.is_king_checked()
@@ -221,7 +225,7 @@ class Game:
 
     def select(self, row: int, column: int):
         if self.selected:
-            x = self.selected.color * -self.flipped
+            x = self.selected.color * self.flipped
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
@@ -326,6 +330,6 @@ class Game:
             if isinstance(self.board[0][0], Pieces.Rook) and self.board[0][0].first_move:
                 castle_rights += "q"
         fen += castle_rights if castle_rights else "-"
-        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1)) if self.en_passant else "-"
+        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = self.flipped) + 1)) if self.en_passant else "-"
         fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
         return fen

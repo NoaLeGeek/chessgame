@@ -44,7 +44,7 @@ class Pawn(Piece):
     def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()
         en_passant = kwds["en_passant"]
-        x = self.color * -flipped
+        x = self.color * flipped
         if -1 < row - x < len(board):
             if board[row - x][column] == 0:
                 self.available_moves.append((row - x, column))
@@ -302,13 +302,11 @@ class King(Piece):
                     self.available_moves.append((row + i, column + j))
 
         # Castling
-        if self.column == (7 - flipped) // 2 and self.first_move:
-            print(list(range(column + flipped, 7 * (1 + flipped) // 2, flipped)))
-            print(list(range(column - flipped, 7 * (1 - flipped) // 2, -flipped)))
+        if self.column == (7 + flipped) // 2 and self.first_move:
             # O-O-O
-            if isinstance(board[row][7 * (1 + flipped) // 2], Rook) and board[row][7 * (1 + flipped) // 2].first_move and all(board[row][i] == 0 for i in range(column + flipped, 7 * (1 + flipped) // 2, flipped)):
+            if isinstance(board[row][7 * (1 - flipped) // 2], Rook) and board[row][7 * (1 - flipped) // 2].first_move and all(board[row][i] == 0 for i in range(column - flipped, 7 * (1 - flipped) // 2, flipped)):
                 self.available_moves.append((row, (7 + 3 * flipped) // 2))
             # O-O
-            if isinstance(board[row][7 * (1 - flipped) // 2], Rook) and board[row][7 * (1 - flipped) // 2].first_move and all(board[row][i] == 0 for i in range(column - flipped, 7 * (1 - flipped) // 2, -flipped)):
+            if isinstance(board[row][7 * (1 + flipped) // 2], Rook) and board[row][7 * (1 + flipped) // 2].first_move and all(board[row][i] == 0 for i in range(column + flipped, 7 * (1 + flipped) // 2, flipped)):
                 self.available_moves.append((row, (7 - 5 * flipped) // 2))
         return self.available_moves
