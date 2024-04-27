@@ -330,6 +330,6 @@ class Game:
             if isinstance(self.board[0][0], Pieces.Rook) and self.board[0][0].first_move:
                 castle_rights += "q"
         fen += castle_rights if castle_rights else "-"
-        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = self.flipped) + 1)) if self.en_passant else "-"
+        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1)) if self.en_passant else "-"
         fen += " " + str(self.halfMoves) + " " + str(self.fullMoves)
         return fen

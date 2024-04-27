@@ -38,10 +38,10 @@ class Move:
         elif self.capture:
             play_sound("capture")
         else:
-            if self.game.turn * -self.game.flipped == 1:
-                play_sound("move-opponent")
-            else:
+            if self.game.turn * self.game.flipped == 1:
                 play_sound("move-self")
+            else:
+                play_sound("move-opponent")
 
     def to_literal(self):
         string = ""
