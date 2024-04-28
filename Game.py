@@ -23,25 +23,33 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
-        self.game_mode = "classic"
+        self.game_mode = "960"
         self.debug = True
         if config["state"] == "game":
             customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
             custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-            self.create_board(custom2fen)
+            self.create_board()
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
+        print(self.board)
         pieces_fen = {chr([80, 78, 66, 82, 81, 75][i%6] + 32 * (i > 5)): Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         parts = fen.split(' ')
         if self.game_mode == "960":
-            last_row = [None for _ in range(config["columns"])]
-            for square_color in [0, 1]:
-                last_row[choice(range(square_color, config["columns"], 2))] = "B"
-            for _ in range(2):
-                last_row[choice([i for i in range(len(last_row)) if last_row[i] != None])] = "N"
-            last_row[choice([i for i in range(len(last_row)) if last_row[i] != None])] = "Q"
-            for [i for i in range(len(last_row)) if last_row[i] != None]:
+            last_row = [None] * config["columns"]
+            for index, piece in enumerate(["B", "B", "N", "N", "Q", "K", "R", "R"]):
+                if index < 2:
+                    last_row[choice(range(index, config["columns"], 2))] = piece
+                elif index < 5:
+                    last_row[choice([i for i, val in enumerate(last_row) if val is None])] = piece
+                else:
+                    last_row[[i for i, val in enumerate(last_row) if val is None][0]] = piece
+            rows = parts[0].split("/")
+            for row in [0, 7]:
+                rows[row] = "".join(last_row)
+                if row == 0:
+                    rows[row] = rows[row].lower()
+            parts[0] = "/".join(rows)
         for part in range(len(parts)):
             match part:
                 case 0:
