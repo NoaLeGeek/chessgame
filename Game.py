@@ -36,7 +36,7 @@ class Game:
         parts = fen.split(' ')
         if self.game_mode == "960":
             last_row = [None] * config["columns"]
-            for index, piece in enumerate(["B", "B", "N", "N", "Q", "K", "R", "R"]):
+            for index, piece in enumerate(["B", "B", "N", "N", "Q", "R", "K", "R"]):
                 if index < 2:
                     last_row[choice(range(index, config["columns"], 2))] = piece
                 elif index < 5:
@@ -166,7 +166,7 @@ class Game:
         return possible_moves
 
     def is_stalemate(self) -> bool:
-        return not any([self.can_move(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
+        return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
 
     def remove(self, row: int, column: int):
         piece = self.board[row][column]
@@ -196,46 +196,40 @@ class Game:
         if isinstance(piece, (Pieces.King, Pieces.Rook, Pieces.Pawn)) and piece.first_move:
             piece.first_move = False
 
-    def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
+    def is_legal(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         print("===============BEFORE CAN MOVE===============", piece, row, column)
         for row1 in range(len(self.board)):
             test = self.board[row1].copy()
             test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
             print(flip_coords(row1, flipped = -self.flipped), test)
-        piece_row, piece_column = piece.row, piece.column
-        save_piece = self.board[row][column]
-        if self.board[row][column] != 0:
-            self.board[row][column] = 0
-        self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
-        piece.row, piece.column = row, column
-        can_move = not self.is_king_checked()
-        piece.row, piece.column = piece_row, piece_column
-        self.board[piece_row][piece_column] = piece
-        self.board[row][column] = save_piece
-
-        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and can_move:
-            if self.is_king_checked():
-                return False
-            piece_row, piece_column = piece.row, piece.column
-            next_column = column + (((piece.column - column) * self.flipped) // 2)
-            self.board[piece.row][piece.column], self.board[row][next_column] = self.board[row][next_column], self.board[piece.row][piece.column]
-            piece.row, piece.column = row, next_column
-            can_move = can_move and not self.is_king_checked()
-            piece.row, piece.column = piece_row, piece_column
-            self.board[piece_row][piece_column] = piece
-            self.board[row][next_column] = 0
-            print("===============AFTER CAN MOVE CASTLING===============")
-            for row1 in range(len(self.board)):
-                test = self.board[row1].copy()
-                test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-                print(flip_coords(row1, flipped = -self.flipped), test)
+        is_legal = self.can_move(piece, row, column)
+        if isinstance(piece, Pieces.King) and abs(piece.column - column) > 1:
+            for distance in range(piece.column, column, 2 * (piece.column < column) - 1):
+                is_legal = is_legal and self.can_move(piece, piece.row, piece.column + distance)
+                if not is_legal:
+                    break
         print("===============AFTER CAN MOVE===============")
         for row1 in range(len(self.board)):
             test = self.board[row1].copy()
             test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
             print(flip_coords(row1, flipped = -self.flipped), test)
+        return is_legal
+    
+    def can_move(self, piece: Pieces.Piece, row: int, column: int, castling: bool = False) -> bool:
+        piece_row, piece_column = piece.row, piece.column
+        # Castling is a no capture move
+        if not castling:
+            save_piece = self.board[row][column]
+        if self.board[row][column] != 0:
+            self.board[row][column] = 0
+        self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
+        piece.row, piece.column = row, column
+        can_move = not self.is_king_checked()
+        self.board[piece_row][piece_column] = piece
+        self.board[row][column] = save_piece if not castling else 0
+        piece.row, piece.column = piece_row, piece_column
         return can_move
-
+        
     def select(self, row: int, column: int):
         if self.selected:
             x = self.selected.color * self.flipped
@@ -288,7 +282,7 @@ class Game:
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-                self.valid_moves = [move for move in piece.get_available_moves(self.board, row, column, self.flipped, en_passant = self.en_passant) if self.can_move(self.selected, *move)]
+                self.valid_moves = [move for move in piece.get_available_moves(self.board, row, column, self.flipped, en_passant = self.en_passant) if self.is_legal(self.selected, *move)]
 
     def flip_game(self):
         self.flipped *= -1
