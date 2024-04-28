@@ -4,7 +4,7 @@ import Move
 from constants import config, window, flip_coords
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
-from random import randint
+from random import choice
 
 class Game:
     def __init__(self):
@@ -33,38 +33,44 @@ class Game:
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
         pieces_fen = {chr([80, 78, 66, 82, 81, 75][i%6] + 32 * (i > 5)): Pieces.Piece.index_to_piece(i%6) for i in range(12)}
+        parts = fen.split(' ')
         if self.game_mode == "960":
-            randint(0, config["columns"])
-        split = fen.split(' ')
-        for i in range(len(split)):
-            match i:
+            last_row = [None for _ in range(config["columns"])]
+            for square_color in [0, 1]:
+                last_row[choice(range(square_color, config["columns"], 2))] = "B"
+            for _ in range(2):
+                last_row[choice([i for i in range(len(last_row)) if last_row[i] != None])] = "N"
+            last_row[choice([i for i in range(len(last_row)) if last_row[i] != None])] = "Q"
+            for [i for i in range(len(last_row)) if last_row[i] != None]:
+        for part in range(len(parts)):
+            match part:
                 case 0:
-                    for j, rang in enumerate(split[i].split('/')):
-                        k = 0
-                        for char in rang:
+                    for row, string in enumerate(parts[part].split("/")):
+                        column = 0
+                        for char in string:
                             if char.isdigit():
-                                k += int(char)
+                                column += int(char)
                             else:
-                                self.board[j][k] = pieces_fen[char]((2 * (ord(char) < 91) - 1), j, k)
-                                k += 1
+                                self.board[row][column] = pieces_fen[char]((2 * (ord(char) < 91) - 1), row, column)
+                                column += 1
                 case 1:
-                    self.turn = int((2 * ord(split[i])) / 21 - (31 / 3))
+                    self.turn = int((2 * ord(parts[part])) / 21 - (31 / 3))
                 case 2:
-                    if "K" not in split[i] and isinstance(self.board[7][7], Pieces.Rook):
+                    if "K" not in parts[part] and isinstance(self.board[7][7], Pieces.Rook):
                         self.board[7][7].first_move = False
-                    if "Q" not in split[i] and isinstance(self.board[7][0], Pieces.Rook):
+                    if "Q" not in parts[part] and isinstance(self.board[7][0], Pieces.Rook):
                         self.board[7][0].first_move = False
-                    if "k" not in split[i] and isinstance(self.board[0][7], Pieces.Rook):
+                    if "k" not in parts[part] and isinstance(self.board[0][7], Pieces.Rook):
                         self.board[0][7].first_move = False
-                    if "q" not in split[i] and isinstance(self.board[0][0], Pieces.Rook):
+                    if "q" not in parts[part] and isinstance(self.board[0][0], Pieces.Rook):
                         self.board[0][0].first_move = False
                 case 3:
-                    if split[i] not in ['-', '–']:
-                        self.en_passant = (flip_coords(int(split[i][1]) - 1, flipped = self.flipped), flip_coords(ord(split[i][0]) - 97, flipped = -self.flipped))
+                    if parts[part] not in ['-', '–']:
+                        self.en_passant = (flip_coords(int(parts[part][1]) - 1, flipped = -self.flipped), flip_coords(ord(parts[part][0]) - 97, flipped = self.flipped))
                 case 4:
-                    self.halfMoves = int(split[i])
+                    self.halfMoves = int(parts[part])
                 case 5:
-                    self.fullMoves = int(split[i])
+                    self.fullMoves = int(parts[part])
         play_sound("game-start")
 
     def update_window(self):
@@ -188,7 +194,7 @@ class Game:
         for row1 in range(len(self.board)):
             test = self.board[row1].copy()
             test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-            print(flip_coords(row1, flipped=self.flipped), test)
+            print(flip_coords(row1, flipped = -self.flipped), test)
         piece_row, piece_column = piece.row, piece.column
         save_piece = self.board[row][column]
         if self.board[row][column] != 0:
@@ -215,12 +221,12 @@ class Game:
             for row1 in range(len(self.board)):
                 test = self.board[row1].copy()
                 test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-                print(flip_coords(row1, flipped=self.flipped), test)
+                print(flip_coords(row1, flipped = -self.flipped), test)
         print("===============AFTER CAN MOVE===============")
         for row1 in range(len(self.board)):
             test = self.board[row1].copy()
             test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-            print(flip_coords(row1, flipped=self.flipped), test)
+            print(flip_coords(row1, flipped = -self.flipped), test)
         return can_move
 
     def select(self, row: int, column: int):
@@ -230,7 +236,7 @@ class Game:
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
                 if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board[7 * (1 - x) // 2][column] if self.board[7 * (1 - x) // 2][column] != 0 and self.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = -x)](self.selected.color, 7 * (1 - x) // 2, column))
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board[7 * (1 - x) // 2][column] if self.board[7 * (1 - x) // 2][column] != 0 and self.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = x)](self.selected.color, 7 * (1 - x) // 2, column))
                     move.make_move()
                     self.promotion = None
                     return
