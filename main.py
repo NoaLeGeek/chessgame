@@ -73,9 +73,8 @@ def main():
                             selected_piece = game.board[row][column]
                             print("clicked on:", selected_piece if selected_piece != 0 else 0)
                             print("cRow", row, "cColumn", column)
-                            #if selected_piece != 0 and isinstance(selected_piece, King):
-                                #print(selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
-                                #print("first_move", selected_piece.first_move)
+                            if selected_piece != 0 and isinstance(selected_piece, King):
+                                print("kingmoves", selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
                             #if game.turn == 1:
                             game.select(row, column)
                         game.highlightedSquares = {}

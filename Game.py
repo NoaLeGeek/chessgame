@@ -197,26 +197,31 @@ class Game:
             piece.first_move = False
 
     def is_legal(self, piece: Pieces.Piece, row: int, column: int) -> bool:
-        print("===============BEFORE CAN MOVE===============", piece, row, column)
-        for row1 in range(len(self.board)):
-            test = self.board[row1].copy()
-            test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-            print(flip_coords(row1, flipped = -self.flipped), test)
+        print("is_legal", piece.row, piece.column, row, column)
+        # print("===============BEFORE CAN MOVE===============", piece, row, column)
+        # for row1 in range(len(self.board)):
+        #     test = self.board[row1].copy()
+        #     test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
+        #     print(flip_coords(row1, flipped = -self.flipped), test)
         is_legal = self.can_move(piece, row, column)
+        # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) > 1:
-            for distance in range(piece.column, column, 2 * (piece.column < column) - 1):
-                is_legal = is_legal and self.can_move(piece, piece.row, piece.column + distance)
+            print("range", list(range(piece.column, column, 2 * (piece.column < column) - 1)))
+            for next_column in range(piece.column, column, 2 * (piece.column < column) - 1):
+                is_legal = is_legal and self.can_move(piece, piece.row, next_column)
                 if not is_legal:
                     break
-        print("===============AFTER CAN MOVE===============")
-        for row1 in range(len(self.board)):
-            test = self.board[row1].copy()
-            test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-            print(flip_coords(row1, flipped = -self.flipped), test)
+        # print("===============AFTER CAN MOVE===============")
+        # for row1 in range(len(self.board)):
+        #     test = self.board[row1].copy()
+        #     test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
+        #     print(flip_coords(row1, flipped = -self.flipped), test)
         return is_legal
     
-    def can_move(self, piece: Pieces.Piece, row: int, column: int, castling: bool = False) -> bool:
+    def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
+        print("can_move", piece.row, piece.column, row, column)
         piece_row, piece_column = piece.row, piece.column
+        castling = abs(piece.column - column) > 1 and isinstance(piece, Pieces.King)
         # Castling is a no capture move
         if not castling:
             save_piece = self.board[row][column]
