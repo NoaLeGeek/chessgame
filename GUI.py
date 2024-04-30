@@ -11,7 +11,7 @@ def draw_text(text: str, color: tuple[int, int, int], size: int, center: tuple[i
     window.blit(text_surface, text_rect)
 
 def draw_board(flipped: int):
-    window.blit(pygame.transform.rotate(board_assets[config["selected_board_asset"]], 90 * (1 - flipped)), (config["margin"], config["margin"]))
+    window.blit(pygame.transform.rotate(board_assets[config["selected_board_asset"]], get_value(flipped, 0, 180)), (config["margin"], config["margin"]))
 
 def draw_piece(piece):
     window.blit(piece.image, (piece.x, piece.y))

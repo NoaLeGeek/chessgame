@@ -1,6 +1,7 @@
 import constants
 
 from constants import config, square_size
+from math import copysign
 
 class Piece:
     def __init__(self, color, row, column):
@@ -302,7 +303,7 @@ class King(Piece):
                     self.available_moves.append((row + i, column + j))
 
         # Castling
-        if  self.first_move:
+        if self.first_move:
             # O-O-O
             rook_index = None
             for i in range(column - flipped, (7 - 9 * flipped) // 2, -flipped):
@@ -314,11 +315,18 @@ class King(Piece):
             rookToPos = range(rook_index, (7 - flipped) // 2 - flipped, 2 * (rook_index < (7 - flipped) // 2) - 1)
             print("kingToPos", list(kingToPos))
             print("rookToPos", list(rookToPos))
-            if rook_index is not None and all(board[row][i] == 0 or isinstance(board[row][i], (Rook, King)) for i in kingToPos) and all(board[row][i] == 0 or isinstance(board[row][i], (Rook, King)) for i in rookToPos):
+            if rook_index is not None:
+                can_castle = True
                 for i in kingToPos:
-                    if not isinstance(board[row][i], (Rook, King)):
+                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
+                    if not can_castle:
                         break
-                self.available_moves.append((row, (7 + 3 * flipped) // 2))
+                for i in rookToPos:
+                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
+                    if not can_castle:
+                        break
+                if can_castle:
+                    self.available_moves.append((row, 2 * (2 - flipped)))
             # O-O   
             rook_index = None
             for i in range(column + flipped, (7 + 9 * flipped) // 2, flipped):
@@ -330,6 +338,16 @@ class King(Piece):
             rookToPos = range(rook_index, (3 * flipped + 7) // 2 + flipped, 2 * (rook_index < ((3 * flipped + 7) // 2)) - 1)
             print("kingToPos", list(kingToPos))
             print("rookToPos", list(rookToPos))
-            if rook_index is not None and all(board[row][i] == 0 or isinstance(board[row][i], (Rook, King)) for i in kingToPos) and all(board[row][i] == 0 or isinstance(board[row][i], (Rook, King)) for i in rookToPos):
-                self.available_moves.append((row, (7 - 5 * flipped) // 2))
+            if rook_index is not None:
+                can_castle = True
+                for i in kingToPos:
+                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
+                    if not can_castle:
+                        break
+                for i in rookToPos:
+                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
+                    if not can_castle:
+                        break
+                if can_castle:
+                    self.available_moves.append((row, (7 + 5 * flipped) // 2))
         return self.available_moves

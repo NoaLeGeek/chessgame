@@ -182,6 +182,7 @@ class Game:
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
             # Calculate old and new position of the rook for O-O and O-O-O
+            # TODO outdated because of 960
             new_rook_pos, old_rook_pos = (2 * column + 7 - self.flipped) // 4, (7 * (2 * column - 3 + self.flipped)) // 8
             self.board[row][new_rook_pos], self.board[row][old_rook_pos] = self.board[row][old_rook_pos], self.board[row][new_rook_pos]
             self.board[row][new_rook_pos].piece_move(row, new_rook_pos)
@@ -220,6 +221,8 @@ class Game:
     
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         print("can_move", piece.row, piece.column, row, column)
+        if (piece.row, piece.column) == (row, column):
+            return True
         piece_row, piece_column = piece.row, piece.column
         castling = abs(piece.column - column) > 1 and isinstance(piece, Pieces.King)
         # Castling is a no capture move
