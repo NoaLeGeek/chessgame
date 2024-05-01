@@ -21,7 +21,7 @@ class Button:
         self.c_y = c_y
         self.c_width = c_width
         self.c_height = c_height
-        self.rect = pygame.Rect(round(pygame.display.Info().current_w * (c_x - 0.5 * c_width)), round(pygame.display.Info().current_h * (c_y - 0.5 * c_height)), round(self.c_width * pygame.display.Info().current_w), round(self.c_height * pygame.display.Info().current_h))
+        self.rect = pygame.Rect(ceil(pygame.display.Info().current_w * (c_x - 0.5 * c_width)), ceil(pygame.display.Info().current_h * (c_y - 0.5 * c_height)), ceil(self.c_width * pygame.display.Info().current_w), ceil(self.c_height * pygame.display.Info().current_h))
         self.color = color
         self.label = Label(c_x, c_y, text, text_color, c_text_size, font)
 
@@ -29,7 +29,7 @@ class Button:
         return self.rect.collidepoint(pygame.mouse.get_pos())
     
     def refresh(self):
-        self.rect = pygame.Rect(round(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), round(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height)), round(self.c_width * pygame.display.Info().current_w), round(self.c_height * pygame.display.Info().current_h))
+        self.rect = pygame.Rect(ceil(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height)), ceil(self.c_width * pygame.display.Info().current_w), ceil(self.c_height * pygame.display.Info().current_h))
         self.label.c_x = self.c_x
         self.label.c_y = self.c_y
         self.label.refresh()
@@ -54,7 +54,7 @@ class Label:
         self.y = self.c_y * pygame.display.Info().current_h
 
     def draw(self):
-        draw_text(self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
+        draw_text(self.text, self.color, ceil(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
 MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 255), 1/13),
                   Button(1/2 - 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "SETTINGS", (255, 255, 255), 1/26),
