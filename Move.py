@@ -14,7 +14,6 @@ class Move:
 
     def make_move(self):
         row, column = self.to
-        self.game.remove(row, column)
         self.game.move(self.piece, row, column)
         # Add the promoted piece to the board if there is one
         if self.promotion and config["selected_piece_asset"] != "blindfold":

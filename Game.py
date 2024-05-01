@@ -168,15 +168,6 @@ class Game:
     def is_stalemate(self) -> bool:
         return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
 
-    def remove(self, row: int, column: int):
-        piece = self.board[row][column]
-        if piece != 0:
-            self.board[row][column] = 0
-            if piece.color == 1:
-                self.white_pieces_left -= 1
-            else:
-                self.black_pieces_left -= 1
-
     def move(self, piece: Pieces.Piece, row: int, column: int):
         x = piece.color * self.flipped
         # Castling
@@ -190,6 +181,7 @@ class Game:
         elif isinstance(piece, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (piece.row - x, column):
             self.board[row + x][column] = 0
         self.en_passant = (row + x, column) if isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2 else None
+        self.board[row][column] = 0
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
         piece.piece_move(row, column)
         # Update the first_move attribute of the piece if it moved
@@ -197,7 +189,7 @@ class Game:
             piece.first_move = False
 
     def is_legal(self, piece: Pieces.Piece, row: int, column: int) -> bool:
-        print("is_legal", piece.row, piece.column, row, column)
+        #print("is_legal", piece.row, piece.column, row, column)
         # print("===============BEFORE CAN MOVE===============", piece, row, column)
         # for row1 in range(len(self.board)):
         #     test = self.board[row1].copy()
@@ -206,7 +198,7 @@ class Game:
         is_legal = self.can_move(piece, row, column)
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) > 1:
-            print("range", list(range(piece.column, column, 2 * (piece.column < column) - 1)))
+            #print("range", list(range(piece.column, column, 2 * (piece.column < column) - 1)))
             for next_column in range(piece.column, column, 2 * (piece.column < column) - 1):
                 is_legal = is_legal and self.can_move(piece, piece.row, next_column)
                 if not is_legal:
@@ -219,21 +211,19 @@ class Game:
         return is_legal
     
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
-        print("can_move", piece.row, piece.column, row, column)
+        #print("can_move", piece.row, piece.column, row, column)
         if (piece.row, piece.column) == (row, column):
             return True
         piece_row, piece_column = piece.row, piece.column
-        castling = abs(piece.column - column) > 1 and isinstance(piece, Pieces.King)
         # Castling is a no capture move
-        if not castling:
-            save_piece = self.board[row][column]
+        save_piece = self.board[row][column]
         if self.board[row][column] != 0:
             self.board[row][column] = 0
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
         piece.row, piece.column = row, column
         can_move = not self.is_king_checked()
         self.board[piece_row][piece_column] = piece
-        self.board[row][column] = save_piece if not castling else 0
+        self.board[row][column] = save_piece
         piece.row, piece.column = piece_row, piece_column
         return can_move
         
