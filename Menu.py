@@ -1,6 +1,6 @@
 import pygame
 
-from constants import window
+from constants import window, game_modes
 from GUI import draw_text
 from math import ceil
 
@@ -14,6 +14,12 @@ class Menu:
             button.draw()
         for label in self.labels:
             label.draw()
+
+    def refresh(self):
+        for button in self.buttons:
+            button.refresh()
+        for label in self.labels:
+            label.refresh()
 
 class Button:
     def __init__(self, c_x: float, c_y: float, c_width: float, c_height: float, color: tuple[int, int, int], text: str, text_color: tuple[int, int, int], c_text_size: float, font: str = "ocraextended") -> None:
@@ -61,3 +67,5 @@ MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 
                   Button(1/2 + 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "CREDITS", (255, 255, 255), 1/26),
                   Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", (255, 255, 255), 1/13)],
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
+CHOOSE_GAME_MODE_MENU = Menu([Button(1/(2 * len(game_modes)), 1/2, 1/len(game_modes), 1, (92, 64, 51), game_modes[i], (255, 255, 255), 1/26) for i in range(len(game_modes))])
+menus = [MAIN_MENU, CHOOSE_GAME_MODE_MENU]

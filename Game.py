@@ -7,7 +7,7 @@ from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion
 from random import choice
 
 class Game:
-    def __init__(self):
+    def __init__(self, game_mode: str = "classic"):
         self.window = window
         self.board = []
         self.turn = 0
@@ -23,7 +23,7 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
-        self.game_mode = "classic"
+        self.game_mode = game_mode
         self.debug = True
         if config["state"] == "game":
             customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"

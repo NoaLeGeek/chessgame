@@ -1,11 +1,11 @@
 import pygame
 import random
-import Menu
 import GUI
 
 from Game import Game
 from Pieces import *
 from constants import *
+from Menu import MAIN_MENU, CHOOSE_GAME_MODE_MENU, menus
 from Config import change_background, change_board, change_piece, change_sound
 
 def main():
@@ -18,7 +18,9 @@ def main():
         GUI.draw_background()
         match config["state"]:
             case "main_menu":
-                Menu.MAIN_MENU.draw_menu()
+                MAIN_MENU.draw_menu()
+            case "choose_game_mode":
+                CHOOSE_GAME_MODE_MENU.draw_menu()
             case "game":
                 game.update_window()
         pygame.display.update()
@@ -31,10 +33,8 @@ def main():
                     pygame.display.set_mode((config["width"], pygame.display.Info().current_h), pygame.RESIZABLE)
                 if pygame.display.Info().current_w < config["height"]:
                     pygame.display.set_mode((config["height"], pygame.display.Info().current_h), pygame.RESIZABLE)
-                for button in Menu.MAIN_MENU.buttons:
-                    button.refresh()
-                for label in Menu.MAIN_MENU.labels:
-                    label.refresh()
+                for menu in menus:
+                    menu.refresh()
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
@@ -58,26 +58,31 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and not game_over:
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
-                    if config["state"] == "main_menu":
-                        if Menu.MAIN_MENU.buttons[0].is_clicked():
-                            config["state"] = "game"
-                            game = Game()
-                        if Menu.MAIN_MENU.buttons[1].is_clicked():
-                            game.state = "settings"
-                        if Menu.MAIN_MENU.buttons[3].is_clicked():
-                            run = False
-                            pygame.quit()
-                    elif config["state"] == "game":
-                        row, column = get_position(*pygame.mouse.get_pos())
-                        if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
-                            selected_piece = game.board[row][column]
-                            print("clicked on:", selected_piece if selected_piece != 0 else 0)
-                            print("cRow", row, "cColumn", column)
-                            if selected_piece != 0 and isinstance(selected_piece, King):
-                                print("kingmoves", selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
-                            #if game.turn == 1:
-                            game.select(row, column)
-                        game.highlightedSquares = {}
+                    match config["state"]:
+                        case "main_menu":
+                            if MAIN_MENU.buttons[0].is_clicked():
+                                config["state"] = "choose_game_mode"
+                            if MAIN_MENU.buttons[1].is_clicked():
+                                game.state = "settings"
+                            if MAIN_MENU.buttons[3].is_clicked():
+                                run = False
+                                pygame.quit()
+                        case "choose_game_mode":
+                            for i in range(len(CHOOSE_GAME_MODE_MENU.buttons)):
+                                if CHOOSE_GAME_MODE_MENU.buttons[i].is_clicked():
+                                    config["state"] = "game"
+                                    game = Game(game_modes[i])
+                        case "game":
+                            row, column = get_position(*pygame.mouse.get_pos())
+                            if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
+                                selected_piece = game.board[row][column]
+                                print("clicked on:", selected_piece if selected_piece != 0 else 0)
+                                print("cRow", row, "cColumn", column)
+                                if selected_piece != 0 and isinstance(selected_piece, King):
+                                    print("kingmoves", selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
+                                #if game.turn == 1:
+                                game.select(row, column)
+                            game.highlightedSquares = {}
                 # Right click
                 elif pygame.mouse.get_pressed()[2]:
                     if config["state"] == "game":
