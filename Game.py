@@ -1,7 +1,7 @@
 import Pieces
 import Move
 
-from constants import config, window, sign, flip_coords
+from constants import config, window, sign, flip_coords, get_value
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
