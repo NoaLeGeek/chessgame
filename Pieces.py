@@ -299,57 +299,14 @@ class King(Piece):
             for j in range(-1, 2):
                 if (-1 < row + i < len(board) and -1 < column + j < len(board[row])) and not (i == 0 and j == 0) and (board[row + i][column + j] == 0 or board[row + i][column + j].color != self.color):
                     self.available_moves.append((row + i, column + j))
-
         # Castling
         if self.first_move:
             # O-O-O
-            rook_index = None
-            range_func = range(column - flipped, flip_coords(-1, flipped = flipped), -flipped)
-            print("range_func", list(range_func))
-            for i in range_func:
-                if isinstance(board[row][i], Rook) and board[row][i].first_move:
-                    rook_index = i
-                    break
-            print("rooki OOO", rook_index)
-            kingToPos = range(flip_coords(2, flipped = flipped), column, sign(column - flip_coords(2, flipped = flipped)))
-            rookToPos = range(flip_coords(3, flipped = flipped), rook_index, sign(rook_index - flip_coords(3, flipped = flipped)))
-            print("kingToPos", list(kingToPos))
-            print("rookToPos", list(rookToPos))
-            if rook_index is not None:
-                can_castle = True
-                for i in kingToPos:
-                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
-                    if not can_castle:
-                        break
-                for i in rookToPos:
-                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
-                    if not can_castle:
-                        break
-                if can_castle:
-                    self.available_moves.append((row, rook_index))
+            rook_index = next((i for i in range(column - flipped, flip_coords(-1, flipped=flipped), -flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
+            if rook_index is not None and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(2, flipped=flipped), column, sign(column - flip_coords(2, flipped=flipped)))) and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(3, flipped=flipped), rook_index, sign(rook_index - flip_coords(3, flipped=flipped)))):
+                self.available_moves.append((row, rook_index))
             # O-O   
-            rook_index = None
-            range_func = range(column + flipped, flip_coords(8, flipped = flipped), flipped)
-            print("range_func", list(range_func))
-            for i in range_func:
-                if isinstance(board[row][i], Rook) and board[row][i].first_move:
-                    rook_index = i
-                    break
-            print("rooki OO", rook_index)
-            kingToPos = range(flip_coords(6, flipped = flipped), column, sign(column - flip_coords(6, flipped = flipped)))
-            rookToPos = range(flip_coords(5, flipped = flipped), rook_index, sign(rook_index - flip_coords(5, flipped = flipped)))
-            print("kingToPos", list(kingToPos))
-            print("rookToPos", list(rookToPos))
-            if rook_index is not None:
-                can_castle = True
-                for i in kingToPos:
-                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
-                    if not can_castle:
-                        break
-                for i in rookToPos:
-                    can_castle = can_castle and (isinstance(board[row][i], (Rook, King)) or board[row][i] == 0)
-                    if not can_castle:
-                        break
-                if can_castle:
-                    self.available_moves.append((row, rook_index))
+            rook_index = next((i for i in range(column + flipped, flip_coords(8, flipped = flipped), flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
+            if rook_index is not None and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(6, flipped=flipped), column, sign(column - flip_coords(6, flipped=flipped)))) and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(5, flipped=flipped), rook_index, sign(rook_index - flip_coords(5, flipped=flipped)))):
+                self.available_moves.append((row, rook_index))
         return self.available_moves
