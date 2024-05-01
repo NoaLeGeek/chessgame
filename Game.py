@@ -23,7 +23,7 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
-        self.game_mode = "960"
+        self.game_mode = "classic"
         self.debug = True
         if config["state"] == "game":
             customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
@@ -189,29 +189,16 @@ class Game:
             piece.first_move = False
 
     def is_legal(self, piece: Pieces.Piece, row: int, column: int) -> bool:
-        #print("is_legal", piece.row, piece.column, row, column)
-        # print("===============BEFORE CAN MOVE===============", piece, row, column)
-        # for row1 in range(len(self.board)):
-        #     test = self.board[row1].copy()
-        #     test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-        #     print(flip_coords(row1, flipped = -self.flipped), test)
         is_legal = self.can_move(piece, row, column)
         # Castling
         if isinstance(piece, Pieces.King) and abs(piece.column - column) > 1:
-            #print("range", list(range(piece.column, column, 2 * (piece.column < column) - 1)))
             for next_column in range(piece.column, column, 2 * (piece.column < column) - 1):
                 is_legal = is_legal and self.can_move(piece, piece.row, next_column)
                 if not is_legal:
                     break
-        # print("===============AFTER CAN MOVE===============")
-        # for row1 in range(len(self.board)):
-        #     test = self.board[row1].copy()
-        #     test = [str(type(piece)).split(".")[1].split("'")[0][0] if piece != 0 else "0" for piece in test]
-        #     print(flip_coords(row1, flipped = -self.flipped), test)
         return is_legal
     
     def can_move(self, piece: Pieces.Piece, row: int, column: int) -> bool:
-        #print("can_move", piece.row, piece.column, row, column)
         if (piece.row, piece.column) == (row, column):
             return True
         piece_row, piece_column = piece.row, piece.column
@@ -281,7 +268,7 @@ class Game:
 
     def execute_move(self, row: int, column: int):
         x, captured = self.selected.color * self.flipped, False
-        if self.board[row][column] != 0 and self.board[row][column].color != self.selected.color:
+        if self.board[row][column] != 0:
             captured = self.board[row][column]
         elif isinstance(self.selected, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column):
             captured = self.board[row + x][column]

@@ -4,7 +4,7 @@ from constants import flip_coords, config, piece_assets, sign, get_value
 from Config import play_sound
 
 class Move:
-    def __init__(self, game, from_, to, piece, capture=False, promotion: bool | tuple[Pieces.Piece, int] = False):
+    def __init__(self, game, from_, to, piece, capture: bool | Pieces.Piece = False, promotion: bool | tuple[Pieces.Piece, int] = False):
         self.game = game
         self.from_ = from_
         self.to = to
@@ -23,12 +23,14 @@ class Move:
         self.game.valid_moves, self.game.selected = [], None
         # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
-            self.game.halfMoves = 0
+            self.game.halfMoves = 0 
+        # Modify the final column of the king if it's a castling move
+        if isinstance(self.piece, Pieces.King) and isinstance(self.capture, Pieces.Rook) and self.capture.color == self.piece.color:
+            self.to = (row, (7 + self.game.flipped + get_value(self.game.flipped * sign(column - self.from_[1]), 4, -4)) // 2)
         self.game.history.append((self, self.to_literal(), self.game.generate_fen()))
         print(self.game.history[-1])
-        # TODO the rook dispapears to line 31
         self.game.check_game()
-        if abs(self.to[1] - self.from_[1]) == 2:
+        if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].color == self.piece.color:
             play_sound("castle")
         elif self.game.is_king_checked():
             play_sound("move-check")
@@ -47,7 +49,7 @@ class Move:
         string = ""
         # The move is O-O or O-O-O
         if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].color == self.piece.color:
-            string += "O" + "-O"*(get_value(sign(column - self.from_[1]) * self.flipped, 1, 2))
+            string += "O" + "-O"*(get_value(sign(column - self.from_[1]) * self.game.flipped, 1, 2))
         else:
             # Add the symbol of the piece or the starting column if it's a pawn
             string += [(chr(flip_coords(self.from_[1], flipped = self.game.flipped) + 97) if self.capture else ""), "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(self.piece)]

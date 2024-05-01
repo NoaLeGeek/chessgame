@@ -1,6 +1,6 @@
 import constants
 
-from constants import config, square_size, get_value, flip_coords, sign
+from constants import config, square_size, flip_coords, sign
 
 class Piece:
     def __init__(self, color, row, column):
