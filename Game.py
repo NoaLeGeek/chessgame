@@ -1,7 +1,7 @@
 import Pieces
 import Move
 
-from constants import config, window, flip_coords, sign, get_value
+from constants import config, window, sign, flip_coords
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
@@ -257,6 +257,10 @@ class Game:
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board[row][column] != 0 and self.board[row][column].color == self.selected.color and (row, column) != (self.selected.row, self.selected.column):
+                # Castling move
+                if isinstance(self.selected, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == self.selected.color:
+                    self.execute_move(row, column)
+                    return
                 self.selected = None
                 self.select(row, column)
                 return
@@ -277,19 +281,22 @@ class Game:
                 self.promotion = self.selected, column - self.selected.column
                 self.valid_moves = []
                 return
-            captured = False
-            if self.board[row][column] != 0 and self.board[row][column].color != self.selected.color:
-                captured = self.board[row][column]
-            elif isinstance(self.selected, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column):
-                captured = self.board[row + x][column]
-            move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, False)
-            move.make_move()
+            self.execute_move(row, column)
         else:
             piece = self.board[row][column]
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
                 # TODO /!\ NEEDS to be optimised, needs to remove all moves that are not in the "Cross pin" if there is one, see chessprogramming.org/Pin
-                self.valid_moves = [move for move in piece.get_available_moves(self.board, row, column, self.flipped, en_passant = self.en_passant) if self.is_legal(self.selected, *move)]
+                self.valid_moves = set([move for move in piece.get_available_moves(self.board, row, column, self.flipped, en_passant = self.en_passant) if self.is_legal(self.selected, *move)])
+
+    def execute_move(self, row: int, column: int):
+        x, captured = self.selected.color * self.flipped, False
+        if self.board[row][column] != 0 and self.board[row][column].color != self.selected.color:
+            captured = self.board[row][column]
+        elif isinstance(self.selected, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column):
+            captured = self.board[row + x][column]
+        move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, False)
+        move.make_move()
 
     def flip_game(self):
         self.flipped *= -1
@@ -305,7 +312,7 @@ class Game:
             for column in range(len(self.board[row])):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.piece_move(7 - piece.row, 7 - piece.column)
+                    piece.piece_move(*flip_coords(piece.row, piece.column, flipped = -1))
         for row in self.board:
             row.reverse()
         self.board.reverse()
@@ -331,7 +338,7 @@ class Game:
                 fen += "/"
         # "w" if self.turn == 1
         # "b" if self.turn == -1
-        fen += chr((21 * self.turn + 217) // 2)
+        fen += chr(get_value(self.turn, 119, 98))
         castle_rights = " "
         if self.get_king(1).first_move:
             if isinstance(self.board[7][7], Pieces.Rook) and self.board[7][7].first_move:

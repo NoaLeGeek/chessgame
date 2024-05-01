@@ -1,7 +1,6 @@
 import constants
 
-from constants import config, square_size
-from math import copysign
+from constants import config, square_size, get_value, flip_coords, sign
 
 class Piece:
     def __init__(self, color, row, column):
@@ -305,13 +304,15 @@ class King(Piece):
         if self.first_move:
             # O-O-O
             rook_index = None
-            for i in range(column - flipped, (7 - 9 * flipped) // 2, -flipped):
+            range_func = range(column - flipped, flip_coords(-1, flipped = flipped), -flipped)
+            print("range_func", list(range_func))
+            for i in range_func:
                 if isinstance(board[row][i], Rook) and board[row][i].first_move:
                     rook_index = i
                     break
             print("rooki OOO", rook_index)
-            kingToPos = range(column, (7 * flipped - 3) // 2 - flipped, -flipped)
-            rookToPos = range(rook_index, (7 - flipped) // 2 - flipped, 2 * (rook_index < (7 - flipped) // 2) - 1)
+            kingToPos = range(flip_coords(2, flipped = flipped), column, sign(column - flip_coords(2, flipped = flipped)))
+            rookToPos = range(flip_coords(3, flipped = flipped), rook_index, sign(rook_index - flip_coords(3, flipped = flipped)))
             print("kingToPos", list(kingToPos))
             print("rookToPos", list(rookToPos))
             if rook_index is not None:
@@ -325,16 +326,18 @@ class King(Piece):
                     if not can_castle:
                         break
                 if can_castle:
-                    self.available_moves.append((row, 2 * (2 - flipped)))
+                    self.available_moves.append((row, rook_index))
             # O-O   
             rook_index = None
-            for i in range(column + flipped, (7 + 9 * flipped) // 2, flipped):
+            range_func = range(column + flipped, flip_coords(8, flipped = flipped), flipped)
+            print("range_func", list(range_func))
+            for i in range_func:
                 if isinstance(board[row][i], Rook) and board[row][i].first_move:
                     rook_index = i
                     break
             print("rooki OO", rook_index)
-            kingToPos = range(column, (5 * flipped + 7) // 2 + flipped, flipped)
-            rookToPos = range(rook_index, (3 * flipped + 7) // 2 + flipped, 2 * (rook_index < ((3 * flipped + 7) // 2)) - 1)
+            kingToPos = range(flip_coords(6, flipped = flipped), column, sign(column - flip_coords(6, flipped = flipped)))
+            rookToPos = range(flip_coords(5, flipped = flipped), rook_index, sign(rook_index - flip_coords(5, flipped = flipped)))
             print("kingToPos", list(kingToPos))
             print("rookToPos", list(rookToPos))
             if rook_index is not None:
@@ -348,5 +351,5 @@ class King(Piece):
                     if not can_castle:
                         break
                 if can_castle:
-                    self.available_moves.append((row, (7 + 5 * flipped) // 2))
+                    self.available_moves.append((row, rook_index))
         return self.available_moves

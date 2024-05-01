@@ -17,6 +17,9 @@ def sign(x: int):
 def get_value(flipped: bool, white_value: int, black_value: int):
     return (white_value * (flipped + 1) + black_value * (1 - flipped)) // 2
 
+def sign(x: int):
+    return (x >= 0) - (x < 0)
+
 def generate_images(asset: str):
     images = []
     for piece in piece_constants:

@@ -1,6 +1,6 @@
 import Pieces
 
-from constants import flip_coords, config, piece_assets
+from constants import flip_coords, config, piece_assets, sign, get_value
 from Config import play_sound
 
 class Move:
@@ -44,19 +44,20 @@ class Move:
                 play_sound("move-opponent")
 
     def to_literal(self):
+        row, column = self.to
         string = ""
         # The move is O-O or O-O-O
-        if isinstance(self.piece, Pieces.King) and abs(self.from_[1] - self.to[1]) == 2:
-            string += "O" + "-O"*((-self.to[1] + 10) // 4)
+        if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].color == self.piece.color:
+            string += "O" + "-O"*(get_value(sign(column - self.from_[1]) * self.flipped, 1, 2))
         else:
             # Add the symbol of the piece or the starting column if it's a pawn
             string += [(chr(flip_coords(self.from_[1], flipped = self.game.flipped) + 97) if self.capture else ""), "N", "B", "R", "Q", "K"][Pieces.Piece.piece_to_index(self.piece)]
             # Add x if it's a capture
             string += ("x" if self.capture else "")
             # Add the destination's column
-            string += chr(flip_coords(self.to[1], flipped = self.game.flipped) + 97)
+            string += chr(flip_coords(column, flipped = self.game.flipped) + 97)
             # Add the destination's row
-            string += str(flip_coords(self.to[0], flipped = -self.game.flipped) + 1)
+            string += str(flip_coords(row, flipped = -self.game.flipped) + 1)
             # Add promotion
             string += ("=" + ["N", "B", "R", "Q"][Pieces.Piece.piece_to_index(self.promotion) - 1] if self.promotion else "")
         # Add # if it's checkmate or + if it's a check
