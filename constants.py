@@ -11,6 +11,9 @@ def flip_coords(*args, **kwds):
     coords = [get_value(kwds["flipped"], arg, 7 - arg) for arg in args] if kwds else tuple([7 - arg for arg in args])
     return coords[0] if len(coords) == 1 else coords
 
+def sign(x: int):
+    return (x >= 0) - (x < 0)
+
 def get_value(flipped: bool, white_value: int, black_value: int):
     return (white_value * (flipped + 1) + black_value * (1 - flipped)) // 2
 

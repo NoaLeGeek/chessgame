@@ -293,7 +293,6 @@ class King(Piece):
     def __init__(self, color, row, column):
         super().__init__(color, row, column)
         self.first_move = True
-        self.not_castled = True
 
     def get_available_moves(self, board, row, column, flipped: bool = False, **kwds):
         self.clear_available_moves()

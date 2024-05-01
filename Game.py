@@ -1,7 +1,7 @@
 import Pieces
 import Move
 
-from constants import config, window, flip_coords
+from constants import config, window, flip_coords, sign, get_value
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
@@ -180,15 +180,14 @@ class Game:
     def move(self, piece: Pieces.Piece, row: int, column: int):
         x = piece.color * self.flipped
         # Castling
-        if isinstance(piece, Pieces.King) and abs(piece.column - column) == 2 and not self.is_king_checked():
+        if isinstance(piece, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == piece.color:
             # Calculate old and new position of the rook for O-O and O-O-O
-            # TODO outdated because of 960
-            new_rook_pos, old_rook_pos = (2 * column + 7 - self.flipped) // 4, (7 * (2 * column - 3 + self.flipped)) // 8
-            self.board[row][new_rook_pos], self.board[row][old_rook_pos] = self.board[row][old_rook_pos], self.board[row][new_rook_pos]
-            self.board[row][new_rook_pos].piece_move(row, new_rook_pos)
-            piece.not_castled = False
+            rook_column = (7 + self.flipped + get_value(self.flipped * sign(column - piece.column), 2, -2)) // 2
+            self.board[row][rook_column], self.board[row][column] = self.board[row][column], self.board[row][rook_column]
+            self.board[row][rook_column].piece_move(row, rook_column)
+            column = (7 + self.flipped + get_value(self.flipped * sign(column - piece.column), 4, -4)) // 2
         # En-passant
-        if isinstance(piece, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (piece.row - x, column):
+        elif isinstance(piece, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (piece.row - x, column):
             self.board[row + x][column] = 0
         self.en_passant = (row + x, column) if isinstance(piece, Pieces.Pawn) and abs(piece.row - row) == 2 else None
         self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
