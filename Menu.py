@@ -1,6 +1,6 @@
 import pygame
 
-from constants import window, game_modes
+from constants import window, game_modes, config
 from GUI import draw_text
 from math import ceil
 
@@ -67,5 +67,9 @@ MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 
                   Button(1/2 + 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "CREDITS", (255, 255, 255), 1/26),
                   Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", (255, 255, 255), 1/13)],
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
-CHOOSE_GAME_MODE_MENU = Menu([Button(1/(2 * len(game_modes)), 1/2, 1/len(game_modes), 1, (92, 64, 51), game_modes[i], (255, 255, 255), 1/26) for i in range(len(game_modes))])
+CHOOSE_GAME_MODE_MENU = Menu([Button(((config["margin"] / pygame.display.Info().current_w) * len(game_modes))/(len(game_modes) + 1),
+                                     1/2,
+                                     (1 - 2*(config["margin"] / pygame.display.Info().current_w))/len(game_modes),
+                                     1 - 2 * (config["margin"] / pygame.display.Info().current_h),
+                                     (92, 64, 51), game_modes[i], (255, 255, 255), 3/104) for i in range(len(game_modes))])
 menus = [MAIN_MENU, CHOOSE_GAME_MODE_MENU]
