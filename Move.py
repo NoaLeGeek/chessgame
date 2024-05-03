@@ -27,6 +27,8 @@ class Move:
         # Modify the final column of the king if it's a castling move
         if isinstance(self.piece, Pieces.King) and isinstance(self.capture, Pieces.Rook) and self.capture.color == self.piece.color:
             self.to = (row, (7 + self.game.flipped + get_value(self.game.flipped * sign(column - self.from_[1]), 4, -4)) // 2)
+        if self.game.gamemode == "+3 Checks" and self.game.is_king_checked():
+            self.game.win_condition += 1
         self.game.history.append((self, self.to_literal(), self.game.generate_fen()))
         print(self.game.history[-1])
         self.game.check_game()

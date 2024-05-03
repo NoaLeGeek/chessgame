@@ -20,7 +20,7 @@ def get_value(flipped: bool, white_value: int, black_value: int):
 def sign(x: int):
     return (x >= 0) - (x < 0)
 
-def generate_images(asset: str):
+def generate_pieces(asset: str):
     images = []
     for piece in piece_constants:
         image = pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
@@ -72,7 +72,7 @@ with open("config.json", "r") as file:
 
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
-game_modes = ["classic", "koth", "+3_checks", "giveaway", "960"]
+gamemodes = ["Classic", "KOTH", "+3 Checks", "Giveaway", "Chess960"]
 window = pygame.display.set_mode((config["height"],) * 2, pygame.RESIZABLE)
 square_size = floor((config["height"] - 2 * config["margin"]) / config["columns"])
 
@@ -80,7 +80,7 @@ available_board_assets = ["green", "checkers", "8_bit", "dark_wood", "glass", "b
 board_assets = {config["selected_board_asset"]: generate_board(config["selected_board_asset"])}
 
 available_piece_assets = ["blindfold", "lichess", "chesscom", "fancy", "warrior", "wood", "game_room", "glass", "gothic", "classic", "metal", "bases", "neo_wood", "icy_sea", "club", "ocean", "newspaper", "space", "cases", "condal", "8_bit", "marble", "book", "alpha", "bubblegum", "dash", "graffiti", "light", "lolz", "luca", "maya", "modern", "nature", "neon", "sky", "tigers", "tournament", "vintage", "3d_wood", "3d_staunton", "3d_plastic", "3d_chesskid"]
-piece_assets = {config["selected_piece_asset"]: generate_images(config["selected_piece_asset"])} if config["selected_piece_asset"] != "blindfold" else {}
+piece_assets = {config["selected_piece_asset"]: generate_pieces(config["selected_piece_asset"])} if config["selected_piece_asset"] != "blindfold" else {}
 
 available_background_assets = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 background_assets = {config["selected_background_asset"]: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", config["selected_background_asset"] + ".png")), (config["width"], config["height"]))}

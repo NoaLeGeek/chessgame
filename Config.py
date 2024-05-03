@@ -1,14 +1,15 @@
 import pygame
 import constants
+import os
 
 from Pieces import *
-from constants import *
+from constants import piece_assets, generate_pieces, generate_board, generate_sounds
 
 def change_piece(board, asset):
         config["selected_piece_asset"] = asset
         if config["selected_piece_asset"] == "blindfold":
             return
-        piece_assets[config["selected_piece_asset"]] = generate_images(asset)
+        piece_assets[config["selected_piece_asset"]] = generate_pieces(asset)
         for row in range(config["rows"]):
             for column in range(config["columns"]):
                 piece = board[row][column]
