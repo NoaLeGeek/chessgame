@@ -108,6 +108,7 @@ class Game:
         return self.is_king_checked() and self.is_stalemate()
 
     def check_game(self):
+        # TODO WIN GIVEAWAT NOT DONE
         if self.gamemode == "KOTH" and any([isinstance(self.board[row][column], Pieces.King) for row in [3, 4] for column in [3, 4]]):
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             self.game_over = True

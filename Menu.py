@@ -61,7 +61,7 @@ class Label:
         self.y = self.c_y * pygame.display.Info().current_h
 
     def draw(self):
-        draw_text(self.text, self.color, ceil(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
+        draw_text(self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
 MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 255), 1/13),
                   Button(1/2 - 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "SETTINGS", (255, 255, 255), 1/26),
