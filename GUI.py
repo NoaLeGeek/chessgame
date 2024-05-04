@@ -39,18 +39,18 @@ def draw_moves(moves):
 def draw_promotion(promotion, offset, flipped):
     x = promotion.color * flipped
     # Draw the promotion rectangle
-    pygame.draw.rect(window, (255, 255, 255), ((promotion.column + offset) * square_size + config["margin"], get_value(flipped, 0, 4) * square_size + config["margin"], square_size, 4*square_size))
+    pygame.draw.rect(window, (255, 255, 255), ((promotion.column + offset) * square_size + config["margin"], get_value(x, 0, 4) * square_size + config["margin"], square_size, 4*square_size))
     # Draw the X rectangle
-    pygame.draw.rect(window, (241, 241, 241), ((promotion.column + offset) * square_size + config["margin"], get_value(flipped, 4, 14/4) * square_size + config["margin"], square_size, .5*square_size))
+    pygame.draw.rect(window, (241, 241, 241), ((promotion.column + offset) * square_size + config["margin"], get_value(x, 4, 14/4) * square_size + config["margin"], square_size, .5*square_size))
     # Draw the X
-    center_x, center_y = (promotion.column + offset + 1/2) * square_size + config["margin"], get_value(flipped, 17/4, 15/4) * square_size + config["margin"]
+    center_x, center_y = (promotion.column + offset + 1/2) * square_size + config["margin"], get_value(x, 17/4, 15/4) * square_size + config["margin"]
     pygame.draw.line(window, (139, 137, 135), (center_x - square_size / 8, center_y - square_size / 8), (center_x + square_size / 8, center_y + square_size / 8), round(square_size / 15))
     pygame.draw.line(window, (139, 137, 135), (center_x + square_size / 8, center_y - square_size / 8), (center_x - square_size / 8, center_y + square_size / 8), round(square_size / 15))
     if config["selected_piece_asset"] == "blindfold":
         return
     for i in range(5):
         if i < 4:
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, get_value(flipped, 0, 7) + x * i, promotion.column + offset)
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, get_value(flipped, 7, 0) + x * i, promotion.column + offset)
             render.image = piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(render) + get_value(render.color, 0, 6)]
             window.blit(render.image, (render.x, render.y))
                   

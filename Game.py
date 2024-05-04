@@ -280,6 +280,7 @@ class Game:
         move.make_move()
 
     def flip_game(self):
+        self.flip_board()
         self.flipped *= -1
         self.selected, self.valid_moves, self.promotion = None, [], None
         if self.en_passant:

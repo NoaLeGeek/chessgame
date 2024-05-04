@@ -45,7 +45,6 @@ def main():
                     game.reset()
                 if config["state"] == "game":
                     if event.key == pygame.K_f:
-                        game.flip_board()
                         game.flip_game()
                     if event.key == pygame.K_c:
                         change_piece(game.board, choice(available_piece_assets))
@@ -77,7 +76,7 @@ def main():
                                 if GAMEMODE_MENU.buttons[i].is_clicked():
                                     config["state"] = "game"
                                     game = Game(gamemodes[i])
-                                    bot_color = choice([-1, 1])
+                                    bot_color = -1
                                     if bot_color == 1:
                                         game.flip_game()
                         case "opponent":
