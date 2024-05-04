@@ -21,13 +21,14 @@ class Game:
         self.history = []
         self.highlightedSquares = {}
         self.game_over = False
-        self.win_condition = 0
         self.gamemode = gamemode
+        if gamemode == "+3 Checks":
+            self.win_condition = 0
+        self.opponent = "randomIA"
         self.debug = False
         if config["state"] == "game":
-            customfen = "rnb1kb1r/pppqpppp/5n2/3N2B1/2P5/3P4/PPp1PPPP/R3KBNR w KQkq - 3 7"
-            custom2fen = "r3k2r/ppPpp1pp/4B3/8/8/4b3/PPpPP1PP/R3K2R w KQkq - 0 1"
-            self.create_board()
+            customfen = "K4RBR/5BkB/5RBR/8/8/8/pppppppp/8 w KQkq – 0 1"
+            self.create_board(customfen)
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
@@ -108,12 +109,14 @@ class Game:
         return self.is_king_checked() and self.is_stalemate()
 
     def check_game(self):
-        # TODO WIN GIVEAWAT NOT DONE
         if self.gamemode == "KOTH" and any([isinstance(self.board[row][column], Pieces.King) for row in [3, 4] for column in [3, 4]]):
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             self.game_over = True
         elif self.gamemode == "+3 Checks" and self.win_condition >= 3:
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
+            self.game_over = True
+        elif self.gamemode == "Giveaway" and (any([self.dict_color_pieces(color) == dict() for color in [1, -1]]) or self.is_stalemate()):
+            print("{} Wins".format("Black" if self.turn == -1 else "White"))
             self.game_over = True
         elif self.is_checkmate():
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
@@ -124,13 +127,14 @@ class Game:
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
             self.game_over = True
-        elif all(not isinstance(self.board[row][column], Pieces.Pawn) for column in range(len(self.board[0])) for row in range(len(self.board))):
+        elif False:
             if self.get_color_pieces(self.turn):
                 pass
         else:
             pass
             #get the last move that is irreversible
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
+        # TODO add the material insufficient
         if self.game_over:
             play_sound("game-end")
             
@@ -158,14 +162,6 @@ class Game:
             for column in range(len(self.board[0])):
                 if isinstance(self.board[row][column], Pieces.King) and self.board[row][column].color == color:
                     return self.board[row][column]
-
-    def possible_moves(self, board: list[list[int | Pieces.Piece]]):
-        possible_moves = []
-        for row in range(len(board)):
-            for column in range(len(board[0])):
-                if board[row][column] != 0 and board[row][column].color == self.turn and isinstance(board[row][column], Pieces.King):
-                    possible_moves += board[row][column].get_available_moves(board, row, column, self.flipped, self.en_passant)
-        return possible_moves
 
     def is_stalemate(self) -> bool:
         return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
@@ -223,8 +219,9 @@ class Game:
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
-                if row in range(2*(1 - x), 2*(3 - x)) and column == self.promotion[1] + self.selected.column:
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (7 * (1 - x) // 2, column), self.selected, self.board[7 * (1 - x) // 2][column] if self.board[7 * (1 - x) // 2][column] != 0 and self.board[7 * (1 - x) // 2][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = x)](self.selected.color, 7 * (1 - x) // 2, column))
+                if row in range(get_value(self.flipped, 0, 4), get_value(self.flipped, 4, 8)) and column == self.promotion[1] + self.selected.column:
+                    promotion_row = get_value(self.flipped, 0, 7)
+                    move = Move.Move(self, (self.selected.row, self.selected.column), (promotion_row, column), self.selected, self.board[promotion_row][column] if self.board[promotion_row][column] != 0 and self.board[promotion_row][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = x)](self.selected.color, promotion_row, column))
                     move.make_move()
                     self.promotion = None
                     return
@@ -300,6 +297,15 @@ class Game:
         for row in self.board:
             row.reverse()
         self.board.reverse()
+
+    def dict_color_pieces(self, color: int):
+        groups = {}
+        for piece in self.get_color_pieces(color):
+            if type(piece) in groups.keys():
+                groups[type(piece)] += 1
+            else:
+                groups[type(piece)] = 1
+        return groups
 
     def generate_fen(self):
         fen = ""

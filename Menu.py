@@ -68,7 +68,6 @@ MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 
                   Button(1/2 + 2/13, 1/2 + 2/13, 4/13, 2/13, (92, 64, 51), "CREDITS", (255, 255, 255), 1/26),
                   Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", (255, 255, 255), 1/13)],
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
-# For the c_x from this menu, I don't know why it works but it does 
-CHOOSE_GAMEMODE_MENU = Menu([Button(((2*i+1) * (1 - 2*(config["margin"] / pygame.display.Info().current_w)))/(2*len(gamemodes)) + (config["margin"] / pygame.display.Info().current_w), 1/2, (1 - 2*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), 1 - 2 * (config["margin"] / pygame.display.Info().current_h), (92, 64, 51), gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))])
-menus = [MAIN_MENU, CHOOSE_GAMEMODE_MENU]
-# (config["margin"] / pygame.display.Info().current_w)*0.5 + (1 - (config["margin"] / pygame.display.Info().current_w))/(len(gamemodes) + 1)
+GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-2*(config["margin"] / pygame.display.Info().current_h)), (92, 64, 51), gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))])
+#OPPONENT_MENU = Menu([Button(), Button()])
+menus = [MAIN_MENU, GAMEMODE_MENU]

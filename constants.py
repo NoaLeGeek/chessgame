@@ -15,7 +15,7 @@ def sign(x: int):
     return (x >= 0) - (x < 0)
 
 def get_value(flipped: bool, white_value: int, black_value: int):
-    return (white_value * (flipped + 1) + black_value * (1 - flipped)) // 2
+    return white_value if flipped == 1 else black_value
 
 def sign(x: int):
     return (x >= 0) - (x < 0)

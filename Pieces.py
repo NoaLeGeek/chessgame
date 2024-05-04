@@ -1,6 +1,6 @@
 import constants
 
-from constants import config, square_size, flip_coords, sign
+from constants import config, square_size, flip_coords, sign, get_value
 
 class Piece:
     def __init__(self, color, row, column):
@@ -11,7 +11,7 @@ class Piece:
         self.y = 0
         self.available_moves = []
         if config["selected_piece_asset"] != "blindfold":
-            self.image = constants.piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(self) + 3 * (1 - self.color)]
+            self.image = constants.piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(self) + get_value(self.color, 0, 6)]
             self.calc_pos(self.image)
 
     def piece_move(self, row, column):

@@ -1,26 +1,29 @@
 import pygame
-import random
 import GUI
 
 from Game import Game
 from Pieces import *
 from constants import *
-from Menu import MAIN_MENU, CHOOSE_GAMEMODE_MENU, menus
+from random import choice
+from Menu import MAIN_MENU, GAMEMODE_MENU, menus
 from Config import change_background, change_board, change_piece, change_sound
 
 def main():
     run = True
-    game_over = False
     fps = 60
     game = None
+    bot_color = 0
     while run:
         clock.tick(fps)
         GUI.draw_background()
         match config["state"]:
             case "main_menu":
                 MAIN_MENU.draw_menu()
-            case "choose_gamemode":
-                CHOOSE_GAMEMODE_MENU.draw_menu()
+            case "gamemode":
+                GAMEMODE_MENU.draw_menu()
+            case "opponent":
+                #OPPONENT_MENU.draw_menu()
+                pass
             case "game":
                 game.update_window()
         pygame.display.update()
@@ -45,34 +48,45 @@ def main():
                         game.flip_board()
                         game.flip_game()
                     if event.key == pygame.K_c:
-                        change_piece(game.board, random.choice(available_piece_assets))
-                        change_background(random.choice(available_background_assets))
-                        change_sound(random.choice(available_sound_assets))
-                        change_board(random.choice(available_board_assets))
-            #if game.turn == -1:
-                #randomPiece = random.choice(list(filter(lambda p: len(p.get_available_moves(game.get_board().board, p.row, p.column)) != 0, game.get_color_pieces(game.turn))))
-                #game.select(randomPiece.row, randomPiece.column)
-                #randomMove = random.choice(randomPiece.get_available_moves(game.get_board().board, randomPiece.row, randomPiece.column))
-                #game.select(randomMove[0], randomMove[1])
+                        change_piece(game.board, choice(available_piece_assets))
+                        change_background(choice(available_background_assets))
+                        change_sound(choice(available_sound_assets))
+                        change_board(choice(available_board_assets))
+            if config["state"] == "game" and game.turn == bot_color:
+                if not game.promotion:
+                    randomPiece = choice(list(filter(lambda p: len(p.get_available_moves(game.board, p.row, p.column, game.flipped, en_passant = game.en_passant)) != 0, game.get_color_pieces(game.turn))))
+                    game.select(randomPiece.row, randomPiece.column)
+                    randomMove = choice(randomPiece.get_available_moves(game.board, randomPiece.row, randomPiece.column, game.flipped, en_passant = game.en_passant))
+                    game.select(randomMove[0], randomMove[1])
+                else:
+                    pass
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
                     match config["state"]:
                         case "main_menu":
                             if MAIN_MENU.buttons[0].is_clicked():
-                                config["state"] = "choose_gamemode"
+                                config["state"] = "gamemode"
                             if MAIN_MENU.buttons[1].is_clicked():
-                                game.state = "settings"
+                                config["state"] = "settings"
                             if MAIN_MENU.buttons[3].is_clicked():
                                 run = False
                                 pygame.quit()
-                        case "choose_gamemode":
-                            for i in range(len(CHOOSE_GAMEMODE_MENU.buttons)):
-                                if CHOOSE_GAMEMODE_MENU.buttons[i].is_clicked():
+                        case "gamemode":
+                            for i in range(len(GAMEMODE_MENU.buttons)):
+                                if GAMEMODE_MENU.buttons[i].is_clicked():
                                     config["state"] = "game"
                                     game = Game(gamemodes[i])
+                                    bot_color = choice([-1, 1])
+                                    if bot_color == 1:
+                                        game.flip_game()
+                        case "opponent":
+                            #if OPPONENT_MENU.buttons[1].is_clicked():
+                                config["state"] = "game"
+                                game.opponent = "randomIA"
+                                
                         case "game":
-                            if not game.game_over:
+                            if not game.game_over and not (game.opponent == "randomIA" and game.turn == bot_color):
                                 row, column = get_position(*pygame.mouse.get_pos())
                                 if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
                                     selected_piece = game.board[row][column]
@@ -80,7 +94,6 @@ def main():
                                     print("cRow", row, "cColumn", column)
                                     if selected_piece != 0 and isinstance(selected_piece, King):
                                         print("kingmoves", selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
-                                    #if game.turn == 1:
                                     game.select(row, column)
                             game.highlightedSquares = {}
                 # Right click
