@@ -27,7 +27,7 @@ class Game:
         self.opponent = "randomIA"
         self.debug = False
         if config["state"] == "game":
-            customfen = "K4RBR/5BkB/5RBR/8/8/8/pppppppp/8 w KQkq – 0 1"
+            customfen = "K5Bk/6RB/7P/8/8/8/pppppppp/8 w - - 0 1"
             self.create_board(customfen)
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:

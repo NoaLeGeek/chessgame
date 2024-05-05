@@ -57,8 +57,12 @@ def main():
                     game.select(randomPiece.row, randomPiece.column)
                     randomMove = choice(randomPiece.get_available_moves(game.board, randomPiece.row, randomPiece.column, game.flipped, en_passant = game.en_passant))
                     game.select(randomMove[0], randomMove[1])
+                    print("move", randomMove[0], randomMove[1])
                 else:
-                    pass
+                    r, c = get_value(game.flipped, 7, 0), game.promotion[0].column + game.promotion[1]
+                    print("promoto", r, c)
+                    game.select(r, c)
+                    
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Left click
                 if pygame.mouse.get_pressed()[0]:
