@@ -15,7 +15,7 @@ class Game:
         self.promotion = None
         self.en_passant = None
         self.flipped = 1
-        self.valid_moves = []
+        self.legal_moves = []
         self.halfMoves = 0
         self.fullMoves = 1
         self.history = []
@@ -24,11 +24,9 @@ class Game:
         self.gamemode = gamemode
         if gamemode == "+3 Checks":
             self.win_condition = 0
-        self.opponent = "randomIA"
         self.debug = False
         if config["state"] == "game":
-            customfen = "K5Bk/6RB/7P/8/8/8/pppppppp/8 w - - 0 1"
-            self.create_board(customfen)
+            self.create_board()
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
@@ -85,13 +83,13 @@ class Game:
         if self.selected:
             draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
         if self.history:
-            draw_highlightedSquares({self.history[-1][0].from_: 3, self.history[-1][0].to: 3})
+            draw_highlightedSquares({self.history[-1].from_: 3, self.history[-1].to: 3})
         if self.highlightedSquares:
             draw_highlightedSquares(self.highlightedSquares)
         if config["selected_piece_asset"] != "blindfold":
             draw_pieces(self.board, self.promotion, self.debug)
-        if self.valid_moves:
-            draw_moves(self.valid_moves)
+        if self.legal_moves:
+            draw_moves(self.legal_moves)
         if self.promotion:
             draw_promotion(*self.promotion, self.flipped)
 
@@ -131,7 +129,10 @@ class Game:
             if self.get_color_pieces(self.turn):
                 pass
         else:
-            pass
+            last_irreversible_move = None
+            for i in range(len(self.history)-1, -1, -1):
+                if self.history[0].capture or isinstance(self.history[0].piece, Pieces.Pawn):
+                    pass
             #get the last move that is irreversible
         # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
         # TODO add the material insufficient
@@ -165,18 +166,23 @@ class Game:
 
     def is_stalemate(self) -> bool:
         return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
+    
+    def is_castling(self, move: Move.Move):
+        piece, row, column = move.piece, *move.to
+        return isinstance(piece, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == piece.color
 
-    def move(self, piece: Pieces.Piece, row: int, column: int):
+    def move(self, move: Move.Move):
+        piece, row, column = move.piece, *move.to
         x = piece.color * self.flipped
-        # Castling
         # TODO the rook disappear in the chess960 order : xRxxxKRx, the rook replace the king and the king is now the void
-        if isinstance(piece, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == piece.color:
-            # Calculate old and new position of the rook for O-O and O-O-O
-            rook_column = (7 + self.flipped + get_value(self.flipped * sign(column - piece.column), 2, -2)) // 2
-            self.board[row][rook_column], self.board[row][column] = self.board[row][column], self.board[row][rook_column]
-            self.board[row][rook_column].piece_move(row, rook_column)
-            column = (7 + self.flipped + get_value(self.flipped * sign(column - piece.column), 4, -4)) // 2
-            print("CALCULATED COLUMN", column, "ROOK", rook_column)
+        # Castling
+        if self.is_castling(move):
+            # Rook and King's positions are swapped
+            self.board[row][column], self.board[row][piece.column] = self.board[row][piece.column], self.board[row][column]
+            rook_column = (7 + self.flipped + get_value(sign(column-piece.column), 2, -2)) // 2
+            self.board[row][piece.column].piece_move(row, rook_column)
+            self.board[row][piece.column], self.board[row][rook_column] = self.board[row][rook_column], self.board[row][piece.column]
+            column = (7 + self.flipped + get_value(sign(column-piece.column), 4, -4)) // 2
         # En-passant
         elif isinstance(piece, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (piece.row - x, column):
             self.board[row + x][column] = 0
@@ -219,10 +225,9 @@ class Game:
             # If in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and self.promotion:
                 # Promote the pawn
-                if row in range(get_value(self.flipped, 0, 4), get_value(self.flipped, 4, 8)) and column == self.promotion[1] + self.selected.column:
-                    promotion_row = get_value(self.flipped, 0, 7)
-                    move = Move.Move(self, (self.selected.row, self.selected.column), (promotion_row, column), self.selected, self.board[promotion_row][column] if self.board[promotion_row][column] != 0 and self.board[promotion_row][column].color != self.selected.color else False, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = x)](self.selected.color, promotion_row, column))
-                    move.make_move()
+                if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
+                    promotion_row = get_value(x, 0, 7)
+                    self.execute_move(promotion_row, column, [Pieces.Queen, Pieces.Knight, Pieces.Rook, Pieces.Bishop][flip_coords(row, flipped = x)](self.selected.color, promotion_row, column))
                     self.promotion = None
                     return
                 # Remove the promotion
@@ -235,7 +240,7 @@ class Game:
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board[row][column] != 0 and self.board[row][column].color == self.selected.color and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
-                if isinstance(self.selected, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == self.selected.color:
+                if isinstance(self.selected, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == self.selected.color and (row, column) in self.legal_moves:
                     self.execute_move(row, column)
                     return
                 self.selected = None
@@ -243,12 +248,12 @@ class Game:
                 return
             # If the play clicks on the selected piece, the selection is removed
             if (row, column) == (self.selected.row, self.selected.column):
-                self.valid_moves = []
+                self.legal_moves = []
                 self.selected = None
                 return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
-            if (row, column) not in self.valid_moves:
-                self.valid_moves = []
+            if (row, column) not in self.legal_moves:
+                self.legal_moves = []
                 self.selected = None
                 if self.is_king_checked():
                     play_sound("illegal")
@@ -256,7 +261,7 @@ class Game:
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
             if isinstance(self.selected, Pieces.Pawn) and row in [0, 7]:
                 self.promotion = self.selected, column - self.selected.column
-                self.valid_moves = []
+                self.legal_moves = []
                 return
             self.execute_move(row, column)
         else:
@@ -268,21 +273,21 @@ class Game:
                     moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
                 elif any([self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].color != piece.color for move in self.get_color_moves(piece.color)]):
                     moves = list(filter(lambda move: self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].color != piece.color, moves))
-                self.valid_moves = moves
+                self.legal_moves = moves
 
-    def execute_move(self, row: int, column: int):
+    def execute_move(self, row: int, column: int, promotion: bool | Pieces.Piece = False):
         x, captured = self.selected.color * self.flipped, False
         if self.board[row][column] != 0:
             captured = self.board[row][column]
         elif isinstance(self.selected, Pieces.Pawn) and isinstance(self.board[row + x][column], Pieces.Pawn) and self.en_passant == (self.selected.row - x, column):
             captured = self.board[row + x][column]
-        move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, False)
+        move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, promotion)
         move.make_move()
 
     def flip_game(self):
         self.flip_board()
         self.flipped *= -1
-        self.selected, self.valid_moves, self.promotion = None, [], None
+        self.selected, self.legal_moves, self.promotion = None, [], None
         if self.en_passant:
             self.en_passant = flip_coords(*self.en_passant)
         if self.history:
@@ -320,23 +325,23 @@ class Game:
                     if empty_squares > 0:
                         fen += str(empty_squares)
                         empty_squares = 0
-                    # Lowercase characters if piece.color == -1
-                    # Uppercase characters if piece.color == 1
-                    fen += chr([96, 94, 82, 98, 97, 91][Pieces.Piece.piece_to_index(piece)] - 16 * piece.color)
+                    char = ["p", "n", "b", "r", "q", "k"][Pieces.Piece.piece_to_index(piece)]
+                    fen += (char if piece.color == -1 else char.upper())
             if empty_squares > 0:
                 fen += str(empty_squares)
             if row < len(self.board) - 1:
                 fen += "/"
-        # "w" if self.turn == 1
-        # "b" if self.turn == -1
-        fen += chr(get_value(self.turn, 119, 98))
+        fen += " " + ("w" if self.turn == 1 else "b")
         castle_rights = ""
-        if self.get_king(1) is not None and self.get_king(1).first_move:
+        white_king = self.get_king(1)
+        if white_king is not None and white_king.first_move:
+            #TODO these conditions dont work in chess960
             if isinstance(self.board[7][7], Pieces.Rook) and self.board[7][7].first_move:
                 castle_rights += "K"
             if isinstance(self.board[7][0], Pieces.Rook) and self.board[7][0].first_move:
                 castle_rights += "Q"
-        if self.get_king(-1) is not None and self.get_king(-1).first_move:
+        black_king = self.get_king(-1)
+        if black_king is not None and black_king.first_move:
             if isinstance(self.board[0][7], Pieces.Rook) and self.board[0][7].first_move:
                 castle_rights += "k"
             if isinstance(self.board[0][0], Pieces.Rook) and self.board[0][0].first_move:

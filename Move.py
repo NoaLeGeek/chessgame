@@ -11,25 +11,30 @@ class Move:
         self.piece = piece
         self.capture = capture
         self.promotion = promotion
+        self.board = game.board
+        self.fen = None
+        self.notation = None
 
     def make_move(self):
         row, column = self.to
-        self.game.move(self.piece, row, column)
+        self.game.move(self)
         # Add the promoted piece to the board if there is one
         if self.promotion and config["selected_piece_asset"] != "blindfold":
-            self.promotion.image = piece_assets[config["selected_piece_asset"]][Pieces.Piece.piece_to_index(self.promotion) + 3 * (1 - self.promotion.color)]
+            self.promotion.image = piece_assets[config["selected_piece_asset"]][Pieces.Piece.piece_to_index(self.promotion) + get_value(self.promotion.color, 0, 6)]
             self.game.board[row][column] = self.promotion
         self.game.change_turn()
-        self.game.valid_moves, self.game.selected = [], None
+        self.game.legal_moves, self.game.selected = [], None
         # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
             self.game.halfMoves = 0 
         # Modify the final column of the king if it's a castling move
         if isinstance(self.piece, Pieces.King) and isinstance(self.capture, Pieces.Rook) and self.capture.color == self.piece.color:
-            self.to = (row, (7 + self.game.flipped + get_value(self.game.flipped * sign(column - self.from_[1]), 4, -4)) // 2)
+            self.to = (row, (7 + self.game.flipped + get_value(sign(column - self.from_[1]), 4, -4)) // 2)
         if self.game.gamemode == "+3 Checks" and self.game.is_king_checked():
             self.game.win_condition += 1
-        self.game.history.append((self, self.to_literal(), self.game.generate_fen()))
+        self.notation = self.to_literal()
+        self.fen = self.game.generate_fen()
+        self.game.history.append(self)
         print(self.game.history[-1])
         self.game.check_game()
         if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].color == self.piece.color:
