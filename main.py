@@ -59,6 +59,8 @@ def main():
                                 run = False
                                 pygame.quit()
                         case "gamemode":
+                            if GAMEMODE_MENU.buttons[-1].is_clicked():
+                                config["state"] = "main_menu"
                             for i in range(len(GAMEMODE_MENU.buttons)):
                                 if GAMEMODE_MENU.buttons[i].is_clicked():
                                     config["state"] = "game"
