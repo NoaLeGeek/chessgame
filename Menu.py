@@ -1,6 +1,6 @@
 import pygame
 
-from constants import window, gamemodes, config
+from constants import window, gamemodes, config, BROWN
 from GUI import draw_text
 from math import ceil
 
@@ -64,11 +64,15 @@ class Label:
         draw_text(self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
 BACK_BUTTON = Button(1.25*(config["margin"] / pygame.display.Info().current_w), 1.25*(config["margin"] / pygame.display.Info().current_h), 1.5*(config["margin"] / pygame.display.Info().current_w), 1.5*(config["margin"] / pygame.display.Info().current_h), (255, 0, 0), "X", (255, 255, 255), 3/52)
-MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 255), 1/13),
-                  Button(1/2, 1/2 + 2/13, 8/13, 2/13, (92, 64, 51), "SETTINGS", (255, 255, 255), 1/13),
+MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, BROWN, "PLAY", (255, 255, 255), 1/13),
+                  Button(1/2, 1/2 + 2/13, 8/13, 2/13, BROWN, "SETTINGS", (255, 255, 255), 1/13),
                   Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", (255, 255, 255), 1/13)],
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
-GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-5*(config["margin"] / pygame.display.Info().current_h)), (92, 64, 51), gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))] +
+GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-5*(config["margin"] / pygame.display.Info().current_h)), BROWN, gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))] +
                      [BACK_BUTTON])
-SETTINGS_MENU = Menu([BACK_BUTTON])
+SETTINGS_MENU = Menu([BACK_BUTTON,
+                      Button(1/2, 3/13, 4/13, 1/13, BROWN, config["selected_piece_asset"], (255, 255, 255), 1/26),
+                      Button(1/2, 6/13, 4/13, 1/13, BROWN, config["selected_board_asset"], (255, 255, 255), 1/26),
+                      Button(1/2, 8/13, 4/13, 1/13, BROWN, config["selected_sound_asset"], (255, 255, 255), 1/26),
+                      Button(1/2, 10/13, 4/13, 1/13, BROWN, config["selected_background_asset"], (255, 255, 255), 1/26)])
 menus = [MAIN_MENU, GAMEMODE_MENU, SETTINGS_MENU]
