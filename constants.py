@@ -20,6 +20,12 @@ def get_value(flipped: bool, white_value: int, black_value: int):
 def sign(x: int):
     return (x >= 0) - (x < 0)
 
+def left_click():
+    return bool(pygame.mouse.get_pressed()[0])
+
+def right_click():
+    return bool(pygame.mouse.get_pressed()[2])
+
 def generate_pieces(asset: str):
     images = []
     for piece in piece_constants:

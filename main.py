@@ -37,9 +37,9 @@ def main():
                 run = False
                 pygame.quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    game.reset()
                 if config["state"] == "game":
+                    if event.key == pygame.K_SPACE:
+                        game.reset()
                     if event.key == pygame.K_f:
                         game.flip_game()
                     if event.key == pygame.K_c:
@@ -47,17 +47,15 @@ def main():
                         change_background(choice(available_background_assets))
                         change_sound(choice(available_sound_assets))
                         change_board(choice(available_board_assets))
-                    
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # Left click
-                if pygame.mouse.get_pressed()[0]:
+                if left_click():
                     match config["state"]:
                         case "main_menu":
                             if MAIN_MENU.buttons[0].is_clicked():
                                 config["state"] = "gamemode"
                             if MAIN_MENU.buttons[1].is_clicked():
                                 config["state"] = "settings"
-                            if MAIN_MENU.buttons[3].is_clicked():
+                            if MAIN_MENU.buttons[2].is_clicked():
                                 run = False
                                 pygame.quit()
                         case "gamemode":
@@ -76,8 +74,7 @@ def main():
                                         print("kingmoves", selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
                                     game.select(row, column)
                             game.highlightedSquares = {}
-                # Right click
-                elif pygame.mouse.get_pressed()[2]:
+                elif right_click():
                     if config["state"] == "game":
                         row, column = get_position(*pygame.mouse.get_pos())
                         if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):

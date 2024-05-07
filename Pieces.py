@@ -21,12 +21,15 @@ class Piece:
             self.calc_pos(self.image)
 
     def calc_pos(self, image):
-        self.x = config["margin"] + (self.column + 0.5) * square_size - 0.5*image.get_width()
-        self.y = config["margin"] + (self.row + 0.5) * square_size - (image.get_height() - 0.5*image.get_width() if config["selected_piece_asset"].startswith("3d") else 0.5*image.get_height())
+        w, h = image.get_width(), image.get_height()
+        self.x = config["margin"] + (self.column + 0.5) * square_size - 0.5*w
+        self.y = config["margin"] + (self.row + 0.5) * square_size - (h - 0.5*w if config["selected_piece_asset"].startswith("3d") else 0.5*h)
 
     def clear_available_moves(self):
         if self.available_moves:
             self.available_moves = []
+
+    #TODO is_ally() and is_enemy()
 
     def piece_to_index(piece):
         return {Pawn: 0, Knight: 1, Bishop: 2, Rook: 3, Queen: 4, King: 5}[type(piece)]
@@ -301,12 +304,13 @@ class King(Piece):
                     self.available_moves.append((row + i, column + j))
         # Castling
         if self.first_move:
+            #TODO RxKR or RKR works but it shouldn't 
             # O-O-O
-            rook_index = next((i for i in range(column - flipped, flip_coords(-1, flipped=flipped), -flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
-            if rook_index is not None and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(2, flipped=flipped), column, sign(column - flip_coords(2, flipped=flipped)))) and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(3, flipped=flipped), rook_index, sign(rook_index - flip_coords(3, flipped=flipped)))):
-                self.available_moves.append((row, rook_index))
+            rook = next((board[row][i] for i in range(column - flipped, flip_coords(-1, flipped=flipped), -flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
+            if rook is not None and all((isinstance(board[row][i], King) and board[row][i].color == board[row][column].color) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(2, flipped=flipped), column, sign(column - flip_coords(2, flipped=flipped)))) and all((isinstance(board[row][i], King) and board[row][i].color == board[row][column].color) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(3, flipped=flipped), rook.column, sign(rook.column - flip_coords(3, flipped=flipped)))):
+                self.available_moves.append((row, rook.column))
             # O-O   
-            rook_index = next((i for i in range(column + flipped, flip_coords(8, flipped = flipped), flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
-            if rook_index is not None and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(6, flipped=flipped), column, sign(column - flip_coords(6, flipped=flipped)))) and all(isinstance(board[row][i], (Rook, King)) or board[row][i] == 0 for i in range(flip_coords(5, flipped=flipped), rook_index, sign(rook_index - flip_coords(5, flipped=flipped)))):
-                self.available_moves.append((row, rook_index))
+            rook = next((board[row][i] for i in range(column + flipped, flip_coords(8, flipped = flipped), flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
+            if rook is not None and all((isinstance(board[row][i], King) and board[row][i].color == board[row][column].color) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(6, flipped=flipped), column, sign(column - flip_coords(6, flipped=flipped)))) and all((isinstance(board[row][i], King) and board[row][i].color == board[row][column].color) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(5, flipped=flipped), rook.column, sign(rook.column - flip_coords(5, flipped=flipped)))):
+                self.available_moves.append((row, rook.column))
         return self.available_moves

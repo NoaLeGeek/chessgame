@@ -17,7 +17,11 @@ class Move:
 
     def make_move(self):
         row, column = self.to
+        castling = self.game.is_castling(self)
+        # Modify the final column of the king if it's a castling move
         self.game.move(self)
+        if castling:
+            self.to = (row, (7 + self.game.flipped + get_value(sign(column - self.from_[1]), 4, -4)) // 2)
         # Add the promoted piece to the board if there is one
         if self.promotion and config["selected_piece_asset"] != "blindfold":
             self.promotion.image = piece_assets[config["selected_piece_asset"]][Pieces.Piece.piece_to_index(self.promotion) + get_value(self.promotion.color, 0, 6)]
@@ -26,10 +30,7 @@ class Move:
         self.game.legal_moves, self.game.selected = [], None
         # Reset halfMoves if it's a capture or a pawn move
         if self.capture or isinstance(self.piece, Pieces.Pawn):
-            self.game.halfMoves = 0 
-        # Modify the final column of the king if it's a castling move
-        if isinstance(self.piece, Pieces.King) and isinstance(self.capture, Pieces.Rook) and self.capture.color == self.piece.color:
-            self.to = (row, (7 + self.game.flipped + get_value(sign(column - self.from_[1]), 4, -4)) // 2)
+            self.game.halfMoves = 0
         if self.game.gamemode == "+3 Checks" and self.game.is_king_checked():
             self.game.win_condition += 1
         self.notation = self.to_literal()
@@ -37,7 +38,7 @@ class Move:
         self.game.history.append(self)
         print(self.game.history[-1])
         self.game.check_game()
-        if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].color == self.piece.color:
+        if castling:
             play_sound("castle")
         elif self.game.is_king_checked():
             play_sound("move-check")
