@@ -51,7 +51,6 @@ def generate_board(asset: str):
 pygame.init()
 pygame.display.set_caption("Chesspy")
 pygame.mixer.init()
-#TODO config volume
 pygame.mixer.music.set_volume(0.2)
 clock = pygame.time.Clock()
 

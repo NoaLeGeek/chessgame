@@ -70,4 +70,5 @@ MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, (92, 64, 51), "PLAY", (255, 255, 
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
 GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-5*(config["margin"] / pygame.display.Info().current_h)), (92, 64, 51), gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))] +
                      [BACK_BUTTON])
-menus = [MAIN_MENU, GAMEMODE_MENU]
+SETTINGS_MENU = Menu([BACK_BUTTON])
+menus = [MAIN_MENU, GAMEMODE_MENU, SETTINGS_MENU]

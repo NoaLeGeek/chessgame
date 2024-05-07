@@ -80,3 +80,7 @@ def draw_highlightedSquares(highlightedSquares):
 
 def draw_background():
     window.blit(background_assets[config["selected_background_asset"]], (0, 0))
+
+def draw_settings():
+    for i, asset in enumerate(piece_assets[config["selected_piece_asset"]]):
+        window.blit(asset, ((i % 6) * (square_size * 3/4) + pygame.display.Info().current_w/4, (i // 6) * (square_size * 3/4) + config["margin"]))

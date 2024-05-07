@@ -1,11 +1,11 @@
 import pygame
-import GUI
 
 from Game import Game
+from GUI import draw_background, draw_settings
 from Pieces import *
 from constants import *
 from random import choice
-from Menu import MAIN_MENU, GAMEMODE_MENU, menus
+from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU
 from Config import change_background, change_board, change_piece, change_sound
 
 def main():
@@ -14,12 +14,15 @@ def main():
     game = None
     while run:
         clock.tick(fps)
-        GUI.draw_background()
+        draw_background()
         match config["state"]:
             case "main_menu":
                 MAIN_MENU.draw_menu()
             case "gamemode":
                 GAMEMODE_MENU.draw_menu()
+            case "settings":
+                SETTINGS_MENU.draw_menu()
+                draw_settings()
             case "game":
                 game.update_window()
         pygame.display.update()
@@ -64,6 +67,14 @@ def main():
                             else:
                                 for i in range(len(GAMEMODE_MENU.buttons)):
                                     if GAMEMODE_MENU.buttons[i].is_clicked():
+                                        config["state"] = "game"
+                                        game = Game(gamemodes[i])
+                        case "settings":
+                            if SETTINGS_MENU.buttons[-1].is_clicked():
+                                config["state"] = "main_menu"
+                            else:
+                                for i in range(len(SETTINGS_MENU.buttons)):
+                                    if SETTINGS_MENU.buttons[i].is_clicked():
                                         config["state"] = "game"
                                         game = Game(gamemodes[i])
                         case "game":
