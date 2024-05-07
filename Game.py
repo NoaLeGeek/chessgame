@@ -166,8 +166,7 @@ class Game:
     def is_stalemate(self) -> bool:
         return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
     
-    def is_castling(self, move: Move.Move):
-        piece, row, column = move.piece, *move.to
+    def is_castling(self, piece: Pieces.Piece, row: int, column: int):
         return isinstance(piece, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == piece.color
 
     def move(self, move: Move.Move):
@@ -175,7 +174,7 @@ class Game:
         x = piece.color * self.flipped
         # TODO king is not moved to the correct emplacement
         # Castling
-        if self.is_castling(move):
+        if self.is_castling(move.piece, *move.to):
             s = sign(column - piece.column)
             # Rook and King's positions are swapped
             # King is now at (row, column)
@@ -198,14 +197,16 @@ class Game:
             self.board[row][column] = 0
             self.board[piece.row][piece.column], self.board[row][column] = self.board[row][column], self.board[piece.row][piece.column]
             piece.piece_move(row, column)
-        # Update the first_move attributeb of the piece if it moved
+        # Update the first_move attribute of the piece if it moved
         if isinstance(piece, (Pieces.King, Pieces.Rook, Pieces.Pawn)) and piece.first_move:
             piece.first_move = False
 
     def is_legal(self, piece: Pieces.Piece, row: int, column: int) -> bool:
         is_legal = self.can_move(piece, row, column)
         # Castling
-        if isinstance(piece, Pieces.King) and abs(piece.column - column) > 1:
+        if self.is_castling(piece, row, column):
+            if self.is_king_checked():
+                return False
             for next_column in range(piece.column, column, 2 * (piece.column < column) - 1):
                 is_legal = is_legal and self.can_move(piece, piece.row, next_column)
                 if not is_legal:

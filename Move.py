@@ -17,7 +17,7 @@ class Move:
 
     def make_move(self):
         row, column = self.to
-        castling = self.game.is_castling(self)
+        castling = self.game.is_castling(self.piece, *self.to)
         # Modify the final column of the king if it's a castling move
         self.game.move(self)
         if castling:
