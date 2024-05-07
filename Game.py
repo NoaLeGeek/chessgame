@@ -96,10 +96,6 @@ class Game:
         if self.promotion:
             draw_promotion(*self.promotion, self.flipped)
 
-    def reset(self):
-        self.board, self.selected, self.legal_moves, self.highlightedSquares = [], None, [], {}
-        self.create_board()
-
     def is_king_checked(self) -> bool:
         king = self.get_king(self.turn)
         if king is None and self.gamemode == "Giveaway":

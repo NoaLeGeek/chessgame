@@ -39,7 +39,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if config["state"] == "game":
                     if event.key == pygame.K_SPACE:
-                        game.reset()
+                        game = Game(game.gamemode)
                     if event.key == pygame.K_f:
                         game.flip_game()
                     if event.key == pygame.K_c:
