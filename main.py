@@ -61,10 +61,11 @@ def main():
                         case "gamemode":
                             if GAMEMODE_MENU.buttons[-1].is_clicked():
                                 config["state"] = "main_menu"
-                            for i in range(len(GAMEMODE_MENU.buttons)):
-                                if GAMEMODE_MENU.buttons[i].is_clicked():
-                                    config["state"] = "game"
-                                    game = Game(gamemodes[i])
+                            else:
+                                for i in range(len(GAMEMODE_MENU.buttons)):
+                                    if GAMEMODE_MENU.buttons[i].is_clicked():
+                                        config["state"] = "game"
+                                        game = Game(gamemodes[i])
                         case "game":
                             if not game.game_over:
                                 row, column = get_position(*pygame.mouse.get_pos())
