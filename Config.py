@@ -3,7 +3,8 @@ import constants
 import os
 
 from Pieces import *
-from constants import piece_assets, generate_pieces, generate_board, generate_sounds
+from Menu import SETTINGS_MENU
+from constants import piece_assets, generate_pieces, generate_board, generate_sounds, available_background_assets, available_board_assets, available_piece_assets, available_sound_assets
 
 def change_piece(board, asset):
         config["selected_piece_asset"] = asset
@@ -31,3 +32,23 @@ def change_board(asset):
 
 def play_sound(sound):
     constants.sound_assets[("all" if sound in ["illegal", "notify", "tenseconds"] else config["selected_sound_asset"], sound)].play()
+
+def refresh_parameters():
+    global selected_config
+    for i, config_type in enumerate(["piece_asset", "board_asset", "sound_asset", "background_asset"]):
+        if SETTINGS_MENU.buttons[i].is_clicked():
+            available_assets = None
+            match selected_config:
+                case "board_asset":
+                    available_assets = available_board_assets
+                case "piece_asset":
+                    available_assets = available_piece_assets
+                case "background_asset":
+                    available_assets = available_background_assets
+                case "sound_asset":
+                    available_assets = available_sound_assets
+            SETTINGS_MENU.buttons[i].label = available_assets[config_index[selected_config]]
+            SETTINGS_MENU.buttons[i].refresh()
+
+config_index = {"piece_asset": available_piece_assets.index(config["selected_piece_asset"]), "board_asset": available_board_assets.index(config["selected_board_asset"]), "sound_asset": available_sound_assets.index(config["selected_sound_asset"]), "background_asset": available_background_assets.index(config["selected_background_asset"])}
+selected_config = None

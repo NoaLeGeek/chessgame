@@ -83,6 +83,6 @@ def draw_background():
 
 def draw_settings():
     for i, asset in enumerate(piece_assets[config["selected_piece_asset"]]):
-        window.blit(asset, ((i % 6) * (square_size * 3/4) + pygame.display.Info().current_w/4, (i // 6) * (square_size * 3/4) + config["margin"]/4))
+        window.blit(asset, ((i % 6) * (square_size * 3/4) + (pygame.display.Info().current_w/2 - 3*(square_size * 3/4)), (i // 6) * (square_size * 3/4) + config["margin"]/4))
     board_asset = pygame.transform.scale(board_assets[config["selected_board_asset"]], (square_size*2, square_size*2))
-    window.blit(board_asset, (pygame.display.Info().current_w/4, pygame.display.Info().current_h/4))
+    window.blit(board_asset, (pygame.display.Info().current_w/2 - square_size, 4*pygame.display.Info().current_h/13))

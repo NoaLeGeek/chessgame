@@ -29,6 +29,7 @@ class Button:
         self.c_height = c_height
         self.rect = pygame.Rect(ceil(pygame.display.Info().current_w * (c_x - 0.5 * c_width)), ceil(pygame.display.Info().current_h * (c_y - 0.5 * c_height)), ceil(self.c_width * pygame.display.Info().current_w), ceil(self.c_height * pygame.display.Info().current_h))
         self.color = color
+        self.text = text
         self.label = Label(c_x, c_y, text, text_color, c_text_size, font)
 
     def is_clicked(self):
@@ -36,6 +37,7 @@ class Button:
     
     def refresh(self):
         self.rect = pygame.Rect(ceil(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height)), ceil(self.c_width * pygame.display.Info().current_w), ceil(self.c_height * pygame.display.Info().current_h))
+        self.label.text = self.text
         self.label.c_x = self.c_x
         self.label.c_y = self.c_y
         self.label.refresh()
@@ -44,7 +46,6 @@ class Button:
         if self.c_x <= 0 or self.c_y <= 0:
             raise ValueError("Button position not set")
         pygame.draw.rect(window, self.color, self.rect)
-        #pygame.draw.circle(window, (0, 0, 0, 63), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), 5)
         self.label.draw()
 
 class Label:
@@ -70,9 +71,9 @@ MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, BROWN, "PLAY", (255, 255, 255), 1
                   [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
 GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-5*(config["margin"] / pygame.display.Info().current_h)), BROWN, gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))] +
                      [BACK_BUTTON])
-SETTINGS_MENU = Menu([BACK_BUTTON,
-                      Button(1/2, 3/13, 4/13, 1/13, BROWN, config["selected_piece_asset"], (255, 255, 255), 1/26),
-                      Button(1/2, 6/13, 4/13, 1/13, BROWN, config["selected_board_asset"], (255, 255, 255), 1/26),
-                      Button(1/2, 8/13, 4/13, 1/13, BROWN, config["selected_sound_asset"], (255, 255, 255), 1/26),
-                      Button(1/2, 10/13, 4/13, 1/13, BROWN, config["selected_background_asset"], (255, 255, 255), 1/26)])
+SETTINGS_MENU = Menu([Button(1/2, 13/52, 4/13, 1/13, BROWN, config["selected_piece_asset"], (255, 255, 255), 1/26),
+                      Button(1/2, 8/13, 4/13, 1/13, BROWN, config["selected_board_asset"], (255, 255, 255), 1/26),
+                      Button(1/2, 10/13, 4/13, 1/13, BROWN, config["selected_sound_asset"], (255, 255, 255), 1/26),
+                      Button(1/2, 12/13, 4/13, 1/13, BROWN, config["selected_background_asset"], (255, 255, 255), 1/26),
+                      BACK_BUTTON])
 menus = [MAIN_MENU, GAMEMODE_MENU, SETTINGS_MENU]
