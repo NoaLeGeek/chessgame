@@ -29,7 +29,6 @@ class Button:
         self.c_height = c_height
         self.rect = pygame.Rect(ceil(pygame.display.Info().current_w * (c_x - 0.5 * c_width)), ceil(pygame.display.Info().current_h * (c_y - 0.5 * c_height)), ceil(self.c_width * pygame.display.Info().current_w), ceil(self.c_height * pygame.display.Info().current_h))
         self.color = color
-        self.text = text
         self.label = Label(c_x, c_y, text, text_color, c_text_size, font)
 
     def is_clicked(self):
@@ -37,7 +36,6 @@ class Button:
     
     def refresh(self):
         self.rect = pygame.Rect(ceil(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height)), ceil(self.c_width * pygame.display.Info().current_w), ceil(self.c_height * pygame.display.Info().current_h))
-        self.label.text = self.text
         self.label.c_x = self.c_x
         self.label.c_y = self.c_y
         self.label.refresh()

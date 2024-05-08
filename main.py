@@ -56,9 +56,18 @@ def main():
                                     case "sound_asset":
                                         length = len(available_sound_assets)
                                 if event.key == pygame.K_LEFT:
-                                    config_index[Config.selected_config] = (0 if config_index[Config.selected_config] - 1 < 0 else config_index[Config.selected_config] - 1)
+                                    config_index[Config.selected_config] = (length - 1 if config_index[Config.selected_config] - 1 < 0 else config_index[Config.selected_config] - 1)
                                 if event.key == pygame.K_RIGHT:
                                     config_index[Config.selected_config] = (config_index[Config.selected_config] + 1) % length
+                                match Config.selected_config:
+                                    case "board_asset":
+                                        change_board(available_board_assets[config_index[Config.selected_config]])
+                                    case "piece_asset":
+                                        change_piece(game.board if game else None, available_piece_assets[config_index[Config.selected_config]])
+                                    case "background_asset":
+                                        change_background(available_background_assets[config_index[Config.selected_config]])
+                                    case "sound_asset":
+                                        change_sound(available_sound_assets[config_index[Config.selected_config]])
                                 refresh_parameters()
                         case "game":
                             if event.key == pygame.K_SPACE:
