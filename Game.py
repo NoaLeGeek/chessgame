@@ -172,7 +172,6 @@ class Game:
     def move(self, move: Move.Move):
         piece, row, column = move.piece, *move.to
         x = piece.color * self.flipped
-        # TODO king is not moved to the correct emplacement
         # Castling
         if self.is_castling(move.piece, *move.to):
             s = sign(column - piece.column)
