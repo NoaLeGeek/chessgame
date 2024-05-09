@@ -153,8 +153,6 @@ class Game:
                     break
         if self.game_over:
             play_sound("game-end")
-        if self.history:
-            print(self.history[-1].fen)
             
     def get_color_moves(self, color: int):
         return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)]
