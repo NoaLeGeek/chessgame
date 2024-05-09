@@ -1,10 +1,10 @@
 import pygame
-import constants
 import os
 
+from time import sleep
 from Pieces import *
 from Menu import SETTINGS_MENU
-from constants import piece_assets, generate_pieces, generate_board, generate_sounds, available_background_assets, available_board_assets, available_piece_assets, available_sound_assets
+from constants import *
 
 def change_piece(board: list[list[int | Piece]], asset: str):
         config["selected_piece_asset"] = asset
@@ -20,19 +20,21 @@ def change_piece(board: list[list[int | Piece]], asset: str):
                         piece.calc_pos(piece.image)
 
 def change_background(asset: str):
-    constants.background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (config["width"], config["height"]))
+    background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (config["width"], config["height"]))
     config["selected_background_asset"] = asset
 
 def change_sound(asset: str):
-    constants.sound_assets.update(generate_sounds(asset))
+    sound_assets.update(generate_sounds(asset))
     config["selected_sound_asset"] = asset
+    for sound in types_sound_asset:
+        sound_assets[(asset, sound)].play()
 
 def change_board(asset: str):
-    constants.board_assets[asset] = generate_board(asset)
+    board_assets[asset] = generate_board(asset)
     config["selected_board_asset"] = asset
 
 def play_sound(sound):
-    constants.sound_assets[("all" if sound in ["illegal", "notify", "tenseconds"] else config["selected_sound_asset"], sound)].play()
+    sound_assets[("all" if sound in ["illegal", "notify", "tenseconds"] else config["selected_sound_asset"], sound)].play()
 
 def refresh_parameters():
     global selected_config
