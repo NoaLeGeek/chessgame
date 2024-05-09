@@ -19,6 +19,9 @@ class Piece:
         self.column = column
         if config["selected_piece_asset"] != "blindfold":
             self.calc_pos(self.image)
+            
+    def get_square_color(self):
+        return (self.row + self.column) % 2
 
     def calc_pos(self, image):
         w, h = image.get_width(), image.get_height()
