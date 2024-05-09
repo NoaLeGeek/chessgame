@@ -5,9 +5,8 @@ from Game import Game
 from GUI import draw_background, draw_settings
 from Pieces import *
 from constants import *
-from random import choice
 from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU
-from Config import change_background, change_board, change_piece, change_sound, draw_frame, config_index, refresh_parameters
+from Config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
 
 def main():
     run = True
@@ -22,14 +21,14 @@ def main():
             case "gamemode":
                 GAMEMODE_MENU.draw_menu()
             case "settings":
+                SETTINGS_MENU.draw_menu()
                 if Config.selected_config:
                     button_index = None
                     for i, config_type in enumerate(["piece_asset", "board_asset", "sound_asset", "background_asset"]):
                         if Config.selected_config == config_type:
                             button_index = i
                             break
-                    draw_frame(button_index)
-                SETTINGS_MENU.draw_menu()
+                    SETTINGS_MENU.buttons[button_index].draw_frame()
                 draw_settings()
             case "game":
                 game.update_window()

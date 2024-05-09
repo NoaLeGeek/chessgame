@@ -33,11 +33,11 @@ class Game:
         pieces_fen = {chr([80, 78, 66, 82, 81, 75][i%6] + 32 * (i > 5)): Pieces.Piece.index_to_piece(i%6) for i in range(12)}
         parts = fen.split(' ')
         if self.gamemode == "Chess960":
-            last_row = [None]*config["columns"]
+            last_row = [None]*len(self.board[0])
             for index, piece in enumerate(["B", "B", "N", "N", "Q", "R", "K", "R"]):
                 # Bishops
                 if index < 2:
-                    last_row[choice(range(index, config["columns"], 2))] = piece
+                    last_row[choice(range(index, len(self.board[0]), 2))] = piece
                 # Knights and Queen
                 elif index < 5:
                     last_row[choice([i for i, val in enumerate(last_row) if val is None])] = piece
@@ -64,6 +64,7 @@ class Game:
                 case 1:
                     self.turn = 1 if parts[part] == "w" else -1
                 case 2:
+                    # TODO dont work in 960
                     if "K" not in parts[part] and isinstance(self.board[7][7], Pieces.Rook):
                         self.board[7][7].first_move = False
                     if "Q" not in parts[part] and isinstance(self.board[7][0], Pieces.Rook):
@@ -112,6 +113,7 @@ class Game:
         elif self.gamemode == "+3 Checks" and self.win_condition >= 3:
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             self.game_over = True
+        # TODO for custom gamemode check win conditions
         elif self.gamemode == "Giveaway" and (any([self.dict_color_pieces(color) == dict() for color in [1, -1]]) or self.is_stalemate()):
             print("{} Wins".format("Black" if self.turn == -1 else "White"))
             self.game_over = True
@@ -124,19 +126,37 @@ class Game:
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
             self.game_over = True
+        # TODO add the material insufficient
         elif False:
             if self.get_color_pieces(self.turn):
                 pass
         else:
-            last_irreversible_move = None
-            for i in range(len(self.history)-1, -1, -1):
-                if self.history[0].capture or isinstance(self.history[0].piece, Pieces.Pawn):
-                    pass
-            #get the last move that is irreversible
-        # TODO for threesold repetition, we can use self.history and check repetitions after the last irreversible moves, irreversible moves are captures, pawn moves, king or rook losing castling rights, castling
-        # TODO add the material insufficient
+            # TODO threesold repetition seems to not be recognized
+            last_index = 0
+            for i in range(1, len(self.history)):
+                move = self.history[-i]
+                # Irreversible move are captures, pawn moves, castling or losing castling rights
+                if move.capture or isinstance(move.piece, Pieces.Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.history[-i-1].fen.split(" ")[2]:
+                    last_index = len(self.history) - 1
+                    break
+            for i in range(last_index, len(self.history)):
+                fen = self.history[i].fen.split(" ")
+                count = 0
+                for j in range(i + 1, len(self.history)):
+                    iterate_fen = self.history[j].fen.split(" ")
+                    # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
+                    if all([iterate_fen[k] == fen[k] for k in range(4)]):
+                        count += 1
+                        if count == 3:
+                            break
+                if count == 3:
+                    self.game_over = True
+                    print("Draw by threesold repetition")
+                    break
         if self.game_over:
             play_sound("game-end")
+        if self.history:
+            print(self.history[-1].fen)
             
     def get_color_moves(self, color: int):
         return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)]
@@ -167,7 +187,7 @@ class Game:
         return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
     
     def is_castling(self, piece: Pieces.Piece, row: int, column: int):
-        return isinstance(piece, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == piece.color
+        return isinstance(piece, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].is_ally(piece)
 
     def move(self, move: Move.Move):
         piece, row, column = move.piece, *move.to
@@ -175,7 +195,7 @@ class Game:
         # Castling
         if self.is_castling(move.piece, *move.to):
             s = sign(column - piece.column)
-            # Rook and King's positions are swapped
+            # Rook and King's positions are swapped to avoid King's deletion during some 960 castling
             # King is now at (row, column)
             # Rook is now at (row, piece.column)
             self.board[row][column], self.board[row][piece.column] = self.board[row][piece.column], self.board[row][column]
@@ -246,9 +266,9 @@ class Game:
                     self.select(row, column)
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
-            if self.board[row][column] != 0 and self.board[row][column].color == self.selected.color and (row, column) != (self.selected.row, self.selected.column):
+            if self.board[row][column] != 0 and self.board[row][column].is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
-                if isinstance(self.selected, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].color == self.selected.color and (row, column) in self.legal_moves:
+                if isinstance(self.selected, Pieces.King) and isinstance(self.board[row][column], Pieces.Rook) and self.board[row][column].is_ally(self.selected) and (row, column) in self.legal_moves:
                     self.execute_move(row, column)
                     return
                 self.selected = None
@@ -279,8 +299,8 @@ class Game:
                 moves = set([move for move in piece.get_available_moves(self.board, row, column, self.flipped, en_passant = self.en_passant)])
                 if self.gamemode != "Giveaway":
                     moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
-                elif any([self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].color != piece.color for move in self.get_color_moves(piece.color)]):
-                    moves = list(filter(lambda move: self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].color != piece.color, moves))
+                elif any([self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece) for move in self.get_color_moves(piece.color)]):
+                    moves = list(filter(lambda move: self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece), moves))
                 self.legal_moves = moves
 
     def execute_move(self, row: int, column: int, promotion: bool | Pieces.Piece = False):
@@ -334,7 +354,7 @@ class Game:
                         fen += str(empty_squares)
                         empty_squares = 0
                     char = ["p", "n", "b", "r", "q", "k"][Pieces.Piece.piece_to_index(piece)]
-                    fen += (char if piece.color == -1 else char.upper())
+                    fen += (char if piece.is_black() else char.upper())
             if empty_squares > 0:
                 fen += str(empty_squares)
             if row < len(self.board) - 1:
@@ -343,16 +363,15 @@ class Game:
         castle_rights = ""
         white_king = self.get_king(1)
         if white_king is not None and white_king.first_move:
-            #TODO these conditions dont work in chess960
-            if isinstance(self.board[7][7], Pieces.Rook) and self.board[7][7].first_move:
+            if next((self.board[white_king.row][i] for i in range(white_king.column - self.flipped, flip_coords(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[white_king.row][i], Pieces.Rook) and self.board[white_king.row][i].first_move), None) is not None:
                 castle_rights += "K"
-            if isinstance(self.board[7][0], Pieces.Rook) and self.board[7][0].first_move:
+            if next((self.board[white_king.row][i] for i in range(white_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[white_king.row][i], Pieces.Rook) and self.board[white_king.row][i].first_move), None) is not None:
                 castle_rights += "Q"
         black_king = self.get_king(-1)
         if black_king is not None and black_king.first_move:
-            if isinstance(self.board[0][7], Pieces.Rook) and self.board[0][7].first_move:
+            if next((self.board[black_king.row][i] for i in range(black_king.column - self.flipped, flip_coords(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[black_king.row][i], Pieces.Rook) and self.board[black_king.row][i].first_move), None) is not None:
                 castle_rights += "k"
-            if isinstance(self.board[0][0], Pieces.Rook) and self.board[0][0].first_move:
+            if next((self.board[black_king.row][i] for i in range(black_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[black_king.row][i], Pieces.Rook) and self.board[black_king.row][i].first_move), None) is not None:
                 castle_rights += "q"
         fen += " " + (castle_rights if castle_rights != "" else "-")
         fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1) if self.en_passant else "-")

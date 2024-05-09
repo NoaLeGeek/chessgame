@@ -36,7 +36,6 @@ class Move:
         self.notation = self.to_literal()
         self.fen = self.game.generate_fen()
         self.game.history.append(self)
-        print(self.game.history[-1])
         self.game.check_game()
         if castling:
             play_sound("castle")
@@ -56,7 +55,7 @@ class Move:
         row, column = self.to
         string = ""
         # The move is O-O or O-O-O
-        if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].color == self.piece.color:
+        if isinstance(self.piece, Pieces.King) and isinstance(self.game.board[row][column], Pieces.Rook) and self.game.board[row][column].is_ally(self.piece):
             string += "O" + "-O"*(get_value(sign(column - self.from_[1]) * self.game.flipped, 1, 2))
         else:
             # Add the symbol of the piece or the starting column if it's a pawn

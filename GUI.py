@@ -1,6 +1,7 @@
 import constants
 import pygame
 
+from math import ceil
 from constants import *
 from Pieces import *
 
@@ -39,7 +40,7 @@ def draw_moves(moves):
 def draw_promotion(promotion, offset, flipped):
     x = promotion.color * flipped
     # Draw the promotion rectangle
-    pygame.draw.rect(window, (255, 255, 255), ((promotion.column + offset) * square_size + config["margin"], get_value(x, 0, 4) * square_size + config["margin"], square_size, 4*square_size))
+    pygame.draw.rect(window, WHITE, ((promotion.column + offset) * square_size + config["margin"], get_value(x, 0, 4) * square_size + config["margin"], square_size, 4*square_size))
     # Draw the X rectangle
     pygame.draw.rect(window, (241, 241, 241), ((promotion.column + offset) * square_size + config["margin"], get_value(x, 4, 14/4) * square_size + config["margin"], square_size, .5*square_size))
     # Draw the X
@@ -87,6 +88,3 @@ def draw_settings():
             window.blit(asset, ((i % 6) * (square_size * 3/4) + (pygame.display.Info().current_w/2 - 3*(square_size * 3/4)), (i // 6) * (square_size * 3/4) + config["margin"]/4))
     board_asset = pygame.transform.scale(board_assets[config["selected_board_asset"]], (square_size*2, square_size*2))
     window.blit(board_asset, (pygame.display.Info().current_w/2 - square_size, 4*pygame.display.Info().current_h/13))
-
-def draw_frame(button_index):
-    pygame.draw.rect(window, (255, 0, 0), rect, round(square_size / 10))

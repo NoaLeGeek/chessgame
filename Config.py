@@ -12,8 +12,8 @@ def change_piece(board: list[list[int | Piece]], asset: str):
             return
         piece_assets[config["selected_piece_asset"]] = generate_pieces(asset)
         if board is not None:
-            for row in range(config["rows"]):
-                for column in range(config["columns"]):
+            for row in range(len(board)):
+                for column in range(len(board[row])):
                     piece = board[row][column]
                     if piece != 0:
                         piece.image = piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(piece) + 3 * (1 - piece.color)]

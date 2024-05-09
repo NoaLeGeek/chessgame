@@ -1,6 +1,6 @@
 import pygame
 
-from constants import window, gamemodes, config, BROWN
+from constants import window, gamemodes, config, BROWN, WHITE, square_size
 from GUI import draw_text
 from math import ceil
 
@@ -46,6 +46,12 @@ class Button:
         pygame.draw.rect(window, self.color, self.rect)
         self.label.draw()
 
+    def draw_frame(self):
+        pygame.draw.lines(window, WHITE, True, [(ceil(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height))),
+                                            (ceil(pygame.display.Info().current_w * (self.c_x + 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y - 0.5 * self.c_height))),
+                                            (ceil(pygame.display.Info().current_w * (self.c_x + 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y + 0.5 * self.c_height))),
+                                            (ceil(pygame.display.Info().current_w * (self.c_x - 0.5 * self.c_width)), ceil(pygame.display.Info().current_h * (self.c_y + 0.5 * self.c_height)))], round(square_size / 15))
+
 class Label:
     def __init__(self, c_x: float, c_y: float, text: str, color: tuple[int, int, int], c_size: float, font: str = "ocraextended") -> None:
         self.c_x = c_x
@@ -62,16 +68,16 @@ class Label:
     def draw(self):
         draw_text(self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
-BACK_BUTTON = Button(1.25*(config["margin"] / pygame.display.Info().current_w), 1.25*(config["margin"] / pygame.display.Info().current_h), 1.5*(config["margin"] / pygame.display.Info().current_w), 1.5*(config["margin"] / pygame.display.Info().current_h), (255, 0, 0), "X", (255, 255, 255), 3/52)
-MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, BROWN, "PLAY", (255, 255, 255), 1/13),
-                  Button(1/2, 1/2 + 2/13, 8/13, 2/13, BROWN, "SETTINGS", (255, 255, 255), 1/13),
-                  Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", (255, 255, 255), 1/13)],
-                  [Label(1/2, 3/16, "Chesspy", (255, 255, 255), 2/13)])
-GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-5*(config["margin"] / pygame.display.Info().current_h)), BROWN, gamemodes[i], (255, 255, 255), 3/104) for i in range(len(gamemodes))] +
+BACK_BUTTON = Button(1.25*(config["margin"] / pygame.display.Info().current_w), 1.25*(config["margin"] / pygame.display.Info().current_h), 1.5*(config["margin"] / pygame.display.Info().current_w), 1.5*(config["margin"] / pygame.display.Info().current_h), (255, 0, 0), "X", WHITE, 3/52)
+MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, BROWN, "PLAY", WHITE, 1/13),
+                  Button(1/2, 1/2 + 2/13, 8/13, 2/13, BROWN, "SETTINGS", WHITE, 1/13),
+                  Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", WHITE, 1/13)],
+                  [Label(1/2, 3/16, "Chesspy", WHITE, 2/13)])
+GAMEMODE_MENU = Menu([Button((0.5*i+1)*(config["margin"] / pygame.display.Info().current_w) + (2*i+1)*(1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/(2*len(gamemodes)), 1/2, (1 - (2+0.5*(len(gamemodes)-1))*(config["margin"] / pygame.display.Info().current_w))/len(gamemodes), (1-5*(config["margin"] / pygame.display.Info().current_h)), BROWN, gamemodes[i], WHITE, 3/104) for i in range(len(gamemodes))] +
                      [BACK_BUTTON])
-SETTINGS_MENU = Menu([Button(1/2, 13/52, 4/13, 1/13, BROWN, config["selected_piece_asset"], (255, 255, 255), 1/26),
-                      Button(1/2, 8/13, 4/13, 1/13, BROWN, config["selected_board_asset"], (255, 255, 255), 1/26),
-                      Button(1/2, 10/13, 4/13, 1/13, BROWN, config["selected_sound_asset"], (255, 255, 255), 1/26),
-                      Button(1/2, 12/13, 4/13, 1/13, BROWN, config["selected_background_asset"], (255, 255, 255), 1/26),
+SETTINGS_MENU = Menu([Button(1/2, 13/52, 4/13, 1/13, BROWN, config["selected_piece_asset"], WHITE, 1/26),
+                      Button(1/2, 8/13, 4/13, 1/13, BROWN, config["selected_board_asset"], WHITE, 1/26),
+                      Button(1/2, 10/13, 4/13, 1/13, BROWN, config["selected_sound_asset"], WHITE, 1/26),
+                      Button(1/2, 12/13, 4/13, 1/13, BROWN, config["selected_background_asset"], WHITE, 1/26),
                       BACK_BUTTON])
 menus = [MAIN_MENU, GAMEMODE_MENU, SETTINGS_MENU]

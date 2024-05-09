@@ -49,6 +49,7 @@ def generate_board(asset: str):
     return pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", asset + ".png")), (square_size*8, square_size*8))
 
 BROWN = (92, 64, 51)
+WHITE = (255, 255, 255)
 
 pygame.init()
 pygame.display.set_caption("Chesspy")
