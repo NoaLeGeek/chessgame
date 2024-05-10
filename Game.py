@@ -241,7 +241,7 @@ class Game:
             self.fullMoves += 1
         self.turn *= -1
         self.halfMoves += 1
-        print("turn", self.turn)
+        print(("White" if self.turn == 1 else "Black") + "'s turn")
 
     def get_piece(self, color: int, piece: Piece) -> Piece:
         """

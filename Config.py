@@ -1,7 +1,8 @@
 import pygame
 
-from Pieces import *
+from Pieces import Piece
 from Menu import SETTINGS_MENU
+from os.path import join
 from constants import *
 
 def change_piece(board: list[list[int | Piece]], asset: str) -> None:
@@ -37,7 +38,7 @@ def change_background(asset: str) -> None:
     Returns:
         None
     """
-    background_assets[asset] = pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", asset + ".png")), (config["width"], config["height"]))
+    background_assets[asset] = pygame.transform.scale(pygame.image.load(join("assets", "backgrounds", asset + ".png")), (config["width"], config["height"]))
     config["selected_background_asset"] = asset
 
 def change_sound(asset: str) -> None:

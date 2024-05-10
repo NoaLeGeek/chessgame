@@ -3,7 +3,6 @@ import Config
 
 from Game import Game
 from GUI import draw_background, draw_settings
-from Pieces import *
 from constants import *
 from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU, FEN_LABEL, MOVE_LABEL
 from Config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
@@ -120,11 +119,6 @@ def main():
                                 if not game.game_over:
                                     row, column = get_position(*pygame.mouse.get_pos())
                                     if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
-                                        selected_piece = game.board[row][column]
-                                        print("clicked on:", selected_piece if selected_piece != 0 else 0)
-                                        print("cRow", row, "cColumn", column)
-                                        if selected_piece != 0 and isinstance(selected_piece, King):
-                                            print("kingmoves", selected_piece.get_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
                                         game.select(row, column)
                                 game.highlightedSquares = {}
                     elif right_click():
