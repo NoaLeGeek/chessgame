@@ -5,7 +5,7 @@ from Game import Game
 from GUI import draw_background, draw_settings
 from Pieces import *
 from constants import *
-from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU
+from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU, FEN_LABEL, MOVE_LABEL
 from Config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
 
 def main():
@@ -32,7 +32,10 @@ def main():
                 draw_settings()
             case "game":
                 game.update_window()
+                FEN_LABEL.draw()
+                MOVE_LABEL.draw()
         pygame.display.update()
+
         for event in pygame.event.get():
             match event.type:
                 case pygame.VIDEORESIZE:

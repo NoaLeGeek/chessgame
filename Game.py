@@ -4,6 +4,7 @@ from constants import config, window, sign, flip_coords, get_value
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
+from Menu import FEN_LABEL
 from Pieces import Piece, King, Rook, Pawn, Queen, Knight, Bishop
 
 class Game:
@@ -81,6 +82,7 @@ class Game:
                 case 5:
                     self.fullMoves = int(parts[part])
         play_sound("game-start")
+        FEN_LABEL.text = fen
 
     def update_window(self):
         draw_board(self.flipped)

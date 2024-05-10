@@ -1,9 +1,7 @@
-import constants
 import pygame
 
-from math import ceil
-from constants import *
-from Pieces import *
+from constants import window, config, square_size, board_assets, piece_assets, background_assets, WHITE, get_value
+from Pieces import Piece, Queen, Knight, Rook, Bishop
 
 def draw_text(text: str, color: tuple[int, int, int], size: int, center: tuple[int, int], font: str):
     text_surface = pygame.font.SysFont(font, size).render(text, True, color)

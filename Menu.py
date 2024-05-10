@@ -69,6 +69,8 @@ class Label:
         draw_text(self.text, self.color, round(self.c_size * pygame.display.Info().current_h), (self.c_x * pygame.display.Info().current_w, self.c_y * pygame.display.Info().current_h), self.font)
 
 BACK_BUTTON = Button(1.25*(config["margin"] / pygame.display.Info().current_w), 1.25*(config["margin"] / pygame.display.Info().current_h), 1.5*(config["margin"] / pygame.display.Info().current_w), 1.5*(config["margin"] / pygame.display.Info().current_h), (255, 0, 0), "X", WHITE, 3/52)
+FEN_LABEL = Label((config["margin"])/pygame.display.Info().current_w + 4/10, 1 - (config["margin"] * 0.5)/pygame.display.Info().current_h, "", WHITE, 1/52)
+MOVE_LABEL = Label((config["margin"])/pygame.display.Info().current_w + 9/10, 1 - (config["margin"] * 0.5)/pygame.display.Info().current_h, "", WHITE, 1/52)
 MAIN_MENU = Menu([Button(1/2, 1/2, 8/13, 2/13, BROWN, "PLAY", WHITE, 1/13),
                   Button(1/2, 1/2 + 2/13, 8/13, 2/13, BROWN, "SETTINGS", WHITE, 1/13),
                   Button(1/2, 1/2 + 4/13, 8/13, 2/13, (255, 0, 0), "QUIT", WHITE, 1/13)],

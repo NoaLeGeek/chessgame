@@ -2,6 +2,7 @@ import Pieces
 
 from constants import flip_coords, config, piece_assets, sign, get_value
 from Config import play_sound
+from Menu import FEN_LABEL, MOVE_LABEL
 
 class Move:
     def __init__(self, game, from_, to, piece, capture: bool | Pieces.Piece = False, promotion: bool | tuple[Pieces.Piece, int] = False):
@@ -50,7 +51,11 @@ class Move:
                 play_sound("move-self")
             else:
                 play_sound("move-opponent")
-
+        FEN_LABEL.text = self.fen
+        if self.piece.color == 1:
+            MOVE_LABEL.text = (str(self.game.fullMoves) + ".")
+        MOVE_LABEL.text += " " + self.notation
+        
     def to_literal(self):
         row, column = self.to
         string = ""
