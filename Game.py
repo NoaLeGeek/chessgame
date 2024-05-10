@@ -30,6 +30,15 @@ class Game:
             self.create_board()
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
+        """
+        Creates the chessboard based on the given FEN string.
+
+        Args:
+            fen (str): The FEN string representing the initial state of the chessboard. Default is the standard starting position.
+
+        Returns:
+            None
+        """
         self.board = [[0] * config["columns"] for _ in range(config["rows"])]
         pieces_fen = {chr([80, 78, 66, 82, 81, 75][i%6] + 32 * (i > 5)): Piece.index_to_piece(i%6) for i in range(12)}
         parts = fen.split(' ')
@@ -84,7 +93,19 @@ class Game:
         play_sound("game-start")
         FEN_LABEL.text = fen
 
-    def update_window(self):
+    def update_window(self) -> None:
+        """
+        Update the game window with the current state of the game.
+
+        This method draws the chessboard, highlighted squares, pieces, legal moves, and promotion options
+        based on the current state of the game.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         draw_board(self.flipped)
         if self.selected:
             draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
@@ -100,15 +121,31 @@ class Game:
             draw_promotion(*self.promotion, self.flipped)
 
     def is_king_checked(self) -> bool:
+        """
+        Checks if the current player's king is in a checked position.
+
+        Returns:
+            bool: True if the king is checked, False otherwise.
+        """
         king = self.get_piece(self.turn, King)
         if king is None and self.gamemode == "Giveaway":
             return False
         return (king.row, king.column) in self.get_color_moves(-self.turn)
     
-    def is_checkmate(self):
+    def is_checkmate(self) -> bool:
+        """
+        Checks if the current game state is a checkmate.
+
+        Returns:
+            A boolean value indicating whether the game state is a checkmate.
+        """
         return self.is_king_checked() and self.is_stalemate()
 
-    def check_game(self):
+    def check_game(self) -> None:
+        """
+        Checks the current state of the game and determines if it is over or not.
+        Prints the winner or draw message accordingly.
+        """
         if self.gamemode == "KOTH" and any([isinstance(self.board[row][column], King) for row in [3, 4] for column in [3, 4]]):
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             self.game_over = True
@@ -155,13 +192,38 @@ class Game:
         if self.game_over:
             play_sound("game-end")
             
-    def get_color_moves(self, color: int):
-        return [move for piece in self.get_color_pieces(color) for move in piece.get_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)]
+    def get_color_moves(self, color: int) -> list[tuple[int, int]]:
+        """
+        Returns a list of all possible moves for the given color.
+
+        Parameters:
+            color (int): The color of the pieces (0 for white, 1 for black).
+
+        Returns:
+            list[tuple[int, int]]: A list of tuples representing the possible moves.
+                                   Each tuple contains the row and column of a valid move.
+        """
+        return [move for piece in self.get_color_pieces(color) for move in piece.get_moves(self.board, piece.row, piece.column, self.flipped, en_passant=self.en_passant)]
     
-    def is_insufficient_material(self):
+    def is_insufficient_material(self) -> bool:
+        """
+        Determines if the current game state has insufficient material for a checkmate.
+
+        Returns:
+            A boolean value indicating whether the current game state has insufficient material for a checkmate.
+        """
         return (self.count_pieces() == 2) or (self.count_pieces() == 3 and (any([self.dict_color_pieces(color * self.turn).get(Bishop, 0) == 1 for color in [-1, 1]]) or any([self.dict_color_pieces(color * self.turn).get(Knight, 0) == 1 for color in [-1, 1]]))) or (self.count_pieces() == 4 and all([self.dict_color_pieces(color * self.turn).get(Bishop, 0) == 1 for color in [-1, 1]]) and self.get_piece(self.turn, Bishop).get_square_color() == self.get_piece(-self.turn, Bishop).get_square_color())
 
-    def get_color_pieces(self, color: int):
+    def get_color_pieces(self, color: int) -> list[Piece]:
+        """
+        Returns a list of pieces of the specified color on the chessboard.
+
+        Parameters:
+        - color (int): The color of the pieces to retrieve. 0 for white, 1 for black.
+
+        Returns:
+        - list[Piece]: A list of Piece objects of the specified color.
+        """
         color_pieces = []
         for row in range(len(self.board)):
             for column in range(len(self.board[0])):
@@ -170,26 +232,67 @@ class Game:
                     color_pieces.append(piece)
         return color_pieces
 
-    def change_turn(self):
+    def change_turn(self) -> None:
+        """
+        Changes the turn of the game to the next player.
+        Increments the fullMoves and halfMoves counters.
+        """
         if self.turn == -1:
             self.fullMoves += 1
         self.turn *= -1
         self.halfMoves += 1
         print("turn", self.turn)
 
-    def get_piece(self, color: int, piece: Piece):
+    def get_piece(self, color: int, piece: Piece) -> Piece:
+        """
+        Retrieves a piece of the specified color and type from the game board.
+
+        Args:
+            color (int): The color of the piece to retrieve.
+            piece (Piece): The type of piece to retrieve.
+
+        Returns:
+            Piece: The first matching piece found on the board, or None if no matching piece is found.
+        """
         for row in range(len(self.board)):
             for column in range(len(self.board[0])):
                 if isinstance(self.board[row][column], piece) and self.board[row][column].color == color:
                     return self.board[row][column]
+        return None
 
     def is_stalemate(self) -> bool:
-        return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
+        """
+        Checks if the current game state is a stalemate.
+
+        Returns:
+            A boolean value indicating whether the game is in a stalemate.
+        """
+        return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_moves(self.board, piece.row, piece.column, self.flipped, en_passant=self.en_passant)])
     
-    def is_castling(self, piece: Piece, row: int, column: int):
+    def is_castling(self, piece: Piece, row: int, column: int) -> bool:
+        """
+        Checks if a move is a castling move.
+
+        Args:
+            piece (Piece): The piece to check.
+            row (int): The row index of the piece.
+            column (int): The column index of the piece.
+
+        Returns:
+            bool: True if the piece is a King, the board position contains a Rook, and the Rook is an ally of the King. False otherwise.
+        """
         return isinstance(piece, King) and isinstance(self.board[row][column], Rook) and self.board[row][column].is_ally(piece)
 
-    def move(self, move: Move.Move):
+    def move(self, move: Move.Move) -> None:
+        """
+        Moves a chess piece on the board.
+
+        Args:
+            move (Move): The move to be made, containing the piece and the destination coordinates.
+
+        Returns:
+            None
+        """
         piece, row, column = move.piece, *move.to
         x = piece.color * self.flipped
         # Castling
@@ -221,6 +324,17 @@ class Game:
             piece.first_move = False
 
     def is_legal(self, piece: Piece, row: int, column: int) -> bool:
+        """
+        Checks if a move is legal for a given piece at the specified row and column.
+
+        Args:
+            piece (Piece): The piece to check the legality of the move for.
+            row (int): The row of the destination square.
+            column (int): The column of the destination square.
+
+        Returns:
+            bool: True if the move is legal, False otherwise.
+        """
         is_legal = self.can_move(piece, row, column)
         # Castling
         if self.is_castling(piece, row, column):
@@ -232,10 +346,27 @@ class Game:
                     break
         return is_legal
     
-    def count_pieces(self):
+    def count_pieces(self) -> int:
+        """
+        Counts the total number of pieces on the chessboard.
+
+        Returns:
+            int: The total number of pieces on the chessboard.
+        """
         return len(self.get_color_pieces(1)) + len(self.get_color_pieces(-1))
     
     def can_move(self, piece: Piece, row: int, column: int) -> bool:
+        """
+        Determines if a given chess piece can move to the specified row and column.
+
+        Args:
+            piece (Piece): The chess piece to be moved.
+            row (int): The row to move the piece to.
+            column (int): The column to move the piece to.
+
+        Returns:
+            bool: True if the piece can move to the specified position, False otherwise.
+        """
         if (piece.row, piece.column) == (row, column):
             return True
         piece_row, piece_column = piece.row, piece.column
@@ -250,7 +381,17 @@ class Game:
         piece.row, piece.column = piece_row, piece_column
         return can_move
         
-    def select(self, row: int, column: int):
+    def select(self, row: int, column: int) -> None:
+        """
+        Selects a chess piece on the board and performs the corresponding actions.
+
+        Args:
+            row (int): The row index of the selected piece.
+            column (int): The column index of the selected piece.
+
+        Returns:
+            None
+        """
         if self.selected:
             x = self.selected.color * self.flipped
             # If in the state of promotion
@@ -258,7 +399,7 @@ class Game:
                 # Promote the pawn
                 if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
                     promotion_row = get_value(x, 0, 7)
-                    self.execute_move(promotion_row, column, ([Queen, Knight, Rook, Bishop][flip_coords(row, flipped = x)] if self.gamemode != "Giveway" else King)(self.selected.color, promotion_row, column))
+                    self.execute_move(promotion_row, column, ([Queen, Knight, Rook, Bishop][flip_coords(row, flipped=x)] if self.gamemode != "Giveway" else King)(self.selected.color, promotion_row, column))
                     self.promotion = None
                     return
                 # Remove the promotion
@@ -299,14 +440,25 @@ class Game:
             piece = self.board[row][column]
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
-                moves = set([move for move in piece.get_moves(self.board, row, column, self.flipped, en_passant = self.en_passant)])
+                moves = set([move for move in piece.get_moves(self.board, row, column, self.flipped, en_passant=self.en_passant)])
                 if self.gamemode != "Giveaway":
                     moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
                 elif any([self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece) for move in self.get_color_moves(piece.color)]):
                     moves = list(filter(lambda move: self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece), moves))
                 self.legal_moves = moves
 
-    def execute_move(self, row: int, column: int, promotion: bool | Piece = False):
+    def execute_move(self, row: int, column: int, promotion: bool | Piece = False) -> None:
+        """
+        Executes a move on the chessboard.
+
+        Args:
+            row (int): The row index of the destination square.
+            column (int): The column index of the destination square.
+            promotion (bool | Piece, optional): Indicates whether the move is a promotion move. Defaults to False.
+
+        Returns:
+            None
+        """
         x, captured = self.selected.color * self.flipped, False
         if self.board[row][column] != 0:
             captured = self.board[row][column]
@@ -315,7 +467,17 @@ class Game:
         move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, promotion)
         move.make_move()
 
-    def flip_game(self):
+    def flip_game(self) -> None:
+        """
+        Flips the game board and updates the necessary attributes.
+
+        This method flips the game board horizontally, updates the flipped attribute,
+        resets the selected, legal_moves, and promotion attributes, and adjusts
+        the en_passant, history, and highlightedSquares attributes accordingly.
+
+        Returns:
+            None
+        """
         self.flip_board()
         self.flipped *= -1
         self.selected, self.legal_moves, self.promotion = None, [], None
@@ -325,17 +487,29 @@ class Game:
             self.history[-1].from_, self.history[-1].to = flip_coords(*self.history[-1].from_), flip_coords(*self.history[-1].to)
             self.highlightedSquares = {flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
             
-    def flip_board(self):
+    def flip_board(self) -> None:
+        """
+        Flips the chessboard vertically and horizontally, and updates the positions of the pieces accordingly.
+        """
         for row in range(len(self.board)):
             for column in range(len(self.board[row])):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.piece_move(*flip_coords(piece.row, piece.column, flipped = -1))
+                    piece.piece_move(*flip_coords(piece.row, piece.column, flipped=-1))
         for row in self.board:
             row.reverse()
         self.board.reverse()
 
-    def dict_color_pieces(self, color: int):
+    def dict_color_pieces(self, color: int) -> dict[type[Piece], int]:
+        """
+        Returns a dictionary that maps each type of piece to the number of occurrences for a given color.
+
+        Args:
+            color (int): The color of the pieces to consider.
+
+        Returns:
+            dict[type[Piece], int]: A dictionary where the keys are the types of pieces and the values are the number of occurrences.
+        """
         groups = {}
         for piece in self.get_color_pieces(color):
             if type(piece) in groups.keys():
@@ -344,7 +518,13 @@ class Game:
                 groups[type(piece)] = 1
         return groups
 
-    def generate_fen(self):
+    def generate_fen(self) -> str:
+        """
+        Generates the Forsyth–Edwards Notation (FEN) representation of the current chess position.
+
+        Returns:
+            str: The FEN string representing the current chess position.
+        """
         fen = ""
         for row in range(len(self.board)):
             empty_squares = 0
