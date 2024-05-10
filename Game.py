@@ -136,14 +136,13 @@ class Game:
                 if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.history[i-1].fen.split(" ")[2]:
                     last_index = i
                     break
-            print("last_index_found", last_index)
             for i in range(last_index, len(self.history)):
-                fen = self.history[i].fen.split(" ")
+                fen = self.history[i].fen.split(" ")[0:4]
                 count = 0
                 for j in range(last_index, len(self.history)):
                     iterate_fen = self.history[j].fen.split(" ")
                     # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
-                    if all([iterate_fen[k] == fen[k] for k in range(4)]):
+                    if fen == iterate_fen[0:4]:
                         count += 1
                         if count == 3:
                             break
