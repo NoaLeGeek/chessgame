@@ -1,6 +1,4 @@
 # chessgame
-Recreation of a chess game for a NSI project
-
 Config
 
 To personalize the skins from pieces, background, board or sounds, you have to click on the button then use left/right arrow key to navigate through the available skins.
@@ -21,4 +19,9 @@ KOTH: King of the Hill, the goal is to walk your king in the center of the board
 Giveaway: If one of your moves can capture one of your opponent's pieces, you have to play it. You win when you have no more pieces left or if you are in stalemate. There is no checkmate, no castling and no checks. Pawns are promoted to Kings. / Si un de vos coups peut capturer une des pièces adverses, vous devez jouer ce coup. Vous gagnez en n'ayant plus aucune pièce ou si vous êtes en pat. Il n'y pas d'échec et mat, ni de roque, ni d'échecs. Les pions sont promus en rois.
 Chess960: Same as classic version but the last rows are randomized / Idem que pour la version classique mais les dernières rangées sont générées aléatoirement.
 
-The assets come from Chess.com and other GitHub repositories.
+The assets come from Chess.com and other GitHub repositories. / Les images et sons proviennent de Chess.com et d'autres dépôts Github.
+
+If you are curious, you can see the progression of the project through the months at https://github.com/NoaLeGeek/chessgame.
+Si vous êtes curieux, vous pouvez découvrir la progression du projet à travers les mois sur ce lien https://github.com/NoaLeGeek/chessgame.
+
+The project is subject to several changes in the future. / Le projet est assujetti à plusieurs changements dans le futur.

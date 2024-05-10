@@ -133,12 +133,12 @@ class Piece:
 
 class Pawn(Piece):
 
-    def __init__(self, color, row, column):
+    def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)
         # Indicates whether the pawn has moved or not
         self.first_move = True
 
-    def get_moves(self, board, row, column, flipped: bool = False, **kwds):
+    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         """
         Returns a list of available moves for the pawn on the given chessboard.
 
@@ -176,12 +176,12 @@ class Pawn(Piece):
 
 
 class Rook(Piece):
-    def __init__(self, color, row, column):
+    def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)
         # Indicates whether the rook has moved or not
         self.first_move = True
 
-    def get_moves(self, board, row, column, flipped: bool = False, **kwds):
+    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         """
         Returns a list of available moves for the pawn on the given chessboard.
 
@@ -233,10 +233,10 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, color, row, column):
+    def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)
 
-    def get_moves(self, board, row, column, flipped: bool = False, **kwds):
+    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         """
         Returns a list of available moves for the pawn on the given chessboard.
 
@@ -304,10 +304,10 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, color, row, column):
+    def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)
 
-    def get_moves(self, board, row, column, flipped: bool = False, **kwds):
+    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         """
         Returns a list of available moves for the pawn on the given chessboard.
 
@@ -351,10 +351,10 @@ class Knight(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, color, row, column):
+    def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)
 
-    def get_moves(self, board, row, column, flipped: bool = False, **kwds):
+    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         """
         Returns a list of available moves for the pawn on the given chessboard.
 
@@ -453,12 +453,12 @@ class Queen(Piece):
         return self.moves
     
 class King(Piece):
-    def __init__(self, color, row, column):
+    def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)
         # Indicates whether the king has moved or not
         self.first_move = True
 
-    def get_moves(self, board, row, column, flipped: bool = False, **kwds):
+    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         """
         Returns a list of available moves for the pawn on the given chessboard.
 
