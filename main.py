@@ -14,6 +14,8 @@ def main():
     game = None
     while run:
         clock.tick(fps)
+
+        # Drawing related code
         draw_background()
         match config["state"]:
             case "main_menu":
@@ -36,8 +38,10 @@ def main():
                 MOVE_LABEL.draw()
         pygame.display.update()
 
+        # Event handling
         for event in pygame.event.get():
             match event.type:
+                # Resize the window
                 case pygame.VIDEORESIZE:
                     if pygame.display.Info().current_h != config["height"]:
                         pygame.display.set_mode((pygame.display.Info().current_w, config["height"]), pygame.RESIZABLE)
@@ -47,9 +51,11 @@ def main():
                         pygame.display.set_mode((config["height"], pygame.display.Info().current_h), pygame.RESIZABLE)
                     for menu in menus:
                         menu.refresh()
+                # Quit the game
                 case pygame.QUIT:
                     run = False
                     pygame.quit()
+                # Keyboard input
                 case pygame.KEYDOWN:
                     match config["state"]:
                         case "settings":
@@ -83,6 +89,7 @@ def main():
                                 game = Game(game.gamemode)
                             if event.key == pygame.K_f:
                                 game.flip_game()
+                # Mouse input
                 case pygame.MOUSEBUTTONDOWN:
                     if left_click():
                         match config["state"]:
