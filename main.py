@@ -117,7 +117,7 @@ def main():
                                         print("clicked on:", selected_piece if selected_piece != 0 else 0)
                                         print("cRow", row, "cColumn", column)
                                         if selected_piece != 0 and isinstance(selected_piece, King):
-                                            print("kingmoves", selected_piece.get_available_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
+                                            print("kingmoves", selected_piece.get_moves(game.board, row, column, game.flipped, en_passant=game.en_passant))
                                         game.select(row, column)
                                 game.highlightedSquares = {}
                     elif right_click():

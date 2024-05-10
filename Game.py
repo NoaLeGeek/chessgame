@@ -156,7 +156,7 @@ class Game:
             play_sound("game-end")
             
     def get_color_moves(self, color: int):
-        return [move for piece in self.get_color_pieces(color) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)]
+        return [move for piece in self.get_color_pieces(color) for move in piece.get_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)]
     
     def is_insufficient_material(self):
         return (self.count_pieces() == 2) or (self.count_pieces() == 3 and (any([self.dict_color_pieces(color * self.turn).get(Bishop, 0) == 1 for color in [-1, 1]]) or any([self.dict_color_pieces(color * self.turn).get(Knight, 0) == 1 for color in [-1, 1]]))) or (self.count_pieces() == 4 and all([self.dict_color_pieces(color * self.turn).get(Bishop, 0) == 1 for color in [-1, 1]]) and self.get_piece(self.turn, Bishop).get_square_color() == self.get_piece(-self.turn, Bishop).get_square_color())
@@ -184,7 +184,7 @@ class Game:
                     return self.board[row][column]
 
     def is_stalemate(self) -> bool:
-        return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_available_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
+        return not any([self.is_legal(piece, *move) for piece in self.get_color_pieces(self.turn) for move in piece.get_moves(self.board, piece.row, piece.column, self.flipped, en_passant = self.en_passant)])
     
     def is_castling(self, piece: Piece, row: int, column: int):
         return isinstance(piece, King) and isinstance(self.board[row][column], Rook) and self.board[row][column].is_ally(piece)
@@ -299,7 +299,7 @@ class Game:
             piece = self.board[row][column]
             if piece != 0 and self.turn == piece.color:
                 self.selected = piece
-                moves = set([move for move in piece.get_available_moves(self.board, row, column, self.flipped, en_passant = self.en_passant)])
+                moves = set([move for move in piece.get_moves(self.board, row, column, self.flipped, en_passant = self.en_passant)])
                 if self.gamemode != "Giveaway":
                     moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
                 elif any([self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece) for move in self.get_color_moves(piece.color)]):
