@@ -7,6 +7,9 @@ from constants import *
 from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU, FEN_LABEL, MOVE_LABEL
 from Config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
 
+# IF BY ANY CHANCE THE GAME IS UNPLAYABLE, PLEASE CONTACT ME AS SOON AS POSSIBLE ON MONBUREAUNUMERIQUE SO THAT YOU CAN STILL HAVE A PLAYABLE CHESS GAME.
+# (WITH YOUR EMAIL ADDRESS, AS THE PROJECT WILL BE TOO BIG TO BE IMPORTED AS AN ATTACHMENT)
+
 def main():
     run = True
     fps = 60
@@ -41,6 +44,8 @@ def main():
         for event in pygame.event.get():
             match event.type:
                 # Resize the window
+
+                # If by any chance the window is flashing and visually unplayable, try removing the part of the code from line 49 to line 54.
                 case pygame.VIDEORESIZE:
                     if pygame.display.Info().current_h != config["height"]:
                         pygame.display.set_mode((pygame.display.Info().current_w, config["height"]), pygame.RESIZABLE)
