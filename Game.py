@@ -141,8 +141,6 @@ class Game:
                 fen = self.history[i].fen.split(" ")
                 count = 0
                 for j in range(last_index, len(self.history)):
-                    if i == j:
-                        continue
                     iterate_fen = self.history[j].fen.split(" ")
                     # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
                     if all([iterate_fen[k] == fen[k] for k in range(4)]):
