@@ -63,7 +63,7 @@ def main():
                                         length = len(available_sound_assets)
                                 if event.key == pygame.K_LEFT:
                                     config_index[Config.selected_config] = (length - 1 if config_index[Config.selected_config] - 1 < 0 else config_index[Config.selected_config] - 1)
-                                if event.key == pygame.K_RIGHT:
+                                elif event.key == pygame.K_RIGHT:
                                     config_index[Config.selected_config] = (config_index[Config.selected_config] + 1) % length
                                 match Config.selected_config:
                                     case "board_asset":

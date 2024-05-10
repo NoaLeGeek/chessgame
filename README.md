@@ -18,7 +18,7 @@ Gamemodes
 Classic: Classic version of chess / Version classique des échecs
 KOTH: King of the Hill, the goal is to walk your king in the center of the board to win / Roi de la colline, le but est de ramener son roi au milieu de l'échiquier pour gagner
 +3 Checks: You win if you check 3 times the opponent's king / Vous gagnez lorsque vous mettez en échec 3 fois le roi adverse
-Giveaway: If one of your moves can capture one of your opponent's pieces, you have to play it. You win when you have no more pieces left or if you are in stalemate. / Si un de vos coups peut capturer une des pièces adverses, vous devez jouer ce coup. Vous gagnez en n'ayant plus aucune pièce ou si vous êtes en pat.
+Giveaway: If one of your moves can capture one of your opponent's pieces, you have to play it. You win when you have no more pieces left or if you are in stalemate. There is no checkmate, no castling and no checks. Pawns are promoted to Kings. / Si un de vos coups peut capturer une des pièces adverses, vous devez jouer ce coup. Vous gagnez en n'ayant plus aucune pièce ou si vous êtes en pat. Il n'y pas d'échec et mat, ni de roque, ni d'échecs. Les pions sont promus en rois.
 Chess960: Same as classic version but the last rows are randomized / Idem que pour la version classique mais les dernières rangées sont générées aléatoirement.
 
 The assets come from Chess.com and other GitHub repositories.

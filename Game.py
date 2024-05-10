@@ -129,14 +129,14 @@ class Game:
             self.game_over = True
             print("Draw by insufficient material")
         else:
-            # TODO threesold repetition seems to not be recognized
             last_index = 0
-            for i in range(1, len(self.history)):
-                move = self.history[-i]
+            for i in range(len(self.history)-1, 0, -1):
+                move = self.history[i]
                 # Irreversible move are captures, pawn moves, castling or losing castling rights
-                if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.history[-i-1].fen.split(" ")[2]:
-                    last_index = len(self.history) - 1
+                if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.history[i-1].fen.split(" ")[2]:
+                    last_index = i
                     break
+            print("last_index_found", last_index)
             for i in range(last_index, len(self.history)):
                 fen = self.history[i].fen.split(" ")
                 count = 0
@@ -225,7 +225,7 @@ class Game:
         is_legal = self.can_move(piece, row, column)
         # Castling
         if self.is_castling(piece, row, column):
-            if self.is_king_checked():
+            if self.is_king_checked() or self.gamemode == "Giveaway":
                 return False
             for next_column in range(piece.column, column, 2 * (piece.column < column) - 1):
                 is_legal = is_legal and self.can_move(piece, piece.row, next_column)
@@ -259,7 +259,7 @@ class Game:
                 # Promote the pawn
                 if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
                     promotion_row = get_value(x, 0, 7)
-                    self.execute_move(promotion_row, column, [Queen, Knight, Rook, Bishop][flip_coords(row, flipped = x)](self.selected.color, promotion_row, column))
+                    self.execute_move(promotion_row, column, ([Queen, Knight, Rook, Bishop][flip_coords(row, flipped = x)] if self.gamemode != "Giveway" else King)(self.selected.color, promotion_row, column))
                     self.promotion = None
                     return
                 # Remove the promotion
@@ -378,7 +378,13 @@ class Game:
             if next((self.board[black_king.row][i] for i in range(black_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
                 castle_rights += "q"
         fen += " " + (castle_rights if castle_rights != "" else "-")
-        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1) if self.en_passant else "-")
+        can_en_passant = bool(self.en_passant)
+        if can_en_passant:
+            x = ((7-2*self.en_passant[0])//3)
+            r, c = self.en_passant
+            if not any([isinstance(self.board[r + x][c + i], Pawn) and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
+                can_en_passant = False
+        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1) if can_en_passant else "-")
         fen += " " + str(self.halfMoves)
         fen += " " + str(self.fullMoves)
         return fen
