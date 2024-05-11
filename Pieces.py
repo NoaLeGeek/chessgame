@@ -15,7 +15,6 @@ class Piece:
             self.image = constants.piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(self) + get_value(self.color, 0, 6)]
             self.calc_pos(self.image)
 
-    
     def piece_move(self, row: int, column: int) -> None:
         """
         Moves the piece to the specified row and column.
