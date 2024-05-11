@@ -1,11 +1,10 @@
-import Move
-
 from constants import config, window, sign, flip_coords, get_value
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
 from Menu import FEN_LABEL
 from Pieces import Piece, King, Rook, Pawn, Queen, Knight, Bishop
+from Move import Move
 
 class Game:
     def __init__(self, gamemode: str = "classic"):
@@ -283,7 +282,7 @@ class Game:
         """
         return isinstance(piece, King) and isinstance(self.board[row][column], Rook) and self.board[row][column].is_ally(piece)
 
-    def move(self, move: Move.Move) -> None:
+    def move(self, move: Move) -> None:
         """
         Moves a chess piece on the board.
 
@@ -464,7 +463,7 @@ class Game:
             captured = self.board[row][column]
         elif isinstance(self.selected, Pawn) and isinstance(self.board[row + x][column], Pawn) and self.en_passant == (self.selected.row - x, column):
             captured = self.board[row + x][column]
-        move = Move.Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, promotion)
+        move = Move(self, (self.selected.row, self.selected.column), (row, column), self.selected, captured, promotion)
         move.make_move()
 
     def flip_game(self) -> None:
