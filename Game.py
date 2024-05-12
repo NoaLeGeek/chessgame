@@ -26,7 +26,7 @@ class Game:
             self.win_condition = 0
         self.debug = False
         if config["state"] == "game":
-            self.create_board("8/8/8/8/8/8/b1r5/kBK5 w - - 0 1")
+            self.create_board()
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         """
