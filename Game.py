@@ -339,7 +339,8 @@ class Game:
         if self.is_castling(piece, row, column):
             if self.is_king_checked() or self.gamemode == "Giveaway":
                 return False
-            for next_column in range(piece.column, column, 2 * (piece.column < column) - 1):
+            s = sign(column - piece.column)
+            for next_column in range((7 + self.flipped + get_value(s, 4, -4)) // 2, piece.column, -s):
                 is_legal = is_legal and self.can_move(piece, piece.row, next_column)
                 if not is_legal:
                     break
