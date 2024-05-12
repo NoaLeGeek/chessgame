@@ -51,7 +51,7 @@ class Move:
         self.game.check_game()
         if castling:
             play_sound("castle")
-        elif self.game.is_king_checked():
+        elif self.game.gamemode != "Giveaway" and self.game.is_king_checked():
             play_sound("move-check")
         elif self.promotion:
             play_sound("promote")
@@ -89,7 +89,7 @@ class Move:
             # Add the destination's row
             string += str(flip_coords(row, flipped = -self.game.flipped) + 1)
             # Add promotion
-            string += ("=" + ["N", "B", "R", "Q"][Piece.piece_to_index(self.promotion) - 1] if self.promotion else "")
+            string += ("=" + ["N", "B", "R", "Q", "K"][Piece.piece_to_index(self.promotion) - 1] if self.promotion else "")
         # Add # if it's checkmate or + if it's a check
         string += ("#" if self.game.is_checkmate() else ("+" if self.game.is_king_checked() else ""))
         return string

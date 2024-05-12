@@ -399,7 +399,7 @@ class Game:
                 # Promote the pawn
                 if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
                     promotion_row = get_value(x, 0, 7)
-                    self.execute_move(promotion_row, column, ([Queen, Knight, Rook, Bishop][flip_coords(row, flipped=x)] if self.gamemode != "Giveway" else King)(self.selected.color, promotion_row, column))
+                    self.execute_move(promotion_row, column, [Queen, Knight, Rook, Bishop][flip_coords(row, flipped=x)](self.selected.color, promotion_row, column))
                     self.promotion = None
                     return
                 # Remove the promotion
@@ -432,6 +432,10 @@ class Game:
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
             if isinstance(self.selected, Pawn) and row in [0, 7]:
+                if self.gamemode == "Giveaway":
+                    promotion_row = get_value(x, 0, 7)
+                    self.execute_move(promotion_row, column, King(self.selected.color, promotion_row, column))
+                    return
                 self.promotion = self.selected, column - self.selected.column
                 self.legal_moves = []
                 return
@@ -443,9 +447,13 @@ class Game:
                 moves = set([move for move in piece.get_moves(self.board, row, column, self.flipped, en_passant=self.en_passant)])
                 if self.gamemode != "Giveaway":
                     moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
-                elif any([self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece) for move in self.get_color_moves(piece.color)]):
-                    moves = list(filter(lambda move: self.board[move[0]][move[1]] != 0 and self.board[move[0]][move[1]].is_enemy(piece), moves))
+                elif any([self.is_capture(self.selected, *move) for move in self.get_color_moves(piece.color)]):
+                    moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
                 self.legal_moves = moves
+
+    def is_capture(self, piece: Piece, row: int, column: int) -> bool:
+        x = piece.color * self.flipped
+        return self.board[row][column] != 0 or (self.en_passant == (piece.row - x, column) and isinstance(piece, Pawn) and isinstance(self.board[row + x][column], Pawn))
 
     def execute_move(self, row: int, column: int, promotion: bool | Piece = False) -> None:
         """

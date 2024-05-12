@@ -165,7 +165,6 @@ class Pawn(Piece):
                     moves.append((row - x, column + 1))
         return moves
 
-
 class Rook(Piece):
     def __init__(self, color: int, row: int, column: int):
         super().__init__(color, row, column)

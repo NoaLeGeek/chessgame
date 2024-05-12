@@ -45,7 +45,7 @@ def main():
             match event.type:
                 # Resize the window
 
-                # If by any chance the window is flashing and visually unplayable, try removing the part of the code from line 49 to line 54.
+                # If by any chance the window is flashing and visually unplayable, try removing the part of the code from line 50 to line 55.
                 case pygame.VIDEORESIZE:
                     if pygame.display.Info().current_h != config["height"]:
                         pygame.display.set_mode((pygame.display.Info().current_w, config["height"]), pygame.RESIZABLE)
@@ -91,6 +91,8 @@ def main():
                         case "game":
                             if event.key == pygame.K_SPACE:
                                 game = Game(game.gamemode)
+                                FEN_LABEL.text = game.generate_fen()
+                                MOVE_LABEL.text = ""
                             if event.key == pygame.K_f:
                                 game.flip_game()
                 # Mouse input
