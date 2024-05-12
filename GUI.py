@@ -106,7 +106,7 @@ def draw_promotion(promotion, offset, flipped) -> None:
         return
     for i in range(5):
         if i < 4:
-            render = [Queen, Knight, Rook, Bishop][i](promotion.color, get_value(flipped, 7, 0) + x * i, promotion.column + offset)
+            render = [Queen, Knight, Rook, Bishop][i](promotion.color, get_value(x, 0, 7) + x * i, promotion.column + offset)
             render.image = piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(render) + get_value(render.color, 0, 6)]
             window.blit(render.image, (render.x, render.y))
                   
