@@ -560,7 +560,7 @@ class Game:
         if can_en_passant:
             x = ((7-2*self.en_passant[0])//3)
             r, c = self.en_passant
-            if not any([isinstance(self.board[r + x][c + i], Pawn) and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
+            if not any([-1 < row + i < len(self.board) and isinstance(self.board[r + x][c + i], Pawn) and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
                 can_en_passant = False
         fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1) if can_en_passant else "-")
         fen += " " + str(self.halfMoves)
