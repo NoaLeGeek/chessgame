@@ -21,6 +21,9 @@ Chess960: Same as classic version but the last rows are randomized / Idem que po
 
 The assets come from Chess.com and other GitHub repositories. / Les images et sons proviennent de Chess.com et d'autres dépôts Github.
 
+I invite you to read the rules of chess. / Je vous invite à lire les règles des échecs.
+https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques
+
 If you are curious, you can see the progression of the project through the months at https://github.com/NoaLeGeek/chessgame.
 Si vous êtes curieux, vous pouvez découvrir la progression du projet à travers les mois sur ce lien https://github.com/NoaLeGeek/chessgame.
 
