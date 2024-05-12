@@ -1,8 +1,8 @@
 {
     "selected_board_asset": "green",
-    "selected_piece_asset": "neo_wood",
+    "selected_piece_asset": "chesscom",
     "selected_background_asset": "wood",
-    "selected_sound_asset": "newspaper",
+    "selected_sound_asset": "default",
     "margin": 32,
     "taskbar_height": 48,
     "rows": 8,
