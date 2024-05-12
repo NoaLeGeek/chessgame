@@ -57,7 +57,7 @@ def main():
                         menu.refresh()
                 # Quit the game
                 case pygame.QUIT:
-                    run = False
+                    run = False  
                     pygame.quit()
                 # Keyboard input
                 case pygame.KEYDOWN:

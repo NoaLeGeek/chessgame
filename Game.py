@@ -26,7 +26,7 @@ class Game:
             self.win_condition = 0
         self.debug = False
         if config["state"] == "game":
-            self.create_board()
+            self.create_board("8/8/8/8/8/8/b1r5/kBK5 w - - 0 1")
 
     def create_board(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1") -> None:
         """
@@ -73,7 +73,6 @@ class Game:
                 case 1:
                     self.turn = 1 if parts[part] == "w" else -1
                 case 2:
-                    # TODO dont work in 960
                     if "K" not in parts[part] and isinstance(self.board[7][7], Rook):
                         self.board[7][7].first_move = False
                     if "Q" not in parts[part] and isinstance(self.board[7][0], Rook):
