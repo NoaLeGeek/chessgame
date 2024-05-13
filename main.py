@@ -44,15 +44,7 @@ def main():
         for event in pygame.event.get():
             match event.type:
                 # Resize the window
-
-                # If by any chance the window is flashing and visually unplayable, try removing the part of the code from line 50 to line 55.
                 case pygame.VIDEORESIZE:
-                    if pygame.display.Info().current_h != config["height"]:
-                        pygame.display.set_mode((pygame.display.Info().current_w, config["height"]), pygame.RESIZABLE)
-                    if pygame.display.Info().current_w > config["width"]:
-                        pygame.display.set_mode((config["width"], pygame.display.Info().current_h), pygame.RESIZABLE)
-                    if pygame.display.Info().current_w < config["height"]:
-                        pygame.display.set_mode((config["height"], pygame.display.Info().current_h), pygame.RESIZABLE)
                     for menu in menus:
                         menu.refresh()
                 # Quit the game
