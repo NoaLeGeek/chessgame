@@ -1,11 +1,11 @@
 import pygame
-import Config
+import config
 
 from Game import Game
 from GUI import draw_background, draw_settings
 from constants import *
 from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU, FEN_LABEL, MOVE_LABEL
-from Config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
+from config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
 
 def main():
     run = True
@@ -23,10 +23,10 @@ def main():
                 GAMEMODE_MENU.draw_menu()
             case "settings":
                 SETTINGS_MENU.draw_menu()
-                if Config.selected_config:
+                if config.selected_config:
                     button_index = None
                     for i, config_type in enumerate(["piece_asset", "board_asset", "sound_asset", "background_asset"]):
-                        if Config.selected_config == config_type:
+                        if config.selected_config == config_type:
                             button_index = i
                             break
                     SETTINGS_MENU.buttons[button_index].draw_frame()
@@ -52,9 +52,9 @@ def main():
                 case pygame.KEYDOWN:
                     match config["state"]:
                         case "settings":
-                            if Config.selected_config:
+                            if config.selected_config:
                                 length = None
-                                match Config.selected_config:
+                                match config.selected_config:
                                     case "board_asset":
                                         length = len(available_board_assets)
                                     case "piece_asset":
@@ -64,18 +64,18 @@ def main():
                                     case "sound_asset":
                                         length = len(available_sound_assets)
                                 if event.key == pygame.K_LEFT:
-                                    config_index[Config.selected_config] = (length - 1 if config_index[Config.selected_config] - 1 < 0 else config_index[Config.selected_config] - 1)
+                                    config_index[config.selected_config] = (length - 1 if config_index[config.selected_config] - 1 < 0 else config_index[config.selected_config] - 1)
                                 elif event.key == pygame.K_RIGHT:
-                                    config_index[Config.selected_config] = (config_index[Config.selected_config] + 1) % length
-                                match Config.selected_config:
+                                    config_index[config.selected_config] = (config_index[config.selected_config] + 1) % length
+                                match config.selected_config:
                                     case "board_asset":
-                                        change_board(available_board_assets[config_index[Config.selected_config]])
+                                        change_board(available_board_assets[config_index[config.selected_config]])
                                     case "piece_asset":
-                                        change_piece(game.board if game else None, available_piece_assets[config_index[Config.selected_config]])
+                                        change_piece(game.board if game else None, available_piece_assets[config_index[config.selected_config]])
                                     case "background_asset":
-                                        change_background(available_background_assets[config_index[Config.selected_config]])
+                                        change_background(available_background_assets[config_index[config.selected_config]])
                                     case "sound_asset":
-                                        change_sound(available_sound_assets[config_index[Config.selected_config]])
+                                        change_sound(available_sound_assets[config_index[config.selected_config]])
                                 refresh_parameters()
                         case "game":
                             if event.key == pygame.K_SPACE:
@@ -110,7 +110,7 @@ def main():
                                 else:
                                     for i, config_type in enumerate(["piece_asset", "board_asset", "sound_asset", "background_asset"]):
                                         if SETTINGS_MENU.buttons[i].is_clicked():
-                                            Config.selected_config = config_type
+                                            config.selected_config = config_type
                             case "game":
                                 if not game.game_over:
                                     row, column = get_position(*pygame.mouse.get_pos())
