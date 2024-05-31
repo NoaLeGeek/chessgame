@@ -16,6 +16,5 @@ class Config:
     def generate_height(self):
         return round((self.user32.GetSystemMetrics(1)-100)/12)*12
 
-
     def save(self):
         pass
