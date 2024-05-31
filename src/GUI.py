@@ -1,7 +1,7 @@
 import pygame
 
 from constants import window, config, square_size, board_assets, piece_assets, background_assets, WHITE, get_value
-from Pieces import Piece, Queen, Knight, Rook, Bishop
+from Board.Pieces import Piece, Queen, Knight, Rook, Bishop
 
 def draw_text(text: str, color: tuple[int, int, int], size: int, center: tuple[int, int], font: str) -> None:
     """

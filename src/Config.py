@@ -1,6 +1,6 @@
 import pygame
 
-from Pieces import Piece
+from Board.pieces import Piece
 from Menu import SETTINGS_MENU
 from os.path import join
 from constants import *
