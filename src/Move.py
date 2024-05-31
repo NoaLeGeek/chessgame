@@ -1,7 +1,7 @@
 from constants import flip_coords, config, piece_assets, sign, get_value
 from Config import play_sound
 from Menu import FEN_LABEL, MOVE_LABEL
-from Pieces import Piece, Pawn, King, Rook
+from Board.Pieces import Piece, Pawn, King, Rook
 
 class Move:
     def __init__(self, game, from_, to, piece, capture: bool | Piece = False, promotion: bool | tuple[Piece, int] = False):

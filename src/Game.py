@@ -3,7 +3,7 @@ from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
 from Menu import FEN_LABEL
-from Pieces import Piece, King, Rook, Pawn, Queen, Knight, Bishop
+from Board.Pieces import Piece, King, Rook, Pawn, Queen, Knight, Bishop
 from Move import Move
 
 class Game:
