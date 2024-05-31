@@ -1,8 +1,17 @@
 import pygame
+import sys
+import os
 
 from math import floor
-from os.path import join
 from json import load
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def get_position(x: int, y: int) -> tuple[int, int]:
     """
@@ -89,7 +98,7 @@ def generate_pieces(asset: str) -> list[pygame.Surface]:
     """
     images = []
     for piece in piece_constants:
-        image = pygame.image.load(join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
+        image = pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
         size = (square_size * 7/8, square_size * 7/8)
         if asset in ["lichess"]:
             size = (square_size * 3 / 4, square_size * 3 / 4)
@@ -112,7 +121,7 @@ def generate_sounds(asset: str) -> dict:
     Returns:
         dict: A dictionary containing the sounds for the asset.
     """
-    return {(asset, sound): pygame.mixer.Sound(join("assets", "sounds", asset, sound + ".ogg")) for sound in types_sound_asset}
+    return {(asset, sound): pygame.mixer.Sound(os.path.join("assets", "sounds", asset, sound + ".ogg")) for sound in types_sound_asset}
 
 def generate_board(asset: str) -> pygame.Surface:
     """
@@ -125,7 +134,7 @@ def generate_board(asset: str) -> pygame.Surface:
     pygame.Surface: The generated chessboard image.
 
     """
-    return pygame.transform.scale(pygame.image.load(join("assets", "boards", asset + ".png")), (square_size*8, square_size*8))
+    return pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", asset + ".png")), (square_size*8, square_size*8))
 
 BROWN = (92, 64, 51)
 WHITE = (255, 255, 255)
@@ -149,7 +158,7 @@ config = {"volume": 0.2,
           "width": pygame.display.Info().current_w,
           "height": pygame.display.Info().current_h - 23 - 48}
 # Load the configuration from the config.json file
-with open("config.json", "r") as file:
+with open(resource_path("config.json"), "r") as file:
         data = load(file)
         # Chess without 8x8 board is not supported actually
         if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
@@ -175,10 +184,10 @@ piece_assets = {config["selected_piece_asset"]: generate_pieces(config["selected
 
 # The different assets available for the background
 available_background_assets = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
-background_assets = {config["selected_background_asset"]: pygame.transform.scale(pygame.image.load(join("assets", "backgrounds", config["selected_background_asset"] + ".png")), (config["width"], config["height"]))}
+background_assets = {config["selected_background_asset"]: pygame.transform.scale(pygame.image.load(os.path.join("assets", "backgrounds", config["selected_background_asset"] + ".png")), (config["width"], config["height"]))}
 
 # The different assets available for the sounds
 available_sound_assets = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]
 types_sound_asset = ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]
-sound_assets = {("all", sound): pygame.mixer.Sound(join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}
+sound_assets = {("all", sound): pygame.mixer.Sound(os.path.join("assets", "sounds", sound + ".ogg")) for sound in ["illegal", "notify", "tenseconds"]}
 sound_assets.update(generate_sounds(config["selected_sound_asset"]))

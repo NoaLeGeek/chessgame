@@ -7,9 +7,6 @@ from constants import *
 from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU, FEN_LABEL, MOVE_LABEL
 from Config import change_background, change_board, change_piece, change_sound, config_index, refresh_parameters
 
-# IF BY ANY CHANCE THE GAME IS UNPLAYABLE, PLEASE CONTACT ME AS SOON AS POSSIBLE ON MONBUREAUNUMERIQUE SO THAT YOU CAN STILL HAVE A PLAYABLE CHESS GAME.
-# (WITH YOUR EMAIL ADDRESS, AS THE PROJECT WILL BE TOO BIG TO BE IMPORTED AS AN ATTACHMENT)
-
 def main():
     run = True
     fps = 60
