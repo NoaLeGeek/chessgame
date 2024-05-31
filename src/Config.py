@@ -3,7 +3,7 @@ import ctypes
 
 class Config:
     def __init__(self):
-        self.user32 = ctypes.windll.user32
+        self.screen_width, self.screen_height = ctypes.windll.user32
         self.config = configparser.ConfigParser()
         self.config.read('config.cfg')
         self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.generate_height()

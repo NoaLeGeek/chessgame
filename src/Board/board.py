@@ -6,7 +6,7 @@ from GUI.text import draw_text
 from config import Config
 
 class Board:
-    def __init__(self, config:Config, size:int):
+    def __init__(self, config: Config, size: int):
         self.config = config
         self.tile_image = load_image('assets/boards/tile_wood2.png', (self.config.tile_size, self.config.tile_size))
         self.board_image = None
@@ -176,4 +176,13 @@ class Board:
         screen.blit(self.selected_piece.image, (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+2)*self.config.tile_size+self.config.margin))
         
 class FEN:
-    def __init__(board, turn, castling_rights, ep_square, half_move, full_move):
+    def __init__(self, board, turn, castling_rights, ep_square, half_move, full_move):
+        self.board = board
+        self.turn = turn
+        self.castling_rights = castling_rights
+        self.ep_square = ep_square
+        self.half_move = half_move
+        self.full_move = full_move
+    
+    def to_literal():
+        pass
