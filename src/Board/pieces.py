@@ -15,111 +15,35 @@ class Piece:
             self.calc_pos(self.image)
 
     def piece_move(self, row: int, column: int) -> None:
-        """
-        Moves the piece to the specified row and column.
-
-        Args:
-            row (int): The row to move the piece to.
-            column (int): The column to move the piece to.
-        """
         self.row = row
         self.column = column
         if config["selected_piece_asset"] != "blindfold":
             self.calc_pos(self.image)
             
     def get_square_color(self):
-        """
-        Returns the color of the square where the piece is located.
-        
-        The color is determined by the sum of the row and column indices of the square.
-        If the sum is even, the square is considered to be black.
-        If the sum is odd, the square is considered to be white.
-        
-        Returns:
-            int: The color of the square (0 for black, 1 for white).
-        """
         return (self.row + self.column) % 2
 
     def calc_pos(self, image: pygame.Surface) -> None:
-        """
-        Calculates the position of the chess piece on the board.
-
-        Args:
-            image (Image): The image of the chess piece.
-
-        Returns:
-            None
-        """
         w, h = image.get_width(), image.get_height()
         self.x = config["margin"] + (self.column + 0.5) * square_size - 0.5*w
         self.y = config["margin"] + (self.row + 0.5) * square_size - (h - 0.5*w if config["selected_piece_asset"].startswith("3d") else 0.5*h)
 
     def is_ally(self, piece: "Piece") -> bool:
-        """
-        Check if the given piece is an ally.
-
-        Args:
-            piece (Piece): The piece to check.
-
-        Returns:
-            bool: True if the given piece is an ally, False otherwise.
-        """
         return self.color == piece.color
     
     def is_enemy(self, piece: "Piece") -> bool:
-        """
-        Check if the given piece is an enemy.
-
-        Args:
-            piece (Piece): The piece to check.
-
-        Returns:
-            bool: True if the piece is an enemy piece, False otherwise.
-        """
         return not self.is_ally(piece)
     
     def is_white(self) -> bool:
-        """
-        Check if the piece is white.
-
-        Returns:
-            bool: True if the piece is white, False otherwise.
-        """
         return self.color == 1
     
     def is_black(self) -> bool:
-        """
-        Check if the piece is black.
-
-        Returns:
-            bool: True if the piece is black, False otherwise.
-        """
         return not self.is_white()
 
     def piece_to_index(piece) -> int:
-        """
-        Converts a chess piece object to its corresponding index.
-
-        Parameters:
-        piece (object): The chess piece object.
-
-        Returns:
-        int: The index corresponding to the chess piece.
-
-        """
         return {Pawn: 0, Knight: 1, Bishop: 2, Rook: 3, Queen: 4, King: 5}[type(piece)]
     
     def index_to_piece(index) -> "Piece":
-        """
-        Converts an index to a corresponding chess piece.
-
-        Parameters:
-        index (int): The index representing the chess piece.
-
-        Returns:
-        Piece: The corresponding chess piece.
-
-        """
         return [Pawn, Knight, Bishop, Rook, Queen, King][index]
 
 class Pawn(Piece):
@@ -130,20 +54,6 @@ class Pawn(Piece):
         self.first_move = True
 
     def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
-        """
-        Returns a list of available moves for the pawn on the given chessboard.
-
-        Args:
-            board (list): The chessboard represented as a 2D list.
-            row (int): The row position of the pawn on the chessboard.
-            column (int): The column position of the pawn on the chessboard.
-            flipped (bool, optional): Indicates whether the chessboard is flipped or not. Defaults to False.
-            **kwds: Additional keyword arguments.
-
-        Returns:
-            list: A list of available moves for the pawn.
-
-        """
         moves = []
         en_passant = kwds["en_passant"]
         x = self.color * flipped
@@ -173,20 +83,6 @@ class Rook(Piece):
 
     def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         moves = []
-        """
-        Returns a list of available moves for the pawn on the given chessboard.
-
-        Args:
-            board (list): The chessboard represented as a 2D list.
-            row (int): The row position of the pawn on the chessboard.
-            column (int): The column position of the pawn on the chessboard.
-            flipped (bool, optional): Indicates whether the chessboard is flipped or not. Defaults to False.
-            **kwds: Additional keyword arguments.
-
-        Returns:
-            list: A list of available moves for the pawn.
-
-        """
         for i in range(row + 1, len(board)):
             if board[i][column] == 0:
                 moves.append((i, column))
@@ -227,20 +123,6 @@ class Bishop(Piece):
         super().__init__(color, row, column)
 
     def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
-        """
-        Returns a list of available moves for the pawn on the given chessboard.
-
-        Args:
-            board (list): The chessboard represented as a 2D list.
-            row (int): The row position of the pawn on the chessboard.
-            column (int): The column position of the pawn on the chessboard.
-            flipped (bool, optional): Indicates whether the chessboard is flipped or not. Defaults to False.
-            **kwds: Additional keyword arguments.
-
-        Returns:
-            list: A list of available moves for the pawn.
-
-        """
         moves = []
         row_temp = row + 1
         column_temp = column + 1
@@ -298,20 +180,6 @@ class Knight(Piece):
         super().__init__(color, row, column)
 
     def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
-        """
-        Returns a list of available moves for the pawn on the given chessboard.
-
-        Args:
-            board (list): The chessboard represented as a 2D list.
-            row (int): The row position of the pawn on the chessboard.
-            column (int): The column position of the pawn on the chessboard.
-            flipped (bool, optional): Indicates whether the chessboard is flipped or not. Defaults to False.
-            **kwds: Additional keyword arguments.
-
-        Returns:
-            list: A list of available moves for the pawn.
-
-        """
         moves = []
         if row > 1 and column > 0 and (
                 board[row - 2][column - 1] == 0 or board[row - 2][column - 1].is_enemy(self)):
@@ -345,20 +213,6 @@ class Queen(Piece):
         super().__init__(color, row, column)
 
     def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
-        """
-        Returns a list of available moves for the pawn on the given chessboard.
-
-        Args:
-            board (list): The chessboard represented as a 2D list.
-            row (int): The row position of the pawn on the chessboard.
-            column (int): The column position of the pawn on the chessboard.
-            flipped (bool, optional): Indicates whether the chessboard is flipped or not. Defaults to False.
-            **kwds: Additional keyword arguments.
-
-        Returns:
-            list: A list of available moves for the pawn.
-
-        """
         moves = []
         row_temp = row + 1
         column_temp = column + 1
@@ -449,20 +303,6 @@ class King(Piece):
         self.first_move = True
 
     def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
-        """
-        Returns a list of available moves for the pawn on the given chessboard.
-
-        Args:
-            board (list): The chessboard represented as a 2D list.
-            row (int): The row position of the pawn on the chessboard.
-            column (int): The column position of the pawn on the chessboard.
-            flipped (bool, optional): Indicates whether the chessboard is flipped or not. Defaults to False.
-            **kwds: Additional keyword arguments.
-
-        Returns:
-            list: A list of available moves for the pawn.
-
-        """
         moves = []
         for i in range(-1, 2):
             for j in range(-1, 2):
