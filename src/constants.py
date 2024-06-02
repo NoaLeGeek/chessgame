@@ -5,14 +5,6 @@ import os
 from math import floor
 from json import load
 
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)
-
 def get_position(x: int, y: int) -> tuple[int, int]:
     """
     Converts pixel coordinates to board coordinates.
@@ -158,7 +150,7 @@ config = {"volume": 0.2,
           "width": pygame.display.Info().current_w,
           "height": pygame.display.Info().current_h - 23 - 48}
 # Load the configuration from the config.json file
-with open(resource_path("config.json"), "r") as file:
+with open("config.cfg", "r") as file:
         data = load(file)
         # Chess without 8x8 board is not supported actually
         if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
