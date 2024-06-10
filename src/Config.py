@@ -14,7 +14,12 @@ class Config:
         self.tile_size = self.height//12
         self.margin = self.tile_size//2
         self.fps = self.config.getint('GENERAL', 'fps')
+        self.volume = self.config.getfloat('GENERAL', 'volume')
         self.piece_asset = self.config.get('ASSETS', 'piece')
+        self.board_asset = self.config.get('ASSETS', 'board')
+        self.board_8x8_asset = self.config.get('ASSETS', 'board_8x8')
+        self.sound_asset = self.config.get('ASSETS', 'sound')
+        self.background_asset = self.config.get('ASSETS', 'background')
 
     def save(self):
         pass

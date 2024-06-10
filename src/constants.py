@@ -137,28 +137,6 @@ pygame.mixer.init()
 pygame.mixer.music.set_volume(0.2)
 clock = pygame.time.Clock()
 
-config = {"volume": 0.2,
-          "taskbar_height": 48,
-          "rows": 8,
-          "columns": 8,
-          "margin": 32,
-          "selected_board_asset": "green",
-          "selected_piece_asset": "chesscom",
-          "selected_background_asset": "standard",
-          "selected_sound_asset": "default",
-          "state": "main_menu",
-          "width": pygame.display.Info().current_w,
-          "height": pygame.display.Info().current_h - 23 - 48}
-# Load the configuration from the config.json file
-with open("config.cfg", "r") as file:
-        data = load(file)
-        # Chess without 8x8 board is not supported actually
-        if data["rows"] != 8 or data["columns"] != 8 or data["rows"] != data["columns"]:
-            raise ValueError("Rows and columns must be 8 and equal to each other.")
-        for key in data.keys():
-            if key in config.keys():
-                config[key] = data[key]
-
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 # The different gamemodes available in the game

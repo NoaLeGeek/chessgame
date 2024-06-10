@@ -20,7 +20,7 @@ class Board:
         self.create_board()
 
     def create_board(self):
-        config = 'LNSGKGSNL/0B00000R0/PPPPPPPPP/000000000/000000000/000000000/PPPPPPPPP/0R00000B0/LNSGKGSNL'
+        config = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1'
         self.board = [[Tile(i, j, self.config.tile_size) for j in range(9)] for i in range(9)]
         for i, row in enumerate(config.split('/')):
             for j, char in enumerate(row):
