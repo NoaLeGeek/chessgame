@@ -7,7 +7,7 @@ class Tile:
         self.size = size
         self.x = column*size + size//2
         self.y = row*size + size + size//2
-        self.occupying_piece = None
+        self.object = None
         self.highlight_color = None
 
     def get_position(self):
