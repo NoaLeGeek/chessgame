@@ -3,7 +3,7 @@ import ctypes
 import sys
 import os
 
-class Config:
+class config:
     def __init__(self):
         self.screen_width, self.screen_height = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
         self.config = configparser.ConfigParser()
