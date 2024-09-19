@@ -2,18 +2,26 @@ import pygame
 from config import Config
 
 class Scene:
-    def __init__(self, manager, config:Config):
+    def __init__(self, manager, config:Config, buttons=[], labels=[]):
         self.manager = manager
         self.config = config
+        self.buttons = buttons
+        self.labels = labels
         
     def render(self, screen:pygame.Surface):
-        raise NotImplementedError
+        for button in self.buttons:
+            button.draw(screen)
+        for label in self.labels:
+            label.draw(screen)
     
     def update(self):
         raise NotImplementedError
     
     def handle_event(self, event:pygame.event.Event):
-        raise NotImplementedError
+        if event.type == pygame.MOUSEBUTTONDOWN :
+            if pygame.mouse.get_pressed()[0]:
+                for button in self.buttons :
+                    button.handle_click()
     
 
 class SceneManager:
