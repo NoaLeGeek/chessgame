@@ -1,7 +1,7 @@
 import pygame
-from scene import Scene
-from game import Game
-from settings import SettingsMenu
+from Scenes.scene import Scene
+from Scenes.game import Game
+from Scenes.settings import SettingsMenu
 from gui import RectButton
 
 class MainMenu(Scene):

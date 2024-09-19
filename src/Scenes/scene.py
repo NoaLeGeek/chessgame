@@ -15,7 +15,7 @@ class Scene:
             label.draw(screen)
     
     def update(self):
-        raise NotImplementedError
+        pass
     
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :

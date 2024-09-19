@@ -1,4 +1,4 @@
-from scene import Scene
+from Scenes.scene import Scene
 
 
 class SettingsMenu(Scene):

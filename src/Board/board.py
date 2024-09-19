@@ -7,7 +7,6 @@ from config import Config
 class Board:
     def __init__(self, config: Config, size: int):
         self.config = config
-        self.tile_image = load_image('assets/boards/tile_wood2.png', (self.config.tile_size, self.config.tile_size))
         self.board_image = None
         self.size = size
         self.selected_piece = None

@@ -5,89 +5,19 @@ import os
 from math import floor
 from json import load
 
-def get_position(x: int, y: int) -> tuple[int, int]:
-    """
-    Converts pixel coordinates to board coordinates.
-
-    Args:
-        x (int): The x-coordinate in pixels.
-        y (int): The y-coordinate in pixels.
-
-    Returns:
-        tuple: A tuple containing the row and column indices on the chessboard.
-    """
-    return (y - config["margin"]) // square_size, (x - config["margin"]) // square_size
-
-def flip_coords(*args, **kwds) -> tuple[int, int] | int:
-    """
-    Flips the given coordinates based on the 'flipped' keyword argument.
-
-    Args:
-        *args: The coordinates to be flipped.
-        **kwds: Optional keyword arguments.
-            - flipped (bool): If True, the coordinates will be flipped. If False, the coordinates will not be flipped.
-        If no keyword arguments are provided, the coordinates will be flipped.
-
-    Returns:
-        tuple or int: The flipped coordinates. If only one coordinate is provided, an int is returned. Otherwise, a tuple is returned.
-    """
-    coords = [get_value(kwds["flipped"], arg, 7 - arg) for arg in args] if kwds else tuple([7 - arg for arg in args])
-    return coords[0] if len(coords) == 1 else coords
-
 def sign(x: int) -> int:
-    """
-    Returns the sign of a number.
-
-    Args:
-        x (int): The number to determine the sign of.
-
-    Returns:
-        int: -1 for x ∈ ]-∞;0[, 1 if x ∈ [0;+∞[.
-    """
     return (x >= 0) - (x < 0)
 
 def get_value(flipped: bool, white_value: int, black_value: int) -> int:
-    """
-    Returns the value based on the flipped flag.
-
-    Parameters:
-    flipped (bool): A flag indicating if the board is flipped.
-    white_value (int): The value to return if the board is not flipped.
-    black_value (int): The value to return if the board is flipped.
-
-    Returns:
-    int: The value based on the flipped flag.
-    """
     return white_value if flipped == 1 else black_value
 
 def left_click() -> bool:
-    """
-    Check if the left mouse button is currently being clicked.
-
-    Returns:
-        bool: True if the left mouse button is being clicked, False otherwise.
-    """
     return bool(pygame.mouse.get_pressed()[0])
 
 def right_click() -> bool:
-    """
-    Check if the right mouse button is currently being clicked.
-
-    Returns:
-        bool: True if the right mouse button is being clicked, False otherwise.
-    """
     return bool(pygame.mouse.get_pressed()[2])
 
 def generate_pieces(asset: str) -> list[pygame.Surface]:
-    """
-    Generate a list of images for chess pieces based on the given asset.
-
-    Parameters:
-    asset (str): The asset type for the chess pieces.
-
-    Returns:
-    list: A list of pygame.Surface objects representing the chess piece images.
-    """
     images = []
     for piece in piece_constants:
         image = pygame.image.load(os.path.join("assets", ("white" if piece.startswith("w") else "black") + "Pieces", asset, piece + ".png"))
@@ -104,28 +34,9 @@ def generate_pieces(asset: str) -> list[pygame.Surface]:
     return images
 
 def generate_sounds(asset: str) -> dict:
-    """
-    Generate a dictionary of sounds for a given asset.
-
-    Args:
-        asset (str): The name of the asset.
-
-    Returns:
-        dict: A dictionary containing the sounds for the asset.
-    """
     return {(asset, sound): pygame.mixer.Sound(os.path.join("assets", "sounds", asset, sound + ".ogg")) for sound in types_sound_asset}
 
 def generate_board(asset: str) -> pygame.Surface:
-    """
-    Generate a chessboard image based on the specified asset.
-
-    Parameters:
-    asset (str): The name of the asset to use for the chessboard.
-
-    Returns:
-    pygame.Surface: The generated chessboard image.
-
-    """
     return pygame.transform.scale(pygame.image.load(os.path.join("assets", "boards", asset + ".png")), (square_size*8, square_size*8))
 
 BROWN = (92, 64, 51)
@@ -133,8 +44,6 @@ WHITE = (255, 255, 255)
 
 pygame.init()
 pygame.display.set_caption("Chesspy")
-pygame.mixer.init()
-pygame.mixer.music.set_volume(0.2)
 clock = pygame.time.Clock()
 
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.

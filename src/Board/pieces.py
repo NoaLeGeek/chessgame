@@ -1,17 +1,14 @@
-import constants
 import pygame
 
-from constants import config, square_size, flip_coords, sign, get_value
-
 class Piece:
-    def __init__(self, color: int, row: int, column: int) -> None:
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None) -> None:
         self.color = color
         self.row = row
         self.column = column
         self.x = 0
         self.y = 0
-        if config["selected_piece_asset"] != "blindfold":
-            self.image = constants.piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(self) + get_value(self.color, 0, 6)]
+        if image:
+            self.image = image
             self.calc_pos(self.image)
 
     def piece_move(self, row: int, column: int) -> None:
