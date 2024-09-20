@@ -2,6 +2,8 @@ from Board.pieces import *
 import pygame
 import os
 
+# TODO créer une fonction qui load un filepath
+
 def notation_to_piece(notation:str):
     return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation]
 
