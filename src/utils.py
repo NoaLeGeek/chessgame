@@ -3,9 +3,17 @@ import pygame
 import os
 
 # TODO créer une fonction qui load un filepath
+def load_image(filepath: str, width: int, height: int):
+    return pygame.transform.scale(pygame.image.load(filepath), (width, height))
+
+def load_sound(filepath: str):
+    return pygame.mixer.Sound(filepath)
 
 def notation_to_piece(notation:str):
     return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation]
+
+def get_value(flipped: bool, white_value: int, black_value: int) -> int:
+    return white_value if flipped == 1 else black_value
 
 def get_position(x: int, y: int, margin) -> tuple[int, int]:
     return (y - margin) // square_size, (x - margin) // square_size

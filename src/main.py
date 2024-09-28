@@ -8,6 +8,7 @@ def main():
     pygame.display.set_caption("Chesspy")
     pygame.mixer.init()
     config = Config()
+    config.set_dimensions(*pygame.display.get_window_size())
     pygame.mixer.music.set_volume(config.volume)
     screen = pygame.display.set_mode((config.width, config.height))
     clock = pygame.time.Clock()

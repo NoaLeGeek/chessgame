@@ -5,7 +5,6 @@ import os
 
 class Config:
     def __init__(self):
-        self.screen_width, self.screen_height = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
         self.config = configparser.ConfigParser()
         self.config.read('config.cfg')
         self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.screen_height
@@ -24,7 +23,14 @@ class Config:
     def save(self):
         pass
 
-    def resource_path(relative_path):
+    def set_dimensions(self, width, height):
+        self.dimensions = (width, height)
+        self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1]
+        self.width = height
+        self.tile_size = self.height//12
+        self.margin = self.tile_size//2
+
+    def resource_path(self, relative_path):
         try:
             base_path = sys._MEIPASS
         except Exception:

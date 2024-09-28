@@ -7,7 +7,8 @@ from config import Config
 class Board:
     def __init__(self, config: Config, size: int):
         self.config = config
-        self.board_image = None
+        self.image = load_image()
+        self.sounds = load_sounds()
         self.size = size
         self.selected_piece = None
         self.current_player = -1
