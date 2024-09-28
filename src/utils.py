@@ -2,7 +2,6 @@ from Board.pieces import *
 import pygame
 import os
 
-# TODO créer une fonction qui load un filepath
 def load_image(filepath: str, width: int, height: int):
     return pygame.transform.scale(pygame.image.load(filepath), (width, height))
 
@@ -15,7 +14,7 @@ def notation_to_piece(notation:str):
 def get_value(flipped: bool, white_value: int, black_value: int) -> int:
     return white_value if flipped == 1 else black_value
 
-def get_position(x: int, y: int, margin) -> tuple[int, int]:
+def get_position(x: int, y: int, margin, square_size) -> tuple[int, int]:
     return (y - margin) // square_size, (x - margin) // square_size
 
 def flip_coords(*args, **kwds) -> tuple[int, int] | int:

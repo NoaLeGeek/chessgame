@@ -8,9 +8,6 @@ from json import load
 def sign(x: int) -> int:
     return (x >= 0) - (x < 0)
 
-def get_value(flipped: bool, white_value: int, black_value: int) -> int:
-    return white_value if flipped == 1 else black_value
-
 def left_click() -> bool:
     return bool(pygame.mouse.get_pressed()[0])
 

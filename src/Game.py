@@ -338,7 +338,7 @@ class Game:
             for column in range(len(self.board[row])):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.piece_move(*flip_coords(piece.row, piece.column, flipped=-1))
+                    piece.piece_move(*flip_coords(piece.row, piece.column))
         for row in self.board:
             row.reverse()
         self.board.reverse()
