@@ -17,6 +17,8 @@ class Config:
         self.board_8x8_asset = self.config.get('ASSETS', 'board_8x8')
         self.sound_asset = self.config.get('ASSETS', 'sound')
         self.background_asset = self.config.get('ASSETS', 'background')
+        self.rows = self.config.getint('BOARD', 'rows')
+        self.columns = self.config.getint('BOARD', 'columns')
 
     def save(self):
         pass

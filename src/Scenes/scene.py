@@ -25,6 +25,9 @@ class Scene:
     
 
 class SceneManager:
+    def __init__(self, background):
+        self.background = background
+
     def set(self, scene:Scene):
         self.scenes = [scene]
     
@@ -35,6 +38,7 @@ class SceneManager:
         self.scenes.pop()
         
     def render(self, screen:pygame.Surface):
+        screen.blit(self.background, (0, 0))
         self.scenes[-1].render(screen)
     
     def update(self):

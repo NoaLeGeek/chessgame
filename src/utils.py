@@ -33,12 +33,29 @@ def flip_coords(*args, **kwds) -> tuple[int, int] | int:
 def load_image(path:str, size:tuple[int, int]):
     return pygame.transform.scale(pygame.image.load(path), size)
 
+#TODO changer new_assets to assets
 def generate_piece_images(asset:str, tile_size:int):
-    images = {1:{}, -1:{}}
+    # TODO paramètres : activer le fait que les noirs soit retournés de 180°, flipped_assets
+    images = dict()
     for file in os.listdir(os.path.join('new_assets', 'piece', asset)):
-        path = os.path.join('assets', 'pieces', asset, file)
+        filepath = os.path.join('new_assets', 'pieces', asset, file)
         notation = os.path.splitext(file)[0]
-        images[-1][notation] = load_image(path, (tile_size, tile_size))
-        images[1][notation] = pygame.transform.rotate(load_image(path, (tile_size, tile_size)), 180)
+        images[notation] = load_image(filepath, (tile_size, tile_size))
+        # pygame.transform.rotate(image, 180)
     return images
 
+def generate_board_image(asset:str, tile_size:int):
+    filepath = os.path.join('new_assets', 'board', asset + '.png')
+    return load_image(filepath, (tile_size * 8, tile_size * 8))
+
+def generate_background_image(asset:str, size:tuple[int, int]):
+    filepath = os.path.join('new_assets', 'background', asset + '.png')
+    return load_image(filepath, size)
+
+def generate_sounds(asset:str):
+    sounds = dict()
+    for sound in os.listdir(os.path.join('new_assets', 'sound', asset)):
+        filepath = os.path.join('new_assets', 'sounds', asset, sound)
+        name = os.path.splitext(sound)[0]
+        sounds[name] = load_sound(filepath)
+    return sounds

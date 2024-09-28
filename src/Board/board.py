@@ -1,31 +1,31 @@
 import pygame
 from Board.tile import Tile
 from Board.pieces import *
-from utils import notation_to_piece, generate_piece_images, load_image
+from utils import notation_to_piece, generate_piece_images, generate_board_image, generate_sounds
 from config import Config
 
 class Board:
     def __init__(self, config: Config, size: int):
         self.config = config
-        self.image = load_image()
-        self.sounds = load_sounds()
+        self.image = generate_board_image(self.config.board_asset, self.config.tile_size)
+        self.sounds = generate_sounds(self.config.sound_asset)
         self.size = size
         self.selected_piece = None
         self.current_player = -1
         self.winner = None
         self.promotion_in_progress = False
         self.piece_images = generate_piece_images(self.config.piece_asset, self.config.tile_size)
-        self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
+        #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
         self.create_board()
 
     def create_board(self):
         config = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1'
-        self.board = [[Tile(i, j, self.config.tile_size) for j in range(9)] for i in range(9)]
+        self.board = [[Tile(i, j, self.config.tile_size) for j in range(self.config.columns)] for i in range(self.config.rows)]
         for i, row in enumerate(config.split('/')):
             for j, char in enumerate(row):
                 if char != '0':
-                    player = 1 if i < 3 else -1
-                    self.board[i][j].occupying_piece = notation_to_piece(char)(i, j, player, self.piece_images[player][char])
+                    player = -1 if char.islower() else 1
+                    self.board[i][j].occupying_piece = notation_to_piece(char)(i, j, player, self.piece_images[("b" if player == -1 else "w") + char])
 
     def select(self, row: int, column: int):
         self.selected_piece = None
