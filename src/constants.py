@@ -5,15 +5,6 @@ import os
 from math import floor
 from json import load
 
-def sign(x: int) -> int:
-    return (x >= 0) - (x < 0)
-
-def left_click() -> bool:
-    return bool(pygame.mouse.get_pressed()[0])
-
-def right_click() -> bool:
-    return bool(pygame.mouse.get_pressed()[2])
-
 def generate_pieces(asset: str) -> list[pygame.Surface]:
     images = []
     for piece in piece_constants:
@@ -39,15 +30,10 @@ def generate_board(asset: str) -> pygame.Surface:
 BROWN = (92, 64, 51)
 WHITE = (255, 255, 255)
 
-pygame.init()
-pygame.display.set_caption("Chesspy")
-clock = pygame.time.Clock()
-
 # Piece images are stored in the following order: pawn, knight, bishop, rook, queen, king. White pieces come first.
 piece_constants = [color + type for color in ["w", "b"] for type in ["P", "N", "B", "R", "Q", "K"]]
 # The different gamemodes available in the game
 gamemodes = ["Classic", "KOTH", "+3 Checks", "Giveaway", "Chess960"]
-window = pygame.display.set_mode((config["height"],) * 2, pygame.RESIZABLE)
 square_size = floor((config["height"] - 2 * config["margin"]) / config["columns"])
 
 # The different assets available for the game

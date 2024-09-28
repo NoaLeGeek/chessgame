@@ -1,6 +1,7 @@
 import pygame
 from Scenes.scene import Scene, SceneManager
 from Board.board import Board
+from utils import left_click
 
 
 class Game(Scene):
@@ -54,7 +55,7 @@ class Game(Scene):
 
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :
-            if pygame.mouse.get_pressed()[0]:
+            if left_click():
                 self.board.handle_left_click()
         elif event.type == pygame.KEYDOWN :
             if event.key == pygame.K_r :

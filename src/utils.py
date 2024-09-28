@@ -8,6 +8,15 @@ def load_image(filepath: str, width: int, height: int):
 def load_sound(filepath: str):
     return pygame.mixer.Sound(filepath)
 
+def sign(x: int) -> int:
+    return (x >= 0) - (x < 0)
+
+def left_click() -> bool:
+    return bool(pygame.mouse.get_pressed()[0])
+
+def right_click() -> bool:
+    return bool(pygame.mouse.get_pressed()[2])
+
 def notation_to_piece(notation:str):
     return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation]
 
@@ -26,7 +35,7 @@ def load_image(path:str, size:tuple[int, int]):
 
 def generate_piece_images(asset:str, tile_size:int):
     images = {1:{}, -1:{}}
-    for file in os.listdir(os.path.join('assets', 'pieces', asset)):
+    for file in os.listdir(os.path.join('new_assets', 'piece', asset)):
         path = os.path.join('assets', 'pieces', asset, file)
         notation = os.path.splitext(file)[0]
         images[-1][notation] = load_image(path, (tile_size, tile_size))
