@@ -14,7 +14,6 @@ class Config:
         self.taskbar_height = self.config.getint('GENERAL', 'taskbar_height')
         self.piece_asset = self.config.get('ASSETS', 'piece')
         self.board_asset = self.config.get('ASSETS', 'board')
-        self.board_8x8_asset = self.config.get('ASSETS', 'board_8x8')
         self.sound_asset = self.config.get('ASSETS', 'sound')
         self.background_asset = self.config.get('ASSETS', 'background')
         self.rows = self.config.getint('BOARD', 'rows')
