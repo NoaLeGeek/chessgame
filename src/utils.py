@@ -1,4 +1,4 @@
-from Board.pieces import *
+from Board.piece import *
 import pygame
 import os
 
@@ -18,7 +18,7 @@ def right_click() -> bool:
     return bool(pygame.mouse.get_pressed()[2])
 
 def notation_to_piece(notation:str):
-    return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation]
+    return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
 
 def get_value(flipped: bool, white_value: int, black_value: int) -> int:
     return white_value if flipped == 1 else black_value
@@ -38,14 +38,14 @@ def generate_piece_images(asset:str, tile_size:int):
     # TODO paramètres : activer le fait que les noirs soit retournés de 180°, flipped_assets
     images = dict()
     for file in os.listdir(os.path.join('new_assets', 'piece', asset)):
-        filepath = os.path.join('new_assets', 'pieces', asset, file)
+        filepath = os.path.join('new_assets', 'piece', asset, file)
         notation = os.path.splitext(file)[0]
         images[notation] = load_image(filepath, (tile_size, tile_size))
         # pygame.transform.rotate(image, 180)
     return images
 
 def generate_board_image(asset:str, tile_size:int):
-    filepath = os.path.join('new_assets', 'board', asset + '.png')
+    filepath = os.path.join('new_assets', 'board', asset + '.jpg')
     return load_image(filepath, (tile_size * 8, tile_size * 8))
 
 def generate_background_image(asset:str, size:tuple[int, int]):
@@ -55,7 +55,7 @@ def generate_background_image(asset:str, size:tuple[int, int]):
 def generate_sounds(asset:str):
     sounds = dict()
     for sound in os.listdir(os.path.join('new_assets', 'sound', asset)):
-        filepath = os.path.join('new_assets', 'sounds', asset, sound)
+        filepath = os.path.join('new_assets', 'sound', asset, sound)
         name = os.path.splitext(sound)[0]
         sounds[name] = load_sound(filepath)
     return sounds

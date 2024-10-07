@@ -5,16 +5,17 @@ class Piece:
         self.color = color
         self.row = row
         self.column = column
+        self.moves = []
         self.x = 0
         self.y = 0
         if image:
             self.image = image
-            self.calc_pos(self.image)
+            #CALC POS
 
     def piece_move(self, row: int, column: int) -> None:
         self.row = row
         self.column = column
-        if config["selected_piece_asset"] != "blindfold":
+        if self.image:
             self.calc_pos(self.image)
             
     def get_square_color(self):
@@ -30,27 +31,15 @@ class Piece:
     
     def is_enemy(self, piece: "Piece") -> bool:
         return not self.is_ally(piece)
-    
-    def is_white(self) -> bool:
-        return self.color == 1
-    
-    def is_black(self) -> bool:
-        return not self.is_white()
-
-    def piece_to_index(piece) -> int:
-        return {Pawn: 0, Knight: 1, Bishop: 2, Rook: 3, Queen: 4, King: 5}[type(piece)]
-    
-    def index_to_piece(index) -> "Piece":
-        return [Pawn, Knight, Bishop, Rook, Queen, King][index]
 
 class Pawn(Piece):
 
-    def __init__(self, color: int, row: int, column: int):
-        super().__init__(color, row, column)
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None):
+        super().__init__(color, row, column, image)
         # Indicates whether the pawn has moved or not
         self.first_move = True
 
-    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+    def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         moves = []
         en_passant = kwds["en_passant"]
         x = self.color * flipped
@@ -73,15 +62,15 @@ class Pawn(Piece):
         return moves
 
 class Rook(Piece):
-    def __init__(self, color: int, row: int, column: int):
-        super().__init__(color, row, column)
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None):
+        super().__init__(color, row, column, image)
         # Indicates whether the rook has moved or not
         self.first_move = True
 
-    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+    def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         moves = []
         for i in range(row + 1, len(board)):
-            if board[i][column] == 0:
+            if board.get_piece(i, column) == 0:
                 moves.append((i, column))
             elif board[i][column].is_enemy(self):
                 moves.append((i, column))
@@ -116,10 +105,10 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self, color: int, row: int, column: int):
-        super().__init__(color, row, column)
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None):
+        super().__init__(color, row, column, image)
 
-    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+    def calc_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         moves = []
         row_temp = row + 1
         column_temp = column + 1
@@ -173,43 +162,24 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, color: int, row: int, column: int):
-        super().__init__(color, row, column)
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None):
+        super().__init__(color, row, column, image)
+        self.directions = [(-2, -1), (-2, 1), (2, -1), (2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2)]
 
-    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
-        moves = []
-        if row > 1 and column > 0 and (
-                board[row - 2][column - 1] == 0 or board[row - 2][column - 1].is_enemy(self)):
-            moves.append((row - 2, column - 1))
-        if row > 1 and column < len(board[row]) - 1 and (
-                board[row - 2][column + 1] == 0 or board[row - 2][column + 1].is_enemy(self)):
-            moves.append((row - 2, column + 1))
-        if row < len(board) - 2 and column > 0 and (
-                board[row + 2][column - 1] == 0 or board[row + 2][column - 1].is_enemy(self)):
-            moves.append((row + 2, column - 1))
-        if row < len(board) - 2 and column < len(board[row]) - 1 and (
-                board[row + 2][column + 1] == 0 or board[row + 2][column + 1].is_enemy(self)):
-            moves.append((row + 2, column + 1))
-        if row > 0 and column > 1 and (
-                board[row - 1][column - 2] == 0 or board[row - 1][column - 2].is_enemy(self)):
-            moves.append((row - 1, column - 2))
-        if row > 0 and column < len(board[row]) - 2 and (
-                board[row - 1][column + 2] == 0 or board[row - 1][column + 2].is_enemy(self)):
-            moves.append((row - 1, column + 2))
-        if row < len(board) - 1 and column > 1 and (
-                board[row + 1][column - 2] == 0 or board[row + 1][column - 2].is_enemy(self)):
-            moves.append((row + 1, column - 2))
-        if row < len(board) - 1 and column < len(board[row]) - 2 and (
-                board[row + 1][column + 2] == 0 or board[row + 1][column + 2].is_enemy(self)):
-            moves.append((row + 1, column + 2))
-        return moves
+    def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        for d_row, d_col in self.directions:
+            new_row, new_col = row + d_row, column + d_col
+            if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
+                piece = board.get_piece(new_row, new_col)
+                if not piece or piece.is_enemy(self):
+                    self.moves.append((new_row, new_col))
 
 
 class Queen(Piece):
-    def __init__(self, color: int, row: int, column: int):
-        super().__init__(color, row, column)
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None):
+        super().__init__(color, row, column, image)
 
-    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+    def calc_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         moves = []
         row_temp = row + 1
         column_temp = column + 1
@@ -294,12 +264,12 @@ class Queen(Piece):
         return moves
     
 class King(Piece):
-    def __init__(self, color: int, row: int, column: int):
-        super().__init__(color, row, column)
+    def __init__(self, color: int, row: int, column: int, image: pygame.Surface = None):
+        super().__init__(color, row, column, image)
         # Indicates whether the king has moved or not
         self.first_move = True
 
-    def get_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+    def calc_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         moves = []
         for i in range(-1, 2):
             for j in range(-1, 2):

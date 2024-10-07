@@ -1,12 +1,12 @@
 import pygame
 
 class Tile:
-    def __init__(self, row, column, size):
+    def __init__(self, row, column, size, margin):
         self.row = row
         self.column = column
         self.size = size
-        self.x = column*size + size//2
-        self.y = row*size + size + size//2
+        self.x = column*size + margin
+        self.y = row*size + margin
         self.object = None
         self.highlight_color = None
 

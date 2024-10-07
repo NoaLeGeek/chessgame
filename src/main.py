@@ -17,7 +17,6 @@ def main():
     manager.set(MainMenu(manager, config))
     run = True
     while run:
-        # TODO render background
         screen.fill('lightblue')
         manager.render(screen)
         manager.update()

@@ -7,10 +7,13 @@ from utils import left_click
 class Game(Scene):
     def __init__(self, manager:SceneManager, config):
         super().__init__(manager, config)
-        self.board = Board(config, 9)
+        self.board = Board(config, config.columns)
 
     def render(self, screen:pygame.Surface):
-        self.board.draw(screen)
+        screen.blit(self.board.image, (self.config.margin, self.config.margin))
+        self.draw_pieces(screen)
+        if self.board.selected_piece :
+            self.draw_moves(screen)
 
     def update(self):
         pass
@@ -18,19 +21,19 @@ class Game(Scene):
     def draw_tiles(self, screen):
         for i in range(11):
             for j in range(9):
-                screen.blit(self.tile_image, (j*self.config.tile_size+self.config.margin, i*self.config.tile_size+self.config.margin))
+                screen.blit(self.board.tile_image, (j*self.config.tile_size+self.config.margin, i*self.config.tile_size+self.config.margin))
                 if 0 < i < 10:
-                    self.board[i - 1][j].draw(screen)
+                    self.board.board[i - 1][j].draw(screen)
         pygame.draw.rect(screen, 'black', (self.config.margin, self.config.margin+self.config.tile_size, self.config.tile_size * 9, self.config.tile_size * 9), 2)
 
     def draw_pieces(self, screen):
-        for row in self.board:
+        for row in self.board.board:
             for tile in row:
-                if tile.occupying_piece:
-                    screen.blit(tile.occupying_piece.image, (tile.x, tile.y))
+                if tile.object:
+                    screen.blit(tile.object.image, (tile.x, tile.y))
 
     def draw_moves(self, screen):
-        for move in self.selected_piece.moves:
+        for move in self.board.selected_piece.moves:
             pygame.draw.circle(screen, 'grey', (move[1] * self.config.tile_size + self.config.tile_size // 2 + self.config.margin, move[0] * self.config.tile_size + self.config.tile_size // 2 + self.config.tile_size + self.config.margin), self.config.tile_size // 8)
 
     # def draw_reserves(self, screen):
@@ -50,7 +53,7 @@ class Game(Scene):
 
     def draw_promotion(self, screen):
         pygame.draw.rect(screen, 'white', (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+1)*self.config.tile_size+self.config.margin, self.config.tile_size, self.config.tile_size*2))
-        screen.blit(self.piece_images[self.current_player]['+'+self.selected_piece.notation], (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+1)*self.config.tile_size+self.config.margin))
+        screen.blit(self.piece_images[self.turn]['+'+self.selected_piece.notation], (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+1)*self.config.tile_size+self.config.margin))
         screen.blit(self.selected_piece.image, (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+2)*self.config.tile_size+self.config.margin))
 
     def handle_event(self, event:pygame.event.Event):
