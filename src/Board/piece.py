@@ -13,7 +13,7 @@ class Piece:
             self.image = image
             #CALC POS
 
-    def piece_move(self, row: int, column: int) -> None:
+    def move(self, row: int, column: int) -> None:
         self.row = row
         self.column = column
         if self.image:

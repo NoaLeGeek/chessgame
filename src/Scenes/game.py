@@ -11,9 +11,12 @@ class Game(Scene):
 
     def render(self, screen:pygame.Surface):
         screen.blit(self.board.image, (self.config.margin, self.config.margin))
+        self.draw_tiles(screen)
         self.draw_pieces(screen)
-        if self.board.selected_piece :
+        if self.board.selected_piece:
             self.draw_moves(screen)
+        if self.board.promotion_in_progress:
+            self.draw_promotion(screen)
 
     def update(self):
         pass

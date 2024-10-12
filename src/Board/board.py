@@ -32,7 +32,7 @@ class Board:
         self.selected_piece = None
         if 0 <= row < 9 and 0 <= column < 9:
             piece = self.get_piece(row, column)
-            print(piece.color, self.turn)
+            print(piece.color if piece else "rien", self.turn)
             if piece and piece.color == self.turn:
                 self.selected_piece = piece
                 self.selected_piece.calc_moves(self, row, column)
