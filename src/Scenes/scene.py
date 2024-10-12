@@ -1,7 +1,7 @@
 import pygame
 from config import Config
 
-class Scene:
+class Scene():
     def __init__(self, manager, config:Config, buttons=[], labels=[]):
         self.manager = manager
         self.config = config
@@ -13,7 +13,7 @@ class Scene:
             button.draw(screen)
         for label in self.labels:
             label.draw(screen)
-    
+
     def update(self):
         pass
     
@@ -46,5 +46,3 @@ class SceneManager:
     
     def handle_event(self, event:pygame.event.Event):
         self.scenes[-1].handle_event(event)
-
-

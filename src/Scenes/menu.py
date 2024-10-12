@@ -1,4 +1,3 @@
-import pygame
 from Scenes.scene import Scene
 from Scenes.game import Game
 from Scenes.settings import SettingsMenu

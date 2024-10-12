@@ -1,6 +1,6 @@
 import pygame
+import os
 from Board.tile import Tile
-from Board.piece import *
 from utils import get_position, notation_to_piece, generate_piece_images, generate_board_image, generate_sounds
 from config import Config
 
@@ -9,6 +9,7 @@ class Board:
         self.config = config
         self.image = generate_board_image(self.config.board_asset, self.config.tile_size)
         self.sounds = generate_sounds(self.config.sound_asset)
+        self.sounds.update({name: pygame.mixer.Sound(os.path.join("assets", "sounds", f"{name}.ogg")) for name in ['illegal', 'notify', 'tenseconds']})
         self.size = size
         self.selected_piece = None
         self.turn = 1
@@ -33,9 +34,8 @@ class Board:
             piece = self.get_piece(row, column)
             print(piece.color, self.turn)
             if piece and piece.color == self.turn:
- 
                 self.selected_piece = piece
-                self.selected_piece.get_moves(self, row, column)
+                self.selected_piece.calc_moves(self, row, column)
         elif self.is_valid_reserve_selection(row, column):
             self.selected_piece = self.get_piece_from_reserve(column)
 
@@ -56,7 +56,7 @@ class Board:
         self.move_piece(self.selected_piece, move)
         if capture:
             self.capture_piece(capture)
-        if isinstance(self.selected_piece, (Pawn, Knight, Queen, Rook, Bishop)) and (self.selected_piece.row <= 2 and self.turn == -1 or self.selected_piece.row >= 6 and self.turn == 1) and not self.selected_piece.promoted and not self.selected_piece.promotion_declined:
+        if (self.selected_piece.row <= 2 and self.turn == -1 or self.selected_piece.row >= 6 and self.turn == 1) and not self.selected_piece.promoted and not self.selected_piece.promotion_declined:
             self.promotion_in_progress = True
             self.selected_piece.moves = []
             return
