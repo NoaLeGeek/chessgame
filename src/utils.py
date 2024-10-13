@@ -1,4 +1,3 @@
-from Board.piece import *
 import pygame
 import os
 
@@ -16,9 +15,6 @@ def left_click() -> bool:
 
 def right_click() -> bool:
     return bool(pygame.mouse.get_pressed()[2])
-
-def notation_to_piece(notation:str):
-    return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
 
 def get_value(flipped: bool, white_value: int, black_value: int) -> int:
     return white_value if flipped == 1 else black_value
@@ -52,6 +48,7 @@ def generate_background_image(asset:str, size:tuple[int, int]):
     filepath = os.path.join('new_assets', 'background', asset + '.png')
     return load_image(filepath, size)
 
+# TODO voler les sons de lichess
 def generate_sounds(asset:str):
     sounds = dict()
     for sound in os.listdir(os.path.join('new_assets', 'sound', asset)):
@@ -59,3 +56,6 @@ def generate_sounds(asset:str):
         name = os.path.splitext(sound)[0]
         sounds[name] = load_sound(filepath)
     return sounds
+
+def play_sound(sounds, type: str):
+    pygame.mixer.Sound.play(sounds[type])

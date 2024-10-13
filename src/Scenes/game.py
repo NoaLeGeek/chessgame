@@ -2,42 +2,66 @@ import pygame
 from Scenes.scene import Scene, SceneManager
 from Board.board import Board
 from utils import left_click
+from Board.piece import Piece
 
 
 class Game(Scene):
     def __init__(self, manager:SceneManager, config):
         super().__init__(manager, config)
         self.board = Board(config, config.columns)
+        self.game_over = False
 
     def render(self, screen:pygame.Surface):
         screen.blit(self.board.image, (self.config.margin, self.config.margin))
-        self.draw_tiles(screen)
-        self.draw_pieces(screen)
-        if self.board.selected_piece:
+        self.draw_objects(screen)
+        self.draw_highlight(screen)
+        if self.board.selected:
             self.draw_moves(screen)
-        if self.board.promotion_in_progress:
+        if self.board.promotion:
             self.draw_promotion(screen)
 
     def update(self):
         pass
 
-    def draw_tiles(self, screen):
-        for i in range(11):
-            for j in range(9):
-                screen.blit(self.board.tile_image, (j*self.config.tile_size+self.config.margin, i*self.config.tile_size+self.config.margin))
-                if 0 < i < 10:
-                    self.board.board[i - 1][j].draw(screen)
-        pygame.draw.rect(screen, 'black', (self.config.margin, self.config.margin+self.config.tile_size, self.config.tile_size * 9, self.config.tile_size * 9), 2)
-
-    def draw_pieces(self, screen):
+    def draw_objects(self, screen):
         for row in self.board.board:
             for tile in row:
-                if tile.object:
+                if self.board.debug:
+                    screen.blit(pygame.font.SysFont("monospace", 15).render(f"({tile.column},{tile.row})", 1, (0, 0, 0)), (tile.row*self.config.tile_size+35, tile.column*self.config.tile_size+60))
+                if tile.object or (isinstance(tile.object, Piece) and self.config.piece_asset != "blindfold"):
                     screen.blit(tile.object.image, (tile.x, tile.y))
 
+    def draw_highlight(self, screen):
+        for row in range(self.config.rows):
+            for column in range(self.config.columns):
+                if self.board.get_highlight(row, column):
+                    match self.board.get_highlight(row, column):
+                        case 0:
+                            r, g, b = 255, 0, 0
+                        # Shift + Right click
+                        case 1:
+                            r, g, b = 0, 255, 0
+                        # Ctrl + Right click
+                        case 2:
+                            r, g, b = 255, 165, 0
+                        # History move
+                        case 3:
+                            r, g, b = 255, 255, 0
+                        # Selected piece
+                        case 4:
+                            r, g, b = 0, 255, 255
+                        case _:
+                            continue
+                    transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
+                    transparent_surface.fill((r, g, b, 75))
+                    screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
+
     def draw_moves(self, screen):
-        for move in self.board.selected_piece.moves:
-            pygame.draw.circle(screen, 'grey', (move[1] * self.config.tile_size + self.config.tile_size // 2 + self.config.margin, move[0] * self.config.tile_size + self.config.tile_size // 2 + self.config.tile_size + self.config.margin), self.config.tile_size // 8)
+        for move in self.board.selected.moves:
+            row, column = move[0], move[1]
+            transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
+            pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (self.config.tile_size // 2, self.config.tile_size // 2), self.config.tile_size // 8)
+            screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
 
     # def draw_reserves(self, screen):
     #     for i, notation in enumerate('PLNSGBR'):
@@ -55,9 +79,9 @@ class Game(Scene):
     #     screen.blit(image, (self.config.margin + self.config.tile_size + self.config.tile_size * i, y_pos))
 
     def draw_promotion(self, screen):
-        pygame.draw.rect(screen, 'white', (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+1)*self.config.tile_size+self.config.margin, self.config.tile_size, self.config.tile_size*2))
-        screen.blit(self.piece_images[self.turn]['+'+self.selected_piece.notation], (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+1)*self.config.tile_size+self.config.margin))
-        screen.blit(self.selected_piece.image, (self.selected_piece.column*self.config.tile_size+self.config.margin, (self.selected_piece.row+2)*self.config.tile_size+self.config.margin))
+        pygame.draw.rect(screen, 'white', (self.selected.column*self.config.tile_size+self.config.margin, (self.selected.row+1)*self.config.tile_size+self.config.margin, self.config.tile_size, self.config.tile_size*2))
+        screen.blit(self.piece_images[self.turn]['+'+self.selected.notation], (self.selected.column*self.config.tile_size+self.config.margin, (self.selected.row+1)*self.config.tile_size+self.config.margin))
+        screen.blit(self.selected.image, (self.selected.column*self.config.tile_size+self.config.margin, (self.selected.row+2)*self.config.tile_size+self.config.margin))
 
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :

@@ -17,7 +17,6 @@ def main():
     manager.set(MainMenu(manager, config))
     run = True
     while run:
-        screen.fill('lightblue')
         manager.render(screen)
         manager.update()
         pygame.display.update()
