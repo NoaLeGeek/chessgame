@@ -7,6 +7,9 @@ class Scene():
         self.config = config
         self.buttons = buttons
         self.labels = labels
+        self.enter()
+        self.in_exit = False
+        
         
     def render(self, screen:pygame.Surface):
         for button in self.buttons:
@@ -15,13 +18,32 @@ class Scene():
             label.draw(screen)
 
     def update(self):
-        pass
+        mouse_pos = pygame.mouse.get_pos()
+        if self.in_enter :
+            self.alpha += 3
+            self.in_enter = self.alpha < 255
+
+        for button in self.buttons :
+            button.update(mouse_pos)
+            if self.in_enter or self.in_exit :
+                button.set_alpha(self.alpha)
+        
     
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :
             if pygame.mouse.get_pressed()[0]:
                 for button in self.buttons :
                     button.handle_click()
+
+    def enter(self):
+        self.in_enter = True
+        self.alpha = 0
+        for button in self.buttons :
+            button.set_alpha(0)
+   
+    def exit(self):
+        self.in_exit = False
+
     
 
 class SceneManager:
@@ -33,9 +55,11 @@ class SceneManager:
     
     def go_to(self, scene:Scene):
         self.scenes.append(scene)
+        self.scenes[-1].enter()
     
     def go_back(self):
         self.scenes.pop()
+        self.scenes[-1].enter()
         
     def render(self, screen:pygame.Surface):
         screen.blit(self.background, (0, 0))
