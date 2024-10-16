@@ -16,18 +16,6 @@ class Move:
         self.notation = None
 
     def make_move(self) -> None:
-        """
-        Makes a move on the chessboard.
-
-        This method updates the game state by executing the move, including handling special moves like castling,
-        promotion, capturing, and checking for game conditions such as checkmate or stalemate.
-
-        Args:
-            None
-
-        Returns:
-            None
-        """
         row, column = self.to
         castling = self.game.is_castling(self.piece, *self.to)
         # Modify the final column of the king if it's a castling move
@@ -35,8 +23,8 @@ class Move:
         if castling:
             self.to = (row, (7 + self.game.flipped + get_value(sign(column - self.from_[1]), 4, -4)) // 2)
         # Add the promoted piece to the board if there is one
-        if self.promotion and config["selected_piece_asset"] != "blindfold":
-            self.promotion.image = piece_assets[config["selected_piece_asset"]][Piece.piece_to_index(self.promotion) + get_value(self.promotion.color, 0, 6)]
+        if self.promotion and config["selected_asset"] != "blindfold":
+            self.promotion.image = piece_assets[config["selected_asset"]][Piece.piece_to_index(self.promotion) + get_value(self.promotion.color, 0, 6)]
             self.game.board[row][column] = self.promotion
         self.game.change_turn()
         self.game.legal_moves, self.game.selected = [], None
@@ -68,12 +56,6 @@ class Move:
         MOVE_LABEL.text += " " + self.notation
         
     def to_literal(self) -> str:
-        """
-        Converts the move object to its literal representation in algebraic notation.
-
-        Returns:
-            str: The literal representation of the move.
-        """
         row, column = self.to
         string = ""
         # The move is O-O or O-O-O

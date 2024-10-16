@@ -16,7 +16,7 @@ class Player:
             moves += piece.get_moves(piece.row, piece.column, board)
         return moves
             
-    def get_piece_from_reserve(self, column):
+    def get_object_from_reserve(self, column):
         piece_type = list(self.reserve.keys())[column - 1]
         if self.reserve[piece_type]:
             piece = self.reserve[piece_type][0]
