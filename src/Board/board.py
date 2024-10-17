@@ -177,19 +177,64 @@ class Board:
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
-        if not self.promotion:
-            if self.selected and (row, column) in self.selected.moves:
-                if self.selected.row is not None:
-                    self.make_move((row, column))
-                else:
-                    self.make_drop((row, column))
-            else:
+        if self.selected:
+            x = self.selected.color * self.flipped
+            # If in the state of promotion
+            if isinstance(self.selected, Pawn) and self.promotion:
+                # Promote the pawn
+                if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
+                    promotion_row = get_value(x, 0, 7)
+                    self.execute_move(promotion_row, column, [Queen, Knight, Rook, Bishop][flip_coords(row, flipped=x)](self.selected.color, promotion_row, column))
+                    self.promotion = None
+                    return
+                # Remove the promotion
+                self.promotion = None
+                # Reselect the pawn if clicked
+                if (row, column) == (self.selected.row, self.selected.column):
+                    self.selected = None
+                    self.select(row, column)
+                    return
+            # If the player clicks on one of his pieces, it will change the selected piece
+            if self.board[row][column] != 0 and self.board[row][column].is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
+                # Castling move
+                if isinstance(self.selected, King) and isinstance(self.board[row][column], Rook) and self.board[row][column].is_ally(self.selected) and (row, column) in self.legal_moves:
+                    self.execute_move(row, column)
+                    return
+                self.selected = None
                 self.select(row, column)
-        else :
-            if row == self.selected.row and column == self.selected.column :
-                self.promote_piece()
-            elif row == self.selected.row+1 and column == self.selected.column :
-                self.decline_promotion()
+                return
+            # If the play clicks on the selected piece, the selection is removed
+            if (row, column) == (self.selected.row, self.selected.column):
+                self.legal_moves = []
+                self.selected = None
+                return
+            # If the player clicks on a square where the selected piece can't move, it will remove the selection
+            if (row, column) not in self.legal_moves:
+                self.legal_moves = []
+                self.selected = None
+                if self.is_king_checked():
+                    play_sound("illegal")
+                return
+            # If the player push a pawn to one of the last rows, it will be in the state of promotion
+            if isinstance(self.selected, Pawn) and row in [0, 7]:
+                if self.gamemode == "Giveaway":
+                    promotion_row = get_value(x, 0, 7)
+                    self.execute_move(promotion_row, column, King(self.selected.color, promotion_row, column))
+                    return
+                self.promotion = self.selected, column - self.selected.column
+                self.legal_moves = []
+                return
+            self.execute_move(row, column)
+        else:
+            piece = self.board[row][column]
+            if piece != 0 and self.turn == piece.color:
+                self.selected = piece
+                moves = set([move for move in piece.get_moves(self.board, row, column, self.flipped, en_passant=self.en_passant)])
+                if self.gamemode != "Giveaway":
+                    moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
+                elif any([self.is_capture(self.selected, *move) for move in self.get_color_moves(piece.color)]):
+                    moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
+                self.legal_moves = moves
 
 
     def draw(self, screen):

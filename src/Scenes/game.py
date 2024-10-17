@@ -3,6 +3,7 @@ from Scenes.scene import Scene, SceneManager
 from Board.board import Board
 from utils import left_click
 from Board.piece import Piece
+from constants import WHITE
 
 
 class Game(Scene):
@@ -79,7 +80,7 @@ class Game(Scene):
     #     screen.blit(image, (self.config.margin + self.config.tile_size + self.config.tile_size * i, y_pos))
 
     def draw_promotion(self, screen):
-        pygame.draw.rect(screen, 'white', (self.selected.column*self.config.tile_size+self.config.margin, (self.selected.row+1)*self.config.tile_size+self.config.margin, self.config.tile_size, self.config.tile_size*2))
+        pygame.draw.rect(screen, WHITE, (self.promote * self.config.tile_size + self.config.margin, get_value(x, 0, 4) * self.config.tile_size + self.config.margin, self.config.tile_size, 4*self.config.tile_size))
         screen.blit(self.piece_images[self.turn]['+'+self.selected.notation], (self.selected.column*self.config.tile_size+self.config.margin, (self.selected.row+1)*self.config.tile_size+self.config.margin))
         screen.blit(self.selected.image, (self.selected.column*self.config.tile_size+self.config.margin, (self.selected.row+2)*self.config.tile_size+self.config.margin))
 

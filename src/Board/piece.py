@@ -16,8 +16,13 @@ class Piece:
         self.row = row
         self.column = column
 
+    @staticmethod
     def notation_to_piece(notation:str):
         return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
+    
+    @staticmethod
+    def piece_to_notation(piece: "Piece"):
+        return {Pawn: 'P', King: 'K', Rook: 'R', Bishop: 'B', Knight: 'N', Queen: 'Q'}[type(piece)]
             
     def get_square_color(self):
         return (self.row + self.column) % 2
