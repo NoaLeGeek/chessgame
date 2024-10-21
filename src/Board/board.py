@@ -2,7 +2,7 @@ import pygame
 import os
 from Board.tile import Tile
 from utils import get_position, generate_piece_images, play_sound, generate_board_image, generate_sounds, flip_coords
-from Board.piece import Piece, Rook
+from Board.piece import Piece
 from config import Config
 from random import choice
 
@@ -16,7 +16,8 @@ class Board:
         self.selected = None
         self.turn = 1
         self.winner = None
-        self.promotion = None
+        self.ep_square = None
+        self.promotion = False
         self.history = []
         self.halfMoves = 0
         self.fullMoves = 1
@@ -28,7 +29,7 @@ class Board:
 
     def create_board(self):
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
-        self.board = [[Tile(i, j, self.config.tile_size, self.config.margin) for j in range(self.config.columns)] for i in range(self.config.rows)]
+        self.board = {}
         for i, part in enumerate(fen.split()):
             match i:
                 # Initialize the board
@@ -41,8 +42,10 @@ class Board:
                             else:
                                 if char not in "rnbqkbnpRNBQKBNP":
                                     raise ValueError("Not a valid FEN")
-                                color = 1 if char.isupper() else -1 
-                                self.board[r][c].object = Piece.notation_to_piece(char)(color, r, c, self.piece_images[("w" if color == 1 else "b") + char.upper()])
+                                color = 1 if char.isupper() else -1
+                                tile = Tile(r, c, self.config.tile_size, self.config.margin)
+                                tile.object = Piece.notation_to_piece(char)(self.config.rules, color, r, c, self.piece_images[("w" if color == 1 else "b") + char.upper()])
+                                self.board[(r, c)] = tile
                                 c += 1
                 # Turn
                 case 1:
@@ -50,14 +53,14 @@ class Board:
                 # Castling rights
                 case 2:
                     # TODO doesn't work with 960
-                    if "K" not in part and isinstance(self.board[7][7], Rook):
-                        self.get_object(7, 7).first_move = False
-                    if "Q" not in part and isinstance(self.board[7][0], Rook):
-                        self.get_object(7, 0).first_move = False
-                    if "k" not in part and isinstance(self.board[0][7], Rook):
-                        self.get_object(0, 7).first_move = False
-                    if "q" not in part and isinstance(self.board[0][0], Rook):
-                        self.get_object(0, 0).first_move = False
+                    if "K" not in part and self.get(7, 7).object.notation == "R":
+                        self.get(7, 7).object.first_move = False
+                    if "Q" not in part and self.get(7, 0).object.notation == "R":
+                        self.get(7, 0).object.first_move = False
+                    if "k" not in part and self.get(0, 7).object.notation == "R":
+                        self.get(0, 7).object.first_move = False
+                    if "q" not in part and self.get(0, 0).object.notation == "R":
+                        self.get(0, 0).object.first_move = False
                 # En passant square
                 case 3:
                     if part not in ['-', '–']:
@@ -93,7 +96,7 @@ class Board:
     def select(self, row: int, column: int):
         self.selected = None
         if 0 <= row < 9 and 0 <= column < 9:
-            piece = self.get_object(row, column)
+            piece = self.get(row, column).object
             if piece and piece.color == self.turn:
                 self.selected = piece
                 self.selected.calc_moves(self, row, column)
@@ -113,7 +116,7 @@ class Board:
         return None
 
     def make_move(self, move):
-        capture = self.get_object(*move)
+        capture = self.get(*move).object
         self.move_piece(self.selected, move)
         if capture:
             self.capture_piece(capture)
@@ -150,92 +153,82 @@ class Board:
     def remove_piece_from_reserve(self, piece):
         self.reserves[self.turn][piece.notation].remove(piece)
     
-    def promote_piece(self):
-        self.selected.notation = '+'+self.selected.notation
-        self.selected.image = self.piece_images[self.turn][self.selected.notation]
-        self.promotion = False
-        self.change_turn()
-
-    def decline_promotion(self):
-        self.selected.promotion_declined = True
+    def promote_piece(self, type_piece):
+        new_piece = type_piece(self.selected.color, self.selected.row, self.selected.column)
+        new_piece.image = self.piece_images[new_piece.notation]
         self.promotion = False
         self.change_turn()
 
     def change_turn(self):
         self.selected = None
         self.turn *= -1
-
-    def get_object(self, row, column):
-        return self.board[row][column].object
     
-    def get_highlight(self, row, column):
-        return self.board[row][column].highlight_color
+    def get(self, row, column):
+        return self.board[(row, column)]
 
     def get_empty_tiles(self):
         return [(tile.row, tile.column) for row in self.board for tile in row if not tile.object]
 
-    def handle_left_click(self):
-        x, y = pygame.mouse.get_pos()
-        row, column = get_position(x, y, self.config.margin, self.config.tile_size)
+    def select_object(self, row, column):
         if self.selected:
             x = self.selected.color * self.flipped
             # If in the state of promotion
-            if isinstance(self.selected, Pawn) and self.promotion:
+            if self.selected.notation == "P" and self.promotion:
                 # Promote the pawn
-                if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
-                    promotion_row = get_value(x, 0, 7)
-                    self.execute_move(promotion_row, column, [Queen, Knight, Rook, Bishop][flip_coords(row, flipped=x)](self.selected.color, promotion_row, column))
-                    self.promotion = None
+                if row in range(flip_coords(0, x), flip_coords(0, x) + x*len(self.selected.promotion), x) and column == self.promotion[1] + self.selected.column:
+
+                    self.promote_piece(self.selected.promotion[flip_coords(row, flipped=x)])
                     return
                 # Remove the promotion
-                self.promotion = None
+                self.promotion = False
                 # Reselect the pawn if clicked
                 if (row, column) == (self.selected.row, self.selected.column):
                     self.selected = None
-                    self.select(row, column)
+                    self.select_object(row, column)
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
             if self.board[row][column] != 0 and self.board[row][column].is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
-                if isinstance(self.selected, King) and isinstance(self.board[row][column], Rook) and self.board[row][column].is_ally(self.selected) and (row, column) in self.legal_moves:
+                if self.selected.notation == "R" and self.get(row, column).object.notation == "K" and self.get(row, column).object.is_ally(self.selected) and (row, column) in self.selected.moves:
                     self.execute_move(row, column)
                     return
                 self.selected = None
-                self.select(row, column)
+                self.select_object(row, column)
                 return
             # If the play clicks on the selected piece, the selection is removed
             if (row, column) == (self.selected.row, self.selected.column):
-                self.legal_moves = []
                 self.selected = None
                 return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
-            if (row, column) not in self.legal_moves:
-                self.legal_moves = []
+            if (row, column) not in self.selected.moves:
                 self.selected = None
                 if self.is_king_checked():
                     play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
-            if isinstance(self.selected, Pawn) and row in [0, 7]:
-                if self.gamemode == "Giveaway":
-                    promotion_row = get_value(x, 0, 7)
-                    self.execute_move(promotion_row, column, King(self.selected.color, promotion_row, column))
+            if self.selected.notation == "P" and row in [0, self.config.rows - 1]:
+                self.selected.move(row, column)
+                self.promotion = True
+                if self.config.rules["giveaway"] == True:
+                    self.promote_piece(self.selected.promotion)
                     return
-                self.promotion = self.selected, column - self.selected.column
-                self.legal_moves = []
                 return
             self.execute_move(row, column)
         else:
-            piece = self.board[row][column]
-            if piece != 0 and self.turn == piece.color:
+            piece = self.get(row, column).object
+            if piece and self.turn == piece.color:
                 self.selected = piece
-                moves = set([move for move in piece.get_moves(self.board, row, column, self.flipped, en_passant=self.en_passant)])
-                if self.gamemode != "Giveaway":
-                    moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
-                elif any([self.is_capture(self.selected, *move) for move in self.get_color_moves(piece.color)]):
+                if self.config.rules["giveaway"] == True and any([self.is_capture(self.selected, *move) for move in self.selected.moves]):
                     moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
-                self.legal_moves = moves
+                else:
+                    moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
+                self.selected.moves = moves
 
+    def handle_left_click(self):
+        x, y = pygame.mouse.get_pos()
+        row, column = get_position(x, y, self.config.margin, self.config.tile_size)
+        self.get(row, column).object.calc_moves(self, row, column, self.flipped, en_passant=self.en_passant)
+        self.select_object(row, column)
 
     def draw(self, screen):
         self.draw_tiles(screen)

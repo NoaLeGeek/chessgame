@@ -35,26 +35,9 @@ class Game(Scene):
     def draw_highlight(self, screen):
         for row in range(self.config.rows):
             for column in range(self.config.columns):
-                if self.board.get_highlight(row, column):
-                    match self.board.get_highlight(row, column):
-                        case 0:
-                            r, g, b = 255, 0, 0
-                        # Shift + Right click
-                        case 1:
-                            r, g, b = 0, 255, 0
-                        # Ctrl + Right click
-                        case 2:
-                            r, g, b = 255, 165, 0
-                        # History move
-                        case 3:
-                            r, g, b = 255, 255, 0
-                        # Selected piece
-                        case 4:
-                            r, g, b = 0, 255, 255
-                        case _:
-                            continue
+                if self.board.get(row, column).highlight_color:
                     transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
-                    transparent_surface.fill((r, g, b, 75))
+                    transparent_surface.fill((*self.board.get(row, column).get_color(), 75))
                     screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
