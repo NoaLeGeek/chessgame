@@ -1,4 +1,5 @@
 import pygame
+from object import Void
 
 class Tile:
     def __init__(self, row, column, size, margin):
@@ -7,7 +8,7 @@ class Tile:
         self.size = size
         self.x = column*size + margin
         self.y = row*size + margin
-        self.object = None
+        self.object = Void(row, column)
         self.highlight_color = None
     
     def draw(self, screen):
@@ -31,4 +32,3 @@ class Tile:
             case 4:
                 r, g, b = 0, 255, 255
         return r, g, b
-        

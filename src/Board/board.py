@@ -64,7 +64,7 @@ class Board:
                 # En passant square
                 case 3:
                     if part not in ['-', '–']:
-                        self.en_passant = (flip_coords(int(part[1]) - 1, flipped = -self.flipped), flip_coords(ord(part[0]) - 97, flipped = self.flipped))
+                        self.ep_square = (flip_coords(int(part[1]) - 1, flipped = -self.flipped), flip_coords(ord(part[0]) - 97, flipped = self.flipped))
                 # Half moves
                 case 4:
                     self.halfMoves = int(part)
@@ -163,11 +163,24 @@ class Board:
         self.selected = None
         self.turn *= -1
     
-    def get(self, row, column):
-        return self.board[(row, column)]
+    def get_tile(self, row, column):
+        return self.board.get((row, column), None)
+    
+    def get_object(self, row, column):
+        return self.get_tile(row, column).object
+    
+    def is_void(self, row, column):
+        tile = self.get_tile(row, column)
+        return tile and tile.object is None
+    
+    def is_empty(self, row, column):
+        return self.get_tile(row, column) is None
 
+    def has_object(self, row, column):
+        return not self.is_void(row, column) and not self.is_empty(row, column)
+    
     def get_empty_tiles(self):
-        return [(tile.row, tile.column) for row in self.board for tile in row if not tile.object]
+        return [(r, c) for r, c in self.board.keys() if self.is_empty(r, c)]
 
     def select_object(self, row, column):
         if self.selected:
@@ -227,7 +240,8 @@ class Board:
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
-        self.get(row, column).object.calc_moves(self, row, column, self.flipped, en_passant=self.en_passant)
+        if self.has_object(row, column) and isinstance(self.get_object(row, column), Piece) and self.get_object(row, column).color == self.turn:
+            self.get_object(row, column).calc_moves(self, row, column, self.flipped, ep_square=self.ep_square)
         self.select_object(row, column)
 
     def draw(self, screen):

@@ -25,19 +25,22 @@ class Game(Scene):
         pass
 
     def draw_objects(self, screen):
-        for row in self.board.board:
-            for tile in row:
-                if self.board.debug:
-                    screen.blit(pygame.font.SysFont("monospace", 15).render(f"({tile.column},{tile.row})", 1, (0, 0, 0)), (tile.row*self.config.tile_size+35, tile.column*self.config.tile_size+60))
-                if tile.object or (isinstance(tile.object, Piece) and self.config.piece_asset != "blindfold"):
-                    screen.blit(tile.object.image, (tile.x, tile.y))
+        for tile in self.board.board.values():
+            if self.board.debug:
+                screen.blit(pygame.font.SysFont("monospace", 15).render(f"({tile.column},{tile.row})", 1, (0, 0, 0)), (tile.row*self.config.tile_size+35, tile.column*self.config.tile_size+60))
+            if tile.object or (isinstance(tile.object, Piece) and self.config.piece_asset != "blindfold"):
+                assert tile.object.image, "Object has no image"
+                screen.blit(tile.object.image, (tile.x, tile.y))
 
     def draw_highlight(self, screen):
         for row in range(self.config.rows):
             for column in range(self.config.columns):
-                if self.board.get(row, column).highlight_color:
+                if self.board.is_empty(row, column):
+                    continue
+                tile = self.board.get_tile(row, column)
+                if tile.highlight_color is not None:
                     transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
-                    transparent_surface.fill((*self.board.get(row, column).get_color(), 75))
+                    transparent_surface.fill((*tile.get_color(), 75))
                     screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
