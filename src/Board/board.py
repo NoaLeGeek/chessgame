@@ -93,27 +93,27 @@ class Board:
         parts[0] = "/".join(rows)
         return parts
 
-    def select(self, row: int, column: int):
-        self.selected = None
-        if 0 <= row < 9 and 0 <= column < 9:
-            piece = self.get(row, column).object
-            if piece and piece.color == self.turn:
-                self.selected = piece
-                self.selected.calc_moves(self, row, column)
-        elif self.is_valid_reserve_selection(row, column):
-            self.selected = self.get_object_from_reserve(column)
+    # def select(self, row: int, column: int):
+    #     self.selected = None
+    #     if 0 <= row < 9 and 0 <= column < 9:
+    #         piece = self.get(row, column).object
+    #         if piece and piece.color == self.turn:
+    #             self.selected = piece
+    #             self.selected.calc_moves(self, row, column)
+    #     elif self.is_valid_reserve_selection(row, column):
+    #         self.selected = self.get_object_from_reserve(column)
 
-    def is_valid_reserve_selection(self, row, column):
-        return ((row == -1 and 1 <= column < 8 and self.turn == 1) or
-                (row == 9 and 1 <= column < 8 and self.turn == -1))
+    # def is_valid_reserve_selection(self, row, column):
+    #     return ((row == -1 and 1 <= column < 8 and self.turn == 1) or
+    #             (row == 9 and 1 <= column < 8 and self.turn == -1))
 
-    def get_object_from_reserve(self, column):
-        piece_type = list(self.reserves[self.turn].keys())[column - 1]
-        if self.reserves[self.turn][piece_type]:
-            piece = self.reserves[self.turn][piece_type][0]
-            piece.moves = self.get_empty_tiles()
-            return piece
-        return None
+    # def get_object_from_reserve(self, column):
+    #     piece_type = list(self.reserves[self.turn].keys())[column - 1]
+    #     if self.reserves[self.turn][piece_type]:
+    #         piece = self.reserves[self.turn][piece_type][0]
+    #         piece.moves = self.get_empty_tiles()
+    #         return piece
+    #     return None
 
     def make_move(self, move):
         capture = self.get(*move).object
@@ -169,15 +169,11 @@ class Board:
     def get_object(self, row, column):
         return self.get_tile(row, column).object
     
-    def is_void(self, row, column):
-        tile = self.get_tile(row, column)
-        return tile and tile.object is None
-    
     def is_empty(self, row, column):
         return self.get_tile(row, column) is None
-
-    def has_object(self, row, column):
-        return not self.is_void(row, column) and not self.is_empty(row, column)
+    
+    def is_occupied(self, row, column):
+        return not self.is_empty(row, column) and self.get_object(row, column).has_hitbox()
     
     def get_empty_tiles(self):
         return [(r, c) for r, c in self.board.keys() if self.is_empty(r, c)]
@@ -228,19 +224,27 @@ class Board:
                 return
             self.execute_move(row, column)
         else:
-            piece = self.get(row, column).object
-            if piece and self.turn == piece.color:
-                self.selected = piece
-                if self.config.rules["giveaway"] == True and any([self.is_capture(self.selected, *move) for move in self.selected.moves]):
-                    moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
-                else:
-                    moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
-                self.selected.moves = moves
+            # Empty tile
+            if self.is_empty(row, column):
+                return
+            # Not a piece
+            if not self.get_object(row, column).is_piece():
+                return
+            # Not the player's piece
+            if self.get_object(row, column).color != self.turn:
+                return
+            piece = self.get_object(row, column)
+            self.selected = piece
+            if self.config.rules["giveaway"] == True and any([self.is_capture(self.selected, *move) for move in self.selected.moves]):
+                moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
+            else:
+                moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
+            self.selected.moves = moves
 
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
-        if self.has_object(row, column) and isinstance(self.get_object(row, column), Piece) and self.get_object(row, column).color == self.turn:
+        if not self.is_empty(row, column) and self.get_object(row, column).is_piece() and self.get_object(row, column).color == self.turn:
             self.get_object(row, column).calc_moves(self, row, column, self.flipped, ep_square=self.ep_square)
         self.select_object(row, column)
 

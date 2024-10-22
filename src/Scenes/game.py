@@ -40,7 +40,7 @@ class Game(Scene):
                 tile = self.board.get_tile(row, column)
                 if tile.highlight_color is not None:
                     transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
-                    transparent_surface.fill((*tile.get_color(), 75))
+                    transparent_surface.fill(*tile.get_color())
                     screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):

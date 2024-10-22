@@ -1,7 +1,7 @@
 import pygame
 from constants import bishop_directions, rook_directions, queen_directions, knight_directions
-from utils import flip_coords, sign, get_value
-from tile import Object
+from utils import flip_coords, get_value
+from Board.object import Object
 
 class Piece(Object):
     def __init__(self, rules, color: int, row: int, column: int, image: pygame.Surface = None) -> None:
@@ -52,12 +52,16 @@ class Pawn(Piece):
                 self.moves.append((row - 2 * x, column))
 
         # Capture diagonale et en passant
-        for d_row, d_col in [(-x, -1), (-x, 1)]:  # Diagonales (-x, -1) et (-x, 1)
+        for d_row, d_col in [(-x, -1), (-x, 1)]:  # Diagonales
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                piece = board.get(new_row, new_col).object
+                if board.is_empty(new_row, new_col):
+                    continue
+                object = board.get_object(new_row, new_col)
+                if not object.is_piece():
+                    continue
                 # Capture normale
-                if piece and piece.is_enemy(self):
+                if object and object.is_enemy(self):
                     self.moves.append((new_row, new_col))
                 # Capture en passant
                 if ep_square and ep_square == (new_row, new_col):
@@ -75,10 +79,9 @@ class Rook(Piece):
         for d_row, d_col in rook_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                piece = board.get(row_temp, column_temp).object
-                if piece == 0:
+                if board.is_empty(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
-                elif piece.is_enemy(self):
+                elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):
                     self.moves.append((row_temp, column_temp))
                     break
                 else:
@@ -95,12 +98,11 @@ class Bishop(Piece):
         for d_row, d_col in bishop_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                piece = board.get(row_temp, column_temp).object
                 # Case vide
-                if piece == 0:
+                if board.is_empty(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 # Pièce ennemie
-                elif piece.is_enemy(self):  
+                elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):  
                     self.moves.append((row_temp, column_temp))
                     break
                 # Pièce alliée
@@ -119,8 +121,7 @@ class Knight(Piece):
         for d_row, d_col in knight_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                piece = board.get(new_row, new_col).object
-                if not piece or piece.is_enemy(self):
+                if board.is_empty(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
                     self.moves.append((new_row, new_col))
 
 
@@ -133,10 +134,9 @@ class Queen(Piece):
         for d_row, d_col in queen_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                piece = board.get(row_temp, column_temp).object
-                if piece == 0:  # Case vide
+                if board.is_empty(row_temp, column_temp):  # Case vide
                     self.moves.append((row_temp, column_temp))
-                elif piece.is_enemy(self):  # Pièce ennemie
+                elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):  # Pièce ennemie
                     self.moves.append((row_temp, column_temp))
                     break
                 else:  # Pièce alliée
@@ -156,23 +156,23 @@ class King(Piece):
         for d_row, d_col in queen_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                piece = board.get(new_row, new_col).object
-                if not piece or piece.is_enemy(self):
+                if board.is_empty(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
                     self.moves.append((new_row, new_col))
 
         # Castling
         if self.first_move:
-            rooks = {}
+            rooks = {1: None, -1: None}
 
             # 1 = O-O-O, -1 = O-O
             for d in [1, -1]:
                 for i in range(flip_coords(0, flipped=d*flipped), column, d*flipped):
-                    if not board.has_object(row, i):
+                    # Skip if empty square or not a piece
+                    if board.is_empty(row, i) or not board.get_object(row, i).is_piece():
                         continue
-                    object = board.get_object(row, i)
-                    if isinstance(object, Piece) and rooks[d] is not None:
+                    if rooks[d] is not None:
                         rooks[d] = None
                         break
+                    piece = board.get_object(row, i)
                     if piece.notation == "R" and piece.first_move and piece.is_ally(self):
                         rooks[d] = i
 

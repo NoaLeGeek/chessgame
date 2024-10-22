@@ -1,5 +1,5 @@
 import pygame
-from object import Void
+from Board.object import Void
 
 class Tile:
     def __init__(self, row, column, size, margin):
@@ -18,17 +18,20 @@ class Tile:
         r, g, b = None, None, None
         match self.highlight_color:
             case 0:
-                r, g, b = 255, 0, 0
+                r, g, b = 255, 0, 0, 75
             # Shift + Right click
             case 1:
-                r, g, b = 0, 255, 0
+                r, g, b = 0, 255, 0, 75
             # Ctrl + Right click
             case 2:
-                r, g, b = 255, 165, 0
+                r, g, b = 255, 165, 0, 75
             # History move
             case 3:
-                r, g, b = 255, 255, 0
+                r, g, b = 255, 255, 0, 75
             # Selected piece
             case 4:
-                r, g, b = 0, 255, 255
+                r, g, b = 0, 255, 255, 75
+            # Void
+            case None:
+                r, g, b = 0, 0, 0, 0
         return r, g, b
