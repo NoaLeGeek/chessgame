@@ -18,6 +18,29 @@ class Piece(Object):
         self.row = row
         self.column = column
 
+    def can_move(self, board, row: int, column: int) -> bool:
+        if board.config.rules["giveaway"] == True:
+            return True
+        if (self.row, self.column) == (row, column):
+            return True
+        piece_row, piece_column = self.row, self.column
+        # When called, (row, column) is empty, is occupied by a object with no hitbox or is occupied by a opponent piece
+        # Save the destination square object
+        save_object = board.get_object(row, column)
+        # Delete the destination square object if it's a piece
+        if save_object.is_piece():
+            del self.board[(row, column)]
+        # Swap the piece with the destination square
+        self.board[(self.row, self.column)], self.board[(row, column)] = self.board[(row, column)], self.board[(self.row, self.column)]
+        self.row, self.column = row, column
+        # Check if the king is in check after the move
+        can_move = not self.board.is_in_check()
+        # Restore the initial state of the board
+        self.board[(piece_row, piece_column)] = self
+        self.board[(row, column)] = save_object
+        self.row, self.column = piece_row, piece_column
+        return can_move
+
     @staticmethod
     def notation_to_piece(notation:str):
         return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
@@ -41,21 +64,22 @@ class Pawn(Piece):
         self.first_move = True
 
     def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        self.moves = []
         ep_square = kwds["ep_square"] if "ep_square" in kwds else None
         x = self.color * flipped
 
         # Déplacement de base vers l'avant
-        if 0 <= row - x < board.config.rows and board.is_empty(row - x, column):
+        if 0 <= row - x < board.config.rows and not board.is_occupied(row - x, column):
             self.moves.append((row - x, column))
             # Premier déplacement du pion (2 cases vers l'avant)
-            if self.first_move and 0 <= row - 2 * x < board.config.rows and board.is_empty(row - 2 * x, column):
+            if self.first_move and 0 <= row - 2 * x < board.config.rows and not board.is_occupied(row - 2 * x, column):
                 self.moves.append((row - 2 * x, column))
 
         # Capture diagonale et en passant
         for d_row, d_col in [(-x, -1), (-x, 1)]:  # Diagonales
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if board.is_empty(new_row, new_col):
+                if not board.is_occupied(new_row, new_col):
                     continue
                 object = board.get_object(new_row, new_col)
                 if not object.is_piece():
@@ -76,10 +100,11 @@ class Rook(Piece):
         self.first_move = True
 
     def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        self.moves = []
         for d_row, d_col in rook_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                if board.is_empty(row_temp, column_temp):
+                if not board.is_occupied(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):
                     self.moves.append((row_temp, column_temp))
@@ -95,11 +120,12 @@ class Bishop(Piece):
         self.notation = 'B'
 
     def calc_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        self.moves = []
         for d_row, d_col in bishop_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                # Case vide
-                if board.is_empty(row_temp, column_temp):
+                # Case non occupée
+                if not board.is_occupied(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 # Pièce ennemie
                 elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):  
@@ -118,10 +144,11 @@ class Knight(Piece):
         self.notation = 'N'
 
     def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        self.moves = []
         for d_row, d_col in knight_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if board.is_empty(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
+                if not board.is_occupied(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
                     self.moves.append((new_row, new_col))
 
 
@@ -131,10 +158,11 @@ class Queen(Piece):
         self.notation = 'Q'
 
     def calc_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        self.moves = []
         for d_row, d_col in queen_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                if board.is_empty(row_temp, column_temp):  # Case vide
+                if not board.is_occupied(row_temp, column_temp):  # Case non occupée
                     self.moves.append((row_temp, column_temp))
                 elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):  # Pièce ennemie
                     self.moves.append((row_temp, column_temp))
@@ -152,22 +180,42 @@ class King(Piece):
         # Indicates whether the king has moved or not
         self.first_move = True
 
+    def in_check(self, board):
+        if board.config.rules["giveaway"] == True:
+            return False
+        for row, column in board.keys():
+            # Empty tile
+            if self.is_empty(row, column):
+                continue
+            # Not a piece
+            if not self.get_object(row, column).is_piece():
+                continue
+            # Not opponent's piece
+            if self.get_object(row, column).color == self.turn:
+                continue
+            opponent = self.get_object(row, column)
+            opponent.calc_moves(self, row, column, self.flipped, ep_square=self.ep_square)
+            if (self.row, self.column) in opponent.moves:
+                return True
+        return False
+
     def calc_moves(self, board: list[list[int | Piece]], row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
+        self.moves = []
         for d_row, d_col in queen_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if board.is_empty(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
+                if not board.is_occupied(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
                     self.moves.append((new_row, new_col))
 
         # Castling
-        if self.first_move:
+        if self.first_move and board.config.rules["no_castling"] == False and board.config.rules["giveaway"] == False and not self.in_check():
             rooks = {1: None, -1: None}
 
             # 1 = O-O-O, -1 = O-O
             for d in [1, -1]:
                 for i in range(flip_coords(0, flipped=d*flipped), column, d*flipped):
                     # Skip if empty square or not a piece
-                    if board.is_empty(row, i) or not board.get_object(row, i).is_piece():
+                    if not board.is_occupied(row, i) or not board.get_object(row, i).is_piece():
                         continue
                     if rooks[d] is not None:
                         rooks[d] = None
@@ -180,7 +228,7 @@ class King(Piece):
                 if rooks[d] is None:
                     continue
                 if all(board[row][i] == 0 or i == rooks[d] for i in range(min(flip_coords(i, flipped=d*flipped), flip_coords(get_value(d, 2, 6), flipped=d*flipped)), column, d*flipped)):
-                    self.moves.append((row, flip_coords(get_value(d, 2, 6), flipped=d*flipped)))
+                    self.moves.append((row, rooks[d]))
                     
             
             # rook = next((board[row][i] for i in range(column - flipped, flip_coords(-1, flipped=flipped), -flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)

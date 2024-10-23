@@ -5,7 +5,7 @@ class Object():
         self.hitbox = hitbox
 
     def is_piece(self):
-        return type(self) == "Piece"
+        return "piece" in str(type(self))
     
     def has_hitbox(self):
         return self.hitbox is not None

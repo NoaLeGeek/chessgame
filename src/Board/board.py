@@ -22,6 +22,7 @@ class Board:
         self.halfMoves = 0
         self.fullMoves = 1
         self.flipped = 1
+        self.kings = {1: None, -1: None}
         self.piece_images = generate_piece_images(self.config.piece_asset, self.config.tile_size)
         #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
         self.debug = False
@@ -46,6 +47,7 @@ class Board:
                                 tile = Tile(r, c, self.config.tile_size, self.config.margin)
                                 tile.object = Piece.notation_to_piece(char)(self.config.rules, color, r, c, self.piece_images[("w" if color == 1 else "b") + char.upper()])
                                 self.board[(r, c)] = tile
+                                self.update_kings(r, c)
                                 c += 1
                 # Turn
                 case 1:
@@ -162,33 +164,44 @@ class Board:
     def change_turn(self):
         self.selected = None
         self.turn *= -1
-    
+
+    def update_kings(self, row, column):
+        piece = self.get_object(row, column)
+        if piece.notation == "K":
+            self.kings[piece.color] = (row, column)
+
+    def is_in_check(self):
+        return self.get_object(*self.kings[self.turn]).in_check(self)
+
     def get_tile(self, row, column):
         return self.board.get((row, column), None)
     
     def get_object(self, row, column):
+        if self.is_empty(row, column):
+            return None
         return self.get_tile(row, column).object
     
+    # True = Tile has no object
     def is_empty(self, row, column):
         return self.get_tile(row, column) is None
     
+    # True = Tile has an object with an hitbox
     def is_occupied(self, row, column):
         return not self.is_empty(row, column) and self.get_object(row, column).has_hitbox()
     
     def get_empty_tiles(self):
-        return [(r, c) for r, c in self.board.keys() if self.is_empty(r, c)]
+        return [(r, c) for r, c in self.board.keys() if not self.is_occupied(r, c)]
 
     def select_object(self, row, column):
         if self.selected:
             x = self.selected.color * self.flipped
             # If in the state of promotion
             if self.selected.notation == "P" and self.promotion:
-                # Promote the pawn
+                # User clicked in the range of promotion
                 if row in range(flip_coords(0, x), flip_coords(0, x) + x*len(self.selected.promotion), x) and column == self.promotion[1] + self.selected.column:
-
                     self.promote_piece(self.selected.promotion[flip_coords(row, flipped=x)])
                     return
-                # Remove the promotion
+                # User did not click in the range of promotion
                 self.promotion = False
                 # Reselect the pawn if clicked
                 if (row, column) == (self.selected.row, self.selected.column):
@@ -196,9 +209,9 @@ class Board:
                     self.select_object(row, column)
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
-            if self.board[row][column] != 0 and self.board[row][column].is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
+            if not self.is_empty(row, column) and self.get_object(row, column).is_piece() and self.get_object(row, column).is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
-                if self.selected.notation == "R" and self.get(row, column).object.notation == "K" and self.get(row, column).object.is_ally(self.selected) and (row, column) in self.selected.moves:
+                if self.selected.notation == "R" and self.get_object(row, column).notation == "K" and (row, column) in self.selected.moves:
                     self.execute_move(row, column)
                     return
                 self.selected = None
@@ -211,7 +224,7 @@ class Board:
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
             if (row, column) not in self.selected.moves:
                 self.selected = None
-                if self.is_king_checked():
+                if self.kings[self.turn] is None or self.is_in_check():
                     play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
@@ -233,9 +246,9 @@ class Board:
             # Not the player's piece
             if self.get_object(row, column).color != self.turn:
                 return
-            piece = self.get_object(row, column)
-            self.selected = piece
-            if self.config.rules["giveaway"] == True and any([self.is_capture(self.selected, *move) for move in self.selected.moves]):
+            self.selected = self.get_object(row, column)
+            moves = self.selected.moves
+            if self.config.rules["giveaway"] == True and any([self.is_capture(self.selected, *move) for move in moves]):
                 moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
             else:
                 moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
