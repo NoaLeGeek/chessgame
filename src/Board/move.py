@@ -3,23 +3,21 @@ from config import play_sound
 from Board.piece import Piece
 
 class Move:
-    def __init__(self, board, from_, to, promotion: Piece = None):
+    def __init__(self, board, from_, to):
         self.board = board
         self.from_ = from_
         self.to = to
-        self.promotion = promotion
+        self.promotion = None
         self.notation = None
 
-    def make_move(self) -> None:
-        row, column = self.to
+    def execute(self, promotion: Piece = None) -> None:
+        if promotion is not None:
+            self.promotion = promotion
         # Modify the final column of the king if it's a castling move
         self.board.move(self)
-        if self.is_castling():
-            self.to = (row, (7 + self.game.flipped + get_value(sign(column - self.from_[1]), 4, -4)) // 2)
-        # Add the promoted piece to the board if there is one
-        if self.promotion and self.board.config.piece_asset != "blindfold":
-            self.promotion.image = piece_assets[config["selected_asset"]][Piece.piece_to_index(self.promotion) + get_value(self.promotion.color, 0, 6)]
-            self.game.board[row][column] = self.promotion
+        # TODO attention à ça quand draw_highlight
+        """ if self.is_castling():
+            self.to = (row, flip_coords(get_value(d, 2, 6), flipped=d*flipped))) """
         self.game.change_turn()
         self.game.legal_moves, self.game.selected = [], None
         # Reset halfMoves if it's a capture or a pawn move

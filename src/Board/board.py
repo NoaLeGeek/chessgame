@@ -23,6 +23,9 @@ class Board:
         self.fullMoves = 1
         self.flipped = 1
         self.kings = {1: None, -1: None}
+        self.game_over = False
+        if self.config.rules["+3_checks"] == True:
+            self.win_condition = 0
         self.piece_images = generate_piece_images(self.config.piece_asset, self.config.tile_size)
         #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
         self.debug = False
@@ -94,6 +97,58 @@ class Board:
                 rows[row] = rows[row].lower()
         parts[0] = "/".join(rows)
         return parts
+    
+    def check_game(self) -> None:
+        if self.config.rules["king_of_the_hill"] == True and any([not self.is_empty(*center) and self.get_object(*center).notation == "K" for center in self.get_center()]):
+            print("{} Wins".format("Black" if self.turn == 1 else "White"))
+            self.game_over = True
+        elif self.config.rules["+3_checks"] == True and self.win_condition >= 3:
+            print("{} Wins".format("Black" if self.turn == 1 else "White"))
+            self.game_over = True
+        elif self.config.rules["giveaway"] == True and (any([self.dict_color_pieces(color) == dict() for color in [1, -1]]) or self.is_stalemate()):
+            print("{} Wins".format("Black" if self.turn == -1 else "White"))
+            self.game_over = True
+        elif self.config.rules["giveaway"] == False and self.is_checkmate():
+            print("{} Wins".format("Black" if self.turn == 1 else "White"))
+            self.game_over = True
+        elif self.is_stalemate():
+            print("Stalemate")
+            self.game_over = True
+        elif self.halfMoves >= 100:
+            print("Draw by the 50 moves rule")
+            self.game_over = True
+        elif self.is_insufficient_material():
+            self.game_over = True
+            print("Draw by insufficient material")
+        elif self.is_threesold_repetition():
+            self.game_over = True
+            print("Draw by threesold repetition")
+        if self.game_over:
+            play_sound("game-end")
+
+    def is_threesold_repetition(self):
+        last_index = 0
+        # TODO maybe make this a global variable to avoid recalculating it
+        for i in range(len(self.history)-1, -1, -1):
+            move = self.history[i]
+            # Irreversible move are captures, pawn moves, castling or losing castling rights
+            if move.capture or move.get_piece().notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.history[i-1].fen.split(" ")[2]:
+                last_index = i
+                break
+        for i in range(last_index, len(self.history)):
+            position1 = self.history[i].fen.split(" ")[0:4]
+            count = 0
+            for j in range(last_index, len(self.history)):
+                position2 = self.history[j].fen.split(" ")[0:4]
+                # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
+                if position1 == position2:
+                    count += 1
+                    if count == 3:
+                        return True
+        return False
+
+    def get_center(self):
+        return [(i, j) for i in range((self.config.rows-1)//2, (self.config.rows//2)+1) for j in range((self.config.columns-1)//2, (self.config.columns//2)+1)]
 
     # def select(self, row: int, column: int):
     #     self.selected = None
