@@ -25,11 +25,10 @@ class Game(Scene):
         pass
 
     def draw_objects(self, screen):
-        for (row, column), tile in self.board.board.items():
-            print(row, column, tile)
+        for tile in self.board.board.values():
             if self.board.debug:
                 screen.blit(pygame.font.SysFont("monospace", 15).render(f"({tile.column},{tile.row})", 1, (0, 0, 0)), (tile.row*self.config.tile_size+35, tile.column*self.config.tile_size+60))
-            if tile.object is not None and self.config.piece_asset != "blindfold":
+            if self.config.piece_asset != "blindfold":
                 assert tile.object.image, "Object has no image"
                 screen.blit(tile.object.image, (tile.x, tile.y))
 
