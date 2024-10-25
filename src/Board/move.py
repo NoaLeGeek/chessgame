@@ -1,5 +1,4 @@
-from constants import flip_coords, config, piece_assets, sign, get_value
-from config import play_sound
+from utils import flip_coords, sign, get_value, play_sound
 from Board.piece import Piece
 
 class Move:
@@ -48,7 +47,7 @@ class Move:
     
     def is_legal(self) -> bool:
         if not self.is_castling():
-            return self.get_piece().can_move(*self.to)
+            return self.get_piece().can_move(self.board, *self.to)
         # Castling
         is_legal = True
         if self.is_castling():

@@ -3,6 +3,7 @@ import os
 from Board.tile import Tile
 from utils import get_position, generate_piece_images, play_sound, generate_board_image, generate_sounds, flip_coords
 from Board.piece import Piece
+from Board.move import Move
 from config import Config
 from random import choice
 
@@ -149,6 +150,9 @@ class Board:
 
     def get_center(self):
         return [(i, j) for i in range((self.config.rows-1)//2, (self.config.rows//2)+1) for j in range((self.config.columns-1)//2, (self.config.columns//2)+1)]
+    
+    def convert_to_move(self, row, column):
+        return Move(self, (self.selected.row, self.selected.column), (row, column))
 
     # def select(self, row: int, column: int):
     #     self.selected = None
@@ -242,7 +246,9 @@ class Board:
     
     # True = Tile has an object with an hitbox
     def is_occupied(self, row, column):
-        return not self.is_empty(row, column) and self.get_object(row, column).has_hitbox()
+        if self.is_empty(row, column):
+            return False
+        return self.get_object(row, column).has_hitbox()
     
     def get_empty_tiles(self):
         return [(r, c) for r, c in self.board.keys() if not self.is_occupied(r, c)]
@@ -253,7 +259,7 @@ class Board:
             # If in the state of promotion
             if self.selected.notation == "P" and self.promotion:
                 # User clicked in the range of promotion
-                if row in range(flip_coords(0, x), flip_coords(0, x) + x*len(self.selected.promotion), x) and column == self.promotion[1] + self.selected.column:
+                if row in range(flip_coords(0, flipped=x), flip_coords(0, flipped=x) + x*len(self.selected.promotion), x) and column == self.promotion[1] + self.selected.column:
                     self.promote_piece(self.selected.promotion[flip_coords(row, flipped=x)])
                     return
                 # User did not click in the range of promotion
@@ -303,10 +309,10 @@ class Board:
                 return
             self.selected = self.get_object(row, column)
             moves = self.selected.moves
-            if self.config.rules["giveaway"] == True and any([self.is_capture(self.selected, *move) for move in moves]):
-                moves = list(filter(lambda move: self.is_capture(self.selected, *move), moves))
+            if self.config.rules["giveaway"] == True and any([self.convert_to_move(*move).is_capture() for move in moves]):
+                moves = list(filter(lambda move: self.convert_to_move(*move).is_capture(), moves))
             else:
-                moves = list(filter(lambda move: self.is_legal(self.selected, *move), moves))
+                moves = list(filter(lambda move: self.convert_to_move(*move).is_legal(), moves))
             self.selected.moves = moves
 
     def handle_left_click(self):
