@@ -58,4 +58,5 @@ def generate_sounds(asset:str):
     return sounds
 
 def play_sound(sounds, type: str):
+    assert type in sounds, f"Sound {type} not found"
     sounds[type].play()

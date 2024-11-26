@@ -45,7 +45,6 @@ class Game(Scene):
                     screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
-        print(self.board.selected.moves)
         for move in self.board.selected.moves:
             row, column = move[0], move[1]
             transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)

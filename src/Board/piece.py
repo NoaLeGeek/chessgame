@@ -87,10 +87,10 @@ class Pawn(Piece):
                 if not object.is_piece():
                     continue
                 # Capture normale
-                if object and object.is_enemy(self):
+                if object.is_enemy(self):
                     self.moves.append((new_row, new_col))
                 # Capture en passant
-                if ep_square and ep_square == (new_row, new_col):
+                if ep_square is not None and ep_square == (new_row, new_col):
                     self.moves.append((new_row, new_col))
 
 
@@ -108,7 +108,7 @@ class Rook(Piece):
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
                 if not board.is_occupied(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
-                elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):
+                elif board.is_enemy(row_temp, column_temp, self):
                     self.moves.append((row_temp, column_temp))
                     break
                 else:
@@ -130,7 +130,7 @@ class Bishop(Piece):
                 if not board.is_occupied(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 # Pièce ennemie
-                elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):  
+                elif board.is_enemy(row_temp, column_temp, self):  
                     self.moves.append((row_temp, column_temp))
                     break
                 # Pièce alliée
@@ -150,7 +150,7 @@ class Knight(Piece):
         for d_row, d_col in knight_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if not board.is_occupied(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
+                if not board.is_occupied(new_row, new_col) or board.is_enemy(new_row, new_col, self):
                     self.moves.append((new_row, new_col))
 
 
@@ -166,7 +166,7 @@ class Queen(Piece):
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
                 if not board.is_occupied(row_temp, column_temp):  # Case non occupée
                     self.moves.append((row_temp, column_temp))
-                elif board.get_object(row_temp, column_temp).is_piece() and board.get_object(row_temp, column_temp).is_enemy(self):  # Pièce ennemie
+                elif board.is_enemy(row_temp, column_temp, self):  # Pièce ennemie
                     self.moves.append((row_temp, column_temp))
                     break
                 else:  # Pièce alliée
@@ -190,7 +190,7 @@ class King(Piece):
             if board.is_empty(row, column):
                 continue
             # Not a piece
-            if not board.get_object(row, column).is_piece():
+            if not board.is_piece(row, column):
                 continue
             # Not opponent's piece
             if board.get_object(row, column).color == board.turn:
@@ -206,7 +206,7 @@ class King(Piece):
         for d_row, d_col in queen_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if not board.is_occupied(new_row, new_col) or (board.get_object(new_row, new_col).is_piece() and board.get_object(new_row, new_col).is_enemy(self)):
+                if not board.is_occupied(new_row, new_col) or board.is_enemy(new_row, new_col, self):
                     self.moves.append((new_row, new_col))
 
         # Castling
@@ -217,7 +217,8 @@ class King(Piece):
             for d in [1, -1]:
                 for i in range(flip_coords(0, flipped=d*flipped), column, d*flipped):
                     # Skip if empty square or not a piece
-                    if not board.is_occupied(row, i) or not board.get_object(row, i).is_piece():
+                    #TODO what?
+                    if not board.is_occupied(row, i) or not board.is_piece(row, i):
                         continue
                     if rooks[d] is not None:
                         rooks[d] = None

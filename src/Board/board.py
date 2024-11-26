@@ -1,7 +1,8 @@
 import pygame
 import os
 from Board.tile import Tile
-from utils import get_position, generate_piece_images, play_sound, generate_board_image, generate_sounds, flip_coords
+from constants import castling_rook_pos
+from utils import get_position, generate_piece_images, play_sound, generate_board_image, generate_sounds, flip_coords, sign
 from Board.piece import Piece
 from Board.move import Move
 from config import Config
@@ -17,9 +18,10 @@ class Board:
         self.selected = None
         self.turn = 1
         self.winner = None
-        self.ep_square = None
+        self.ep = None
+        self.ep_log = []
         self.promotion = False
-        self.history = []
+        self.moveLogs = []
         self.halfMoves = 0
         self.fullMoves = 1
         self.flipped = 1
@@ -58,6 +60,8 @@ class Board:
                     self.turn = 1 if part == "w" else -1
                 # Castling rights
                 case 2:
+                    # for d in [-1, 1]:
+                    #     for row in 
                     # TODO doesn't work with 960
                     if "K" not in part and self.get(7, 7).object.notation == "R":
                         self.get(7, 7).object.first_move = False
@@ -130,17 +134,17 @@ class Board:
     def is_threesold_repetition(self):
         last_index = 0
         # TODO maybe make this a global variable to avoid recalculating it
-        for i in range(len(self.history)-1, -1, -1):
-            move = self.history[i]
+        for i in range(len(self.moveLogs)-1, -1, -1):
+            move = self.moveLogs[i]
             # Irreversible move are captures, pawn moves, castling or losing castling rights
-            if move.capture or move.get_piece().notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.history[i-1].fen.split(" ")[2]:
+            if move.capture or move.get_piece().notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
                 last_index = i
                 break
-        for i in range(last_index, len(self.history)):
-            position1 = self.history[i].fen.split(" ")[0:4]
+        for i in range(last_index, len(self.moveLogs)):
+            position1 = self.moveLogs[i].fen.split(" ")[0:4]
             count = 0
-            for j in range(last_index, len(self.history)):
-                position2 = self.history[j].fen.split(" ")[0:4]
+            for j in range(last_index, len(self.moveLogs)):
+                position2 = self.moveLogs[j].fen.split(" ")[0:4]
                 # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
                 if position1 == position2:
                     count += 1
@@ -191,11 +195,6 @@ class Board:
         self.place_piece(self.selected, move)
         self.change_turn()
 
-    def move_piece(self, piece, move):
-        self.board[piece.row][piece.column].object = None
-        self.board[move[0]][move[1]].object = piece
-        piece.move(*move)
-
     def capture_piece(self, piece):
         if piece.notation != 'K':
             piece.__init__(None, None, self.turn, None)
@@ -216,9 +215,10 @@ class Board:
     
     def promote_piece(self, type_piece):
         new_piece = type_piece(self.selected.color, self.selected.row, self.selected.column)
-        new_piece.image = self.piece_images[new_piece.notation]
+        if self.config.piece_asset != "blindfold":
+            new_piece.image = self.piece_images[new_piece.notation]
+        self.board[self.selected.row][self.selected.column].object = new_piece
         self.promotion = False
-        self.change_turn()
 
     def change_turn(self):
         self.selected = None
@@ -244,6 +244,18 @@ class Board:
     def is_empty(self, row, column):
         return self.get_tile(row, column) is None
     
+    # True = Tile has a piece
+    def is_piece(self, row, column):
+        return not self.is_empty(row, column) and self.get_object(row, column).is_piece()
+    
+    # True = Tile has an ally piece with the given piece
+    def is_ally(self, row, column, piece):
+        return self.is_piece(row, column) and self.get_object(row, column).is_ally(piece)
+    
+    # True = Tile has an enemy piece with the given piece
+    def is_enemy(self, row, column, piece):
+        return self.is_piece(row, column) and self.get_object(row, column).is_enemy(piece)
+    
     # True = Tile has an object with an hitbox
     def is_occupied(self, row, column):
         if self.is_empty(row, column):
@@ -252,6 +264,42 @@ class Board:
     
     def get_empty_tiles(self):
         return [(r, c) for r, c in self.board.keys() if not self.is_occupied(r, c)]
+    
+    def move_piece(self, move: Move):
+        piece, row, column = move.get_piece(), *move.to
+        assert not self.is_empty(piece.row, piece.column)
+        del self.board[(piece.row, piece.column)]
+        self.board[(row, column)] = piece
+
+        x = piece.color * self.flipped
+        # Castling
+        if move.is_castling():
+            d = sign(column - piece.column)
+            # Rook and King's positions are swapped to avoid King's deletion during some 960 castling
+            # King is now at (row, column)
+            # Rook is now at (row, piece.column)
+            self.board[(row, column)], self.board[(row, piece.column)] = self.board[(row, piece.column)], self.board[(row, column)]
+            # Calculate the new position for the rook
+            rook_column = flip_coords(castling_rook_pos[d*self.flipped], flipped=d*self.flipped)
+            # piece.column hasn't updated, we can use it as the old King's pos where the rook is
+            self.get_object(row, piece.column).move(row, rook_column)
+            self.board[(row, piece.column)], self.board[(row, rook_column)] = self.board[(row, rook_column)], self.board[(row, piece.column)]
+            # King's pos is updated
+            self.get_object(row, column).move(row, column)
+            # Calculate the new position for the king
+            column = flip_coords(castling_rook_pos[d*self.flipped]+d, flipped=d*self.flipped)
+        # En-passant
+        elif piece.notation == "P" and self.is_piece(row + x, column) and self.get_object(row + x, column).notation == "P" and self.en_passant == (piece.row - x, column):
+            del self.board[(row + x, column)]
+        self.en_passant = (row + x, column) if piece.notation == "P" and abs(piece.row - row) == 2 else None
+        if column != piece.column or row != piece.row:
+            if not self.is_empty(row, column):
+                del self.board[(row, column)]
+            self.board[(piece.row, piece.column)], self.board[(row, column)] = self.board[(row, column)], self.board[(piece.row, piece.column)]
+            piece.move(row, column)
+        # Update the first_move attribute of the piece if it moved
+        if piece.notation in "KRP" and piece.first_move:
+            piece.first_move = False
 
     def select_object(self, row, column):
         if self.selected:
@@ -270,10 +318,10 @@ class Board:
                     self.select_object(row, column)
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
-            if not self.is_empty(row, column) and self.get_object(row, column).is_piece() and self.get_object(row, column).is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
+            if self.is_ally(row, column, self.selected) and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
                 if self.selected.notation == "R" and self.get_object(row, column).notation == "K" and (row, column) in self.selected.moves:
-                    self.execute_move(row, column)
+                    self.convert_to_move(row, column).execute()
                     return
                 self.selected = None
                 self.select_object(row, column)
@@ -296,13 +344,10 @@ class Board:
                     self.promote_piece(self.selected.promotion)
                     return
                 return
-            self.execute_move(row, column)
+            self.convert_to_move(row, column).execute()
         else:
-            # Empty tile
-            if self.is_empty(row, column):
-                return
             # Not a piece
-            if not self.get_object(row, column).is_piece():
+            if not self.is_piece(row, column):
                 return
             # Not the player's piece
             if self.get_object(row, column).color != self.turn:
@@ -318,7 +363,7 @@ class Board:
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
-        if not self.is_empty(row, column) and self.get_object(row, column).is_piece() and self.get_object(row, column).color == self.turn:
+        if self.is_piece(row, column) and self.get_object(row, column).color == self.turn:
             self.get_object(row, column).calc_moves(self, row, column, self.flipped, ep_square=self.ep_square)
         self.select_object(row, column)
 

@@ -2,32 +2,41 @@ from utils import flip_coords, sign, get_value, play_sound
 from Board.piece import Piece
 
 class Move:
-    def __init__(self, board, from_, to):
+    def __init__(self, board, from_, to, castling=False):
         self.board = board
         self.from_ = from_
         self.to = to
-        self.promotion = None
+        self.piece = board.get_object(*from_)
+        if board.ep_square is not None and board.is_enemy(*board.ep_square, ):
+            self.capture = board.get_object(to[0] - self.piece.color*self.board.flipped, to[1])
+        elif board.is_piece(*to):
+            self.capture = board.get_object(*to)
+        self.promotion = 
+        self.castling = castling
         self.notation = None
 
     def execute(self, promotion: Piece = None) -> None:
         if promotion is not None:
             self.promotion = promotion
+            self.board.promote_piece(self, promotion)
         # Modify the final column of the king if it's a castling move
-        self.board.move(self)
+        self.board.move_piece(self)
         # TODO attention à ça quand draw_highlight
         """ if self.is_castling():
             self.to = (row, flip_coords(get_value(d, 2, 6), flipped=d*flipped))) """
-        self.game.change_turn()
-        self.game.legal_moves, self.game.selected = [], None
+        self.board.change_turn()
+        self.board.selected = [], None
         # Reset halfMoves if it's a capture or a pawn move
         if self.is_capture() or self.get_piece().notation == "P":
-            self.game.halfMoves = 0
+            self.board.halfMoves = 0
         if self.board.config.rules["+3_checks"] == True and self.board.is_king_checked():
-            self.game.win_condition += 1
+            self.board.win_condition += 1
         self.notation = self.to_literal()
         self.fen = self.board.generate_fen()
-        self.board.history.append(self)
+        self.board.moveLogs.append(self)
         self.board.check_game()
+
+    def play_sound(self) -> None:
         if self.is_castling():
             play_sound("castle")
         elif self.board.config.rules["giveaway"] == False and self.board.is_in_check():
@@ -43,11 +52,11 @@ class Move:
                 play_sound("move-opponent")
 
     def is_capture(self) -> bool:
-        return self.get_capture().is_piece()
+        return self.capture is not None
     
     def is_legal(self) -> bool:
         if not self.is_castling():
-            return self.get_piece().can_move(self.board, *self.to)
+            return self.piece.can_move(self.board, *self.to)
         # Castling
         is_legal = True
         if self.is_castling():
@@ -60,15 +69,9 @@ class Move:
         return is_legal
     
     def is_castling(self) -> bool:
-        return self.get_piece().notation == "K" and self.get_capture().notation == "R" and self.get_piece().color == self.get_capture().color and self.get_piece().first_move and self.get_capture().first_move
-    
-    def get_piece(self) -> Piece:
-        return self.board.get_object(*self.from_)
-    
-    def get_capture(self) -> Piece:
-        return self.board.get_object(*self.to)
+        return self.piece.notation == "K" and self.capture.notation == "R" and self.get_piece().color == self.get_capture().color and self.get_piece().first_move and self.get_capture().first_move
         
-    def to_literal(self) -> str:
+    def __str__(self) -> str:
         row, column = self.to
         string = ""
         # The move is O-O or O-O-O

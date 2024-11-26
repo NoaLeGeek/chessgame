@@ -18,7 +18,7 @@ class Game:
         self.legal_moves = []
         self.halfMoves = 0
         self.fullMoves = 1
-        self.history = []
+        self.moveLogs = []
         self.highlightedSquares = {}
         self.game_over = False
         self.gamemode = gamemode
@@ -71,8 +71,8 @@ class Game:
         draw_board(self.flipped)
         if self.selected:
             draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
-        if self.history:
-            draw_highlightedSquares({self.history[-1].from_: 3, self.history[-1].to: 3})
+        if self.moveLogs:
+            draw_highlightedSquares({self.moveLogs[-1].from_: 3, self.moveLogs[-1].to: 3})
         if self.highlightedSquares:
             draw_highlightedSquares(self.highlightedSquares)
         if config["selected_asset"] != "blindfold":
@@ -115,17 +115,17 @@ class Game:
             print("Draw by insufficient material")
         else:
             last_index = 0
-            for i in range(len(self.history)-1, 0, -1):
-                move = self.history[i]
+            for i in range(len(self.moveLogs)-1, 0, -1):
+                move = self.moveLogs[i]
                 # Irreversible move are captures, pawn moves, castling or losing castling rights
-                if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.history[i-1].fen.split(" ")[2]:
+                if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
                     last_index = i
                     break
-            for i in range(last_index, len(self.history)):
-                fen = self.history[i].fen.split(" ")[0:4]
+            for i in range(last_index, len(self.moveLogs)):
+                fen = self.moveLogs[i].fen.split(" ")[0:4]
                 count = 0
-                for j in range(last_index, len(self.history)):
-                    iterate_fen = self.history[j].fen.split(" ")
+                for j in range(last_index, len(self.moveLogs)):
+                    iterate_fen = self.moveLogs[j].fen.split(" ")
                     # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
                     if fen == iterate_fen[0:4]:
                         count += 1
@@ -314,8 +314,8 @@ class Game:
         self.selected, self.legal_moves, self.promotion = None, [], None
         if self.en_passant:
             self.en_passant = flip_coords(*self.en_passant)
-        if self.history:
-            self.history[-1].from_, self.history[-1].to = flip_coords(*self.history[-1].from_), flip_coords(*self.history[-1].to)
+        if self.moveLogs:
+            self.moveLogs[-1].from_, self.moveLogs[-1].to = flip_coords(*self.moveLogs[-1].from_), flip_coords(*self.moveLogs[-1].to)
             self.highlightedSquares = {flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
             
     def flip_board(self) -> None:
