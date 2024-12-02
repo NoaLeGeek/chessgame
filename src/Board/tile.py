@@ -1,6 +1,4 @@
 import pygame
-from Board.object import Void
-
 class Tile:
     def __init__(self, row, column, size, margin):
         self.row = row
@@ -8,11 +6,7 @@ class Tile:
         self.size = size
         self.x = column*size + margin
         self.y = row*size + margin
-        self.object = Void(row, column)
         self.highlight_color = None
-    
-    def draw(self, screen):
-        pygame.draw.rect(screen, 'black', (self.x, self.y, self.size, self.size), 1)
 
     def get_color(self):
         r, g, b = None, None, None

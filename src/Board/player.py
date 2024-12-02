@@ -16,12 +16,5 @@ class Player:
             moves += piece.get_moves(piece.row, piece.column, board)
         return moves
             
-    def get_object_from_reserve(self, column):
-        piece_type = list(self.reserve.keys())[column - 1]
-        if self.reserve[piece_type]:
-            piece = self.reserve[piece_type][0]
-            return piece
-        return None
-    
     def is_king_check(self, board, opponent):
         return (self.king.row, self.king.column) in opponent.get_moves(board)

@@ -1,11 +1,9 @@
 import pygame
 from constants import bishop_directions, rook_directions, queen_directions, knight_directions
 from utils import flip_coords, get_value
-from Board.object import Object
 
-class Piece(Object):
+class Piece():
     def __init__(self, rules, color: int, row: int, column: int, image: pygame.Surface = None) -> None:
-        super().__init__(row, column)
         self.color = color
         self.row = row
         self.column = column
@@ -71,23 +69,21 @@ class Pawn(Piece):
         x = self.color * flipped
 
         # Déplacement de base vers l'avant
-        if 0 <= row - x < board.config.rows and not board.is_occupied(row - x, column):
+        if 0 <= row - x < board.config.rows and board.is_empty(row - x, column):
             self.moves.append((row - x, column))
             # Premier déplacement du pion (2 cases vers l'avant)
-            if self.first_move and 0 <= row - 2 * x < board.config.rows and not board.is_occupied(row - 2 * x, column):
+            if self.first_move and 0 <= row - 2 * x < board.config.rows and board.is_empty(row - 2 * x, column):
                 self.moves.append((row - 2 * x, column))
 
         # Capture diagonale et en passant
         for d_row, d_col in [(-x, -1), (-x, 1)]:  # Diagonales
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if not board.is_occupied(new_row, new_col):
+                if board.is_empty(new_row, new_col):
                     continue
-                object = board.get_object(new_row, new_col)
-                if not object.is_piece():
-                    continue
+                piece = board.get_piece(new_row, new_col)
                 # Capture normale
-                if object.is_enemy(self):
+                if piece.is_enemy(self):
                     self.moves.append((new_row, new_col))
                 # Capture en passant
                 if ep_square is not None and ep_square == (new_row, new_col):
@@ -106,7 +102,7 @@ class Rook(Piece):
         for d_row, d_col in rook_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                if not board.is_occupied(row_temp, column_temp):
+                if board.is_empty(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 elif board.is_enemy(row_temp, column_temp, self):
                     self.moves.append((row_temp, column_temp))
@@ -127,7 +123,7 @@ class Bishop(Piece):
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
                 # Case non occupée
-                if not board.is_occupied(row_temp, column_temp):
+                if board.is_empty(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 # Pièce ennemie
                 elif board.is_enemy(row_temp, column_temp, self):  
@@ -150,7 +146,7 @@ class Knight(Piece):
         for d_row, d_col in knight_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if not board.is_occupied(new_row, new_col) or board.is_enemy(new_row, new_col, self):
+                if board.is_empty(new_row, new_col) or board.is_enemy(new_row, new_col, self):
                     self.moves.append((new_row, new_col))
 
 
@@ -164,7 +160,7 @@ class Queen(Piece):
         for d_row, d_col in queen_directions:
             row_temp, column_temp = row + d_row, column + d_col
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
-                if not board.is_occupied(row_temp, column_temp):  # Case non occupée
+                if board.is_empty(row_temp, column_temp):  # Case non occupée
                     self.moves.append((row_temp, column_temp))
                 elif board.is_enemy(row_temp, column_temp, self):  # Pièce ennemie
                     self.moves.append((row_temp, column_temp))
@@ -189,13 +185,10 @@ class King(Piece):
             # Empty tile
             if board.is_empty(row, column):
                 continue
-            # Not a piece
-            if not board.is_piece(row, column):
-                continue
             # Not opponent's piece
-            if board.get_object(row, column).color == board.turn:
+            if board.get_piece(row, column).color == board.turn:
                 continue
-            opponent = board.get_object(row, column)
+            opponent = board.get_piece(row, column)
             opponent.calc_moves(board, row, column, board.flipped, ep_square=board.ep_square)
             if (self.row, self.column) in opponent.moves:
                 return True
@@ -206,7 +199,7 @@ class King(Piece):
         for d_row, d_col in queen_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if not board.is_occupied(new_row, new_col) or board.is_enemy(new_row, new_col, self):
+                if board.is_empty(new_row, new_col) or board.is_enemy(new_row, new_col, self):
                     self.moves.append((new_row, new_col))
 
         # Castling
@@ -218,25 +211,17 @@ class King(Piece):
                 for i in range(flip_coords(0, flipped=d*flipped), column, d*flipped):
                     # Skip if empty square or not a piece
                     #TODO what?
-                    if not board.is_occupied(row, i) or not board.is_piece(row, i):
+                    if board.is_empty(row, i):
                         continue
                     if rooks[d] is not None:
                         rooks[d] = None
                         break
-                    piece = board.get_object(row, i)
+                    piece = board.get_piece(row, i)
                     if piece.notation == "R" and piece.first_move and piece.is_ally(self):
                         rooks[d] = i
 
             for d in [1, -1]:
                 if rooks[d] is None:
                     continue
-                if all(board[row][i] == 0 or i == rooks[d] for i in range(min(flip_coords(i, flipped=d*flipped), flip_coords(get_value(d, 2, 6), flipped=d*flipped)), column, d*flipped)):
+                if all(board.is_empty(row, i) or i == rooks[d] for i in range(min(flip_coords(i, flipped=d*flipped), flip_coords(get_value(d, 2, 6), flipped=d*flipped)), column, d*flipped)):
                     self.moves.append((row, rooks[d]))
-                    
-            
-            # rook = next((board[row][i] for i in range(column - flipped, flip_coords(-1, flipped=flipped), -flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
-            # if rook is not None and all((isinstance(board[row][i], King) and board[row][i].is_ally(board[row][column])) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(2, flipped=flipped), column, sign(column - flip_coords(2, flipped=flipped)))) and all((isinstance(board[row][i], King) and board[row][i].is_ally(board[row][column])) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(3, flipped=flipped), rook.column, sign(rook.column - flip_coords(3, flipped=flipped)))):
-            #     self.moves.append((row, rook.column))
-            # rook = next((board[row][i] for i in range(column + flipped, flip_coords(8, flipped = flipped), flipped) if isinstance(board[row][i], Rook) and board[row][i].first_move), None)
-            # if rook is not None and all((isinstance(board[row][i], King) and board[row][i].is_ally(board[row][column])) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(6, flipped=flipped), column, sign(column - flip_coords(6, flipped=flipped)))) and all((isinstance(board[row][i], King) and board[row][i].is_ally(board[row][column])) or board[row][i] == 0 or board[row][i] == rook for i in range(flip_coords(5, flipped=flipped), rook.column, sign(rook.column - flip_coords(5, flipped=flipped)))):
-            #     self.moves.append((row, rook.column))

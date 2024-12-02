@@ -2,16 +2,17 @@ from utils import flip_coords, sign, get_value, play_sound
 from Board.piece import Piece
 
 class Move:
-    def __init__(self, board, from_, to, castling=False):
+    def __init__(self, board, from_, to, castling=False, promotion=None):
         self.board = board
         self.from_ = from_
         self.to = to
-        self.piece = board.get_object(*from_)
+        self.piece = board.get_piece(*from_)
         if board.ep_square is not None and board.is_enemy(*board.ep_square, ):
-            self.capture = board.get_object(to[0] - self.piece.color*self.board.flipped, to[1])
-        elif board.is_piece(*to):
-            self.capture = board.get_object(*to)
-        self.promotion = 
+            self.capture = board.get_piece(to[0] - self.piece.color*self.board.flipped, to[1])
+        elif not board.is_empty(*to):
+            self.capture = board.get_piece(*to)
+        if self.to[0] in [0, board.rows - 1] and self.piece.notation == "P":
+            self.promotion = promotion
         self.castling = castling
         self.notation = None
 
@@ -69,7 +70,7 @@ class Move:
         return is_legal
     
     def is_castling(self) -> bool:
-        return self.piece.notation == "K" and self.capture.notation == "R" and self.get_piece().color == self.get_capture().color and self.get_piece().first_move and self.get_capture().first_move
+        return self.piece.notation == "K" and self.capture.notation == "R" and self.get_piece().is_ally(self.get_capture()) and self.get_piece().first_move and self.get_capture().first_move
         
     def __str__(self) -> str:
         row, column = self.to
