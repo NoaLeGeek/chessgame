@@ -65,7 +65,7 @@ class Pawn(Piece):
 
     def calc_moves(self, board, row: int, column: int, flipped: bool = False, **kwds) -> list[tuple[int, int]]:
         self.moves = []
-        ep_square = kwds["ep_square"] if "ep_square" in kwds else None
+        ep = kwds["ep"] if "ep" in kwds else None
         x = self.color * flipped
 
         # Déplacement de base vers l'avant
@@ -86,7 +86,7 @@ class Pawn(Piece):
                 if piece.is_enemy(self):
                     self.moves.append((new_row, new_col))
                 # Capture en passant
-                if ep_square is not None and ep_square == (new_row, new_col):
+                if ep is not None and ep == (new_row, new_col):
                     self.moves.append((new_row, new_col))
 
 
@@ -104,7 +104,7 @@ class Rook(Piece):
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
                 if board.is_empty(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
-                elif board.is_enemy(row_temp, column_temp, self):
+                elif board.get_piece(row_temp, column_temp).is_enemy(self):
                     self.moves.append((row_temp, column_temp))
                     break
                 else:
@@ -126,7 +126,7 @@ class Bishop(Piece):
                 if board.is_empty(row_temp, column_temp):
                     self.moves.append((row_temp, column_temp))
                 # Pièce ennemie
-                elif board.is_enemy(row_temp, column_temp, self):  
+                elif board.get_piece(row_temp, column_temp).is_enemy(self):  
                     self.moves.append((row_temp, column_temp))
                     break
                 # Pièce alliée
@@ -146,7 +146,7 @@ class Knight(Piece):
         for d_row, d_col in knight_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if board.is_empty(new_row, new_col) or board.is_enemy(new_row, new_col, self):
+                if board.is_empty(new_row, new_col) or board.get_piece(new_row, new_col).is_enemy(self):
                     self.moves.append((new_row, new_col))
 
 
@@ -162,7 +162,7 @@ class Queen(Piece):
             while 0 <= row_temp < board.config.rows and 0 <= column_temp < board.config.columns:
                 if board.is_empty(row_temp, column_temp):  # Case non occupée
                     self.moves.append((row_temp, column_temp))
-                elif board.is_enemy(row_temp, column_temp, self):  # Pièce ennemie
+                elif board.get_piece(row_temp, column_temp).is_enemy(self):  # Pièce ennemie
                     self.moves.append((row_temp, column_temp))
                     break
                 else:  # Pièce alliée
@@ -189,7 +189,7 @@ class King(Piece):
             if board.get_piece(row, column).color == board.turn:
                 continue
             opponent = board.get_piece(row, column)
-            opponent.calc_moves(board, row, column, board.flipped, ep_square=board.ep_square)
+            opponent.calc_moves(board, row, column, board.flipped, ep=board.ep)
             if (self.row, self.column) in opponent.moves:
                 return True
         return False
@@ -199,7 +199,7 @@ class King(Piece):
         for d_row, d_col in queen_directions:
             new_row, new_col = row + d_row, column + d_col
             if 0 <= new_row < board.config.rows and 0 <= new_col < board.config.columns:
-                if board.is_empty(new_row, new_col) or board.is_enemy(new_row, new_col, self):
+                if board.is_empty(new_row, new_col) or board.get_piece(new_row, new_col).is_enemy(self):
                     self.moves.append((new_row, new_col))
 
         # Castling

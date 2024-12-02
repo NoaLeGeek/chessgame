@@ -74,7 +74,7 @@ class Board:
                 # En passant square
                 case 3:
                     if part not in ['-', '–']:
-                        self.ep_square = (flip_coords(int(part[1]) - 1, flipped = -self.flipped), flip_coords(ord(part[0]) - 97, flipped = self.flipped))
+                        self.ep = (flip_coords(int(part[1]) - 1, flipped = -self.flipped), flip_coords(ord(part[0]) - 97, flipped = self.flipped))
                 # Half moves
                 case 4:
                     self.halfMoves = int(part)
@@ -260,7 +260,7 @@ class Board:
                     self.select_piece(row, column)
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
-            if self.is_ally(row, column, self.selected) and (row, column) != (self.selected.row, self.selected.column):
+            if not self.is_empty(row, column) and self.get_piece(row, column).is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
                 if self.selected.notation == "R" and self.get_piece(row, column).notation == "K" and (row, column) in self.selected.moves:
                     self.convert_to_move(row, column).execute()
@@ -303,7 +303,7 @@ class Board:
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
         if not self.is_empty(row, column) and self.get_piece(row, column).color == self.turn:
-            self.get_piece(row, column).calc_moves(self, row, column, self.flipped, ep_square=self.ep_square)
+            self.get_piece(row, column).calc_moves(self, row, column, self.flipped, ep=self.ep)
             self.select_piece(row, column)
 
     def draw(self, screen):
@@ -316,11 +316,11 @@ class Board:
             self.draw_promotion(screen)
         
 class FEN:
-    def __init__(self, board, turn, castling_rights, ep_square, half_move, full_move):
+    def __init__(self, board, turn, castling_rights, ep, half_move, full_move):
         self.board = board
         self.turn = turn
         self.castling_rights = castling_rights
-        self.ep_square = ep_square
+        self.ep = ep
         self.half_move = half_move
         self.full_move = full_move
     
