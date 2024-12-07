@@ -263,6 +263,7 @@ class Board:
             if not self.is_empty(row, column) and self.get_piece(row, column).is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
                 # Castling move
                 if self.selected.notation == "R" and self.get_piece(row, column).notation == "K" and (row, column) in self.selected.moves:
+                    print("bro i tried to execute")
                     self.convert_to_move(row, column).execute()
                     return
                 self.selected = None
@@ -286,14 +287,15 @@ class Board:
                     self.promote_piece(self.selected.promotion)
                     return
                 return
+            print("bro i tried to excute")
             self.convert_to_move(row, column).execute()
         else:
             # Not the player's piece
             if self.get_piece(row, column).color != self.turn:
                 return
             self.selected = self.get_piece(row, column)
-            moves = self.selected.moves
-            if self.config.rules["giveaway"] == True and any([self.convert_to_move(*move).is_capture() for move in moves]):
+            moves = [self.convert_to_move(*move) for move in self.selected.moves]
+            if self.config.rules["giveaway"] == True and any(lambda move: move.is_capture(), moves):
                 moves = list(filter(lambda move: self.convert_to_move(*move).is_capture(), moves))
             else:
                 moves = list(filter(lambda move: self.convert_to_move(*move).is_legal(), moves))
