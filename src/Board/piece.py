@@ -42,11 +42,12 @@ class Piece():
         return can_move
 
     @staticmethod
-    def notation_to_piece(notation:str):
+    def notation_to_piece(notation: str):
         return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
-            
-    def get_square_color(self):
-        return (self.row + self.column) % 2
+    
+    @staticmethod
+    def piece_to_notation(piece: "Piece"):
+        return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece.__class__]
 
     def is_ally(self, piece: "Piece") -> bool:
         return self.color == piece.color

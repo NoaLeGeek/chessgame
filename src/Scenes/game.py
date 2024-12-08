@@ -25,7 +25,7 @@ class Game(Scene):
         pass
 
     def draw_pieces(self, screen):
-        print("selected", self.board.selected, ((self.board.selected.row, self.board.selected.column) if self.board.selected else None))
+        #print("selected", self.board.selected, ((self.board.selected.row, self.board.selected.column) if self.board.selected else None))
         for tile in self.board.board.values():
             assert tile is not None, "Tile is None"
             if self.board.debug:
@@ -46,9 +46,9 @@ class Game(Scene):
                     screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
-        print("actual moves", self.board.selected.moves)
+        #print("actual moves", [move.to for move in self.board.selected.moves])
         for move in self.board.selected.moves:
-            row, column = move[0], move[1]
+            row, column = move
             transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (self.config.tile_size // 2, self.config.tile_size // 2), self.config.tile_size // 8)
             screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
