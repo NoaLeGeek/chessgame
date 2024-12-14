@@ -1,6 +1,8 @@
 # chessgame
 Config
 
+Bienami
+
 To personalize the skins from pieces, background, board or sounds, you have to click on the button then use left/right arrow key to navigate through the available skins.
 Pour personnaliser l'apparence des pièces, de l'arrière-plan, du plateau ou des sons, vous devez cliquez sur le bouton puis utilisez les flèches directionnelles gauche/droite pour naviguer à travers les apparences disponibles.
 
