@@ -1,5 +1,6 @@
 from utils import flip_coords, sign, get_value, play_sound
 from Board.piece import Piece
+from Board.fen import FEN
 
 class Move:
     def __init__(self, board, from_, to, castling=False, promotion=None):
@@ -35,7 +36,7 @@ class Move:
         if self.board.config.rules["+3_checks"] == True and self.board.is_king_checked():
             self.board.win_condition += 1
         self.notation = str(self)
-        self.fen = self.board.FEN(self.board, self.board.turn, self.board.castling, self.board.ep, self.board.halfMoves, self.board.fullMoves)
+        self.fen = FEN(self.board, self.board.turn, self.board.castling, self.board.ep, self.board.halfMoves, self.board.fullMoves)
         self.board.moveLogs.append(self)
         self.board.check_game()
 

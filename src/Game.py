@@ -356,20 +356,20 @@ class Game:
             if row < len(self.board) - 1:
                 fen += "/"
         fen += " " + ("w" if self.turn == 1 else "b")
-        castle_rights = ""
+        castling = ""
         white_king = self.get_piece(1, King)
         if white_king is not None and white_king.first_move:
             if next((self.board[white_king.row][i] for i in range(white_king.column - self.flipped, flip_coords(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[white_king.row][i], Rook) and self.board[white_king.row][i].first_move), None) is not None:
-                castle_rights += "K"
+                castling += "K"
             if next((self.board[white_king.row][i] for i in range(white_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[white_king.row][i], Rook) and self.board[white_king.row][i].first_move), None) is not None:
-                castle_rights += "Q"
+                castling += "Q"
         black_king = self.get_piece(-1, King)
         if black_king is not None and black_king.first_move:
             if next((self.board[black_king.row][i] for i in range(black_king.column - self.flipped, flip_coords(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
-                castle_rights += "k"
+                castling += "k"
             if next((self.board[black_king.row][i] for i in range(black_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
-                castle_rights += "q"
-        fen += " " + (castle_rights if castle_rights != "" else "-")
+                castling += "q"
+        fen += " " + (castling if castling != "" else "-")
         can_en_passant = bool(self.en_passant)
         if can_en_passant:
             x = ((7-2*self.en_passant[0])//3)
