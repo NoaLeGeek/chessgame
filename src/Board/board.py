@@ -3,7 +3,7 @@ import os
 from Board.tile import Tile
 from constants import castling_rook_pos
 from utils import get_position, generate_piece_images, play_sound, generate_board_image, generate_sounds, flip_coords, sign
-from Board.piece import Piece
+from Board.piece import notation_to_piece, piece_to_notation
 from Board.move import Move
 from config import Config
 from random import choice
@@ -53,7 +53,7 @@ class Board:
                                     raise ValueError("Not a valid FEN")
                                 color = 1 if char.isupper() else -1
                                 tile = Tile(r, c, self.config.tile_size, self.config.margin)
-                                tile.piece = Piece.notation_to_piece(char)(self.config.rules, color, r, c, self.piece_images[("w" if color == 1 else "b") + char.upper()])
+                                tile.piece = notation_to_piece(char)(self.config.rules, color, r, c, self.piece_images[("w" if color == 1 else "b") + char.upper()])
                                 self.board[(r, c)] = tile
                                 self.update_kings(r, c)
                                 c += 1
@@ -179,7 +179,7 @@ class Board:
                 if any([self.dict_color_pieces(color).get("K", 0) == 1 for color in [-1, 1]]):
                     return True
             case 4:
-                if all([self.dict_color_pieces(color).get("B", 0) == 1 for color in [-1, 1]]) and self.find_piece("B", 1).get_square_color() == self.find_piece("B", -1).get_square_color():
+                if all([self.dict_color_pieces(color).get("B", 0) == 1 for color in [-1, 1]]) and self.find_tile("B", 1).get_square_color() == self.find_tile("B", -1).get_square_color():
                     return True
             case _:
                 return False
@@ -187,9 +187,9 @@ class Board:
     def count_pieces(self):
         return len([piece for piece in self.board.values() if piece.piece is not None])
     
-    def find_piece(self, type, color):
+    def find_tile(self, notation, color):
         for tile in self.board.values():
-            if tile.piece is not None and tile.piece.notation == type and tile.piece.color == color:
+            if tile.piece is not None and tile.piece.notation == notation and tile.piece.color == color:
                 return tile
         return None
     
@@ -252,12 +252,18 @@ class Board:
         return [(r, c) for r, c in self.board.keys() if self.is_empty(r, c)]
     
     def move_piece(self, move: Move):
+        print("BOARD BEFORE MOVE", str(self))
         piece, row, column = move.piece, *move.to
+        print("PIECE POS BEFORE MOVE", piece.row, piece.column)
         assert not self.is_empty(piece.row, piece.column), f"There is no piece at {(piece.row, piece.column)}"
         save_tile = self.board[(piece.row, piece.column)]
+        print("SAVE TILE", save_tile.x, save_tile.y)
         del self.board[(piece.row, piece.column)]
         self.board[(row, column)] = save_tile
+        self.board[(row, column)].calc_position(self.config.margin)
+        print("AFTER SAVE TILE", self.board[(row, column)].x, self.board[(row, column)].y)
         piece.move(row, column)
+        print("PIECE POS AFTER MOVE", piece.row, piece.column)
         # Remembering the move for undo
         self.moveLogs.append(move)
         self.update_kings(row, column)
@@ -297,6 +303,7 @@ class Board:
         # Update the first_move attribute of the piece if it moved
         if piece.notation in "KRP" and piece.first_move:
             piece.first_move = False
+        print("BOARD AFTER MOVE", str(self))
 
     def select_piece(self, row, column):
         if self.selected is not None:
@@ -343,6 +350,9 @@ class Board:
                 return
             self.convert_to_move((self.selected.row, self.selected.column), (row, column)).execute()
         else:
+            # Tile is empty
+            if self.is_empty(row, column):
+                return
             # Not the player's piece
             if self.get_piece(row, column).color != self.turn:
                 return
@@ -357,6 +367,7 @@ class Board:
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
+        print("CLICK", row, column)
         if not self.is_empty(row, column) and self.get_piece(row, column).color == self.turn:
             self.get_piece(row, column).calc_moves(self, row, column, self.flipped, ep=self.ep)
         self.select_piece(row, column)
@@ -369,6 +380,68 @@ class Board:
         self.draw_reserves(screen)
         if self.promotion:
             self.draw_promotion(screen)
+
+    # FEN format
+    def __str__(self) -> str:
+        fen = ""
+        # Board
+        for row in range(self.config.rows):
+            empty_squares = 0
+            for column in range(self.config.columns):
+                piece = self.get_piece(row, column)
+                if piece is None:
+                    empty_squares += 1
+                else:
+                    if empty_squares > 0:
+                        fen += str(empty_squares)
+                        empty_squares = 0
+                    char = piece_to_notation(piece)
+                    fen += (char if piece.color == 1 else char.lower())
+            if empty_squares > 0:
+                fen += str(empty_squares)
+            if row < self.config.rows - 1:
+                fen += "/"
+        fen += " " + ("w" if self.turn == 1 else "b")
+        # Castling rights
+        castling = " "
+        for color in [1, -1]:
+            king_tile = self.find_tile("K", color)
+            if king_tile is None or not king_tile.piece.first_move:
+                continue
+            # 1 = O-O-O, -1 = O-O
+            for d in [1, -1]:
+                for i in range(flip_coords(0, flipped=d*self.flipped), column, d*self.flipped):
+                    # Skip if empty square
+                    if self.is_empty(row, i):
+                        continue
+                    piece = self.get_piece(row, i)
+                    if piece.notation == "R" and piece.first_move and piece.is_ally(king_tile.piece):
+                        # 1 = Queenside, -1 = Kingside
+                        char = ("Q" if d == 1 else "K")
+                        # White = uppercase, Black = lowercase
+                        castling += char if color == 1 else char.lower()
+                        break
+        # If no castling rights
+        if castling == " ":
+            castling += "-"
+        fen += castling
+        en_passant = " "
+        # No en passant
+        if self.ep is None:
+            en_passant += "-"
+        # Verify if there is a pawn that can be captured en passant
+        else:
+            x = 1 if self.ep[0] == 3 else -1
+            r, c = self.en_passant
+            if not any([self.get_piece(r + x, c + i).notation == "P" and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
+                en_passant += "-"
+        # En passant possible
+        if en_passant == " ":
+            en_passant += chr(97 + flip_coords(self.ep[1], flipped = self.flipped)) + str(flip_coords(self.ep[0], flipped = -self.flipped) + 1)
+        fen += en_passant
+        fen += " " + str(self.halfMoves)
+        fen += " " + str(self.fullMoves)
+        return fen
 
 class Castling:
     def __init__(self, wOO, wOOO, bOO, bOOO):

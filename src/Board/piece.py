@@ -2,6 +2,14 @@ import pygame
 from constants import bishop_directions, rook_directions, queen_directions, knight_directions
 from utils import flip_coords, get_value
 
+@staticmethod
+def notation_to_piece(notation: str):
+    return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
+    
+@staticmethod
+def piece_to_notation(piece: "Piece"):
+    return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece.__class__]
+
 class Piece():
     def __init__(self, rules, color: int, row: int, column: int, image: pygame.Surface = None) -> None:
         self.color = color
@@ -40,14 +48,6 @@ class Piece():
             del board.board[(row, column)]
         self.row, self.column = piece_row, piece_column
         return can_move
-
-    @staticmethod
-    def notation_to_piece(notation: str):
-        return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
-    
-    @staticmethod
-    def piece_to_notation(piece: "Piece"):
-        return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece.__class__]
 
     def is_ally(self, piece: "Piece") -> bool:
         return self.color == piece.color
@@ -208,10 +208,10 @@ class King(Piece):
             rooks = {1: None, -1: None}
 
             # 1 = O-O-O, -1 = O-O
+            # Find the rook(s) that can castle
             for d in [1, -1]:
                 for i in range(flip_coords(0, flipped=d*flipped), column, d*flipped):
-                    # Skip if empty square or not a piece
-                    #TODO what?
+                    # Skip if empty square
                     if board.is_empty(row, i):
                         continue
                     if rooks[d] is not None:
@@ -221,6 +221,7 @@ class King(Piece):
                     if piece.notation == "R" and piece.first_move and piece.is_ally(self):
                         rooks[d] = i
 
+            # Check if the squares between the king and the found rook(s) are empty
             for d in [1, -1]:
                 if rooks[d] is None:
                     continue

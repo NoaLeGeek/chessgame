@@ -11,6 +11,9 @@ class Tile:
     def get_square_color(self):
         return (self.row + self.column) % 2
 
+    def calc_position(self, margin):
+        self.x, self.y = self.column * self.size + margin, self.row * self.size + margin
+
     def get_color(self):
         r, g, b = None, None, None
         match self.highlight_color:
