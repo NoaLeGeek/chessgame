@@ -369,7 +369,7 @@ class Board:
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
         print("CLICK", row, column)
         if not self.is_empty(row, column) and self.get_piece(row, column).color == self.turn:
-            self.get_piece(row, column).calc_moves(self, row, column, self.flipped, ep=self.ep)
+            self.get_tile(row, column).calc_moves(self, ep=self.ep)
         self.select_piece(row, column)
 
     def draw(self, screen):

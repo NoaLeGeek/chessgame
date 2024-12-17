@@ -1,15 +1,24 @@
 import pygame
 class Tile:
-    def __init__(self, row, column, size, margin):
+    def __init__(self, board, row, column, size):
+        self.board = board
         self.row = row
         self.column = column
         self.size = size
-        self.x = column*size + margin
-        self.y = row*size + margin
+        self.calc_position(board.config.margin)
         self.highlight_color = None
+        self.piece = None
 
     def get_square_color(self):
         return (self.row + self.column) % 2
+    
+    def move(self, row: int, column: int) -> None:
+        self.row = row
+        self.column = column
+        self.calc_position(self.board.config.margin)
+
+    def calc_moves(self, **kwds):
+        self.piece.calc_moves(self.board, (self.row, self.column), **kwds)
 
     def calc_position(self, margin):
         self.x, self.y = self.column * self.size + margin, self.row * self.size + margin
