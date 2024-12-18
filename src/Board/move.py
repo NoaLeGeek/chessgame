@@ -5,7 +5,7 @@ class Move:
         self.board = board
         self.from_ = from_
         self.to = to
-        self.piece = board.get_piece(*from_)
+        self.piece = board.get_tile(*from_)
         self.capture = None
         self.promotion = None
         if board.ep is not None and not board.is_empty(*board.ep) and board.get_piece(*board.ep).is_enemy(self.piece):
@@ -57,14 +57,14 @@ class Move:
     
     def is_legal(self) -> bool:
         if not self.is_castling():
-            return self.piece.can_move(self.board, *self.to)
+            return self.piece.can_move(self.board, self.to)
         # Castling
         is_legal = True
         if self.is_castling():
             d = sign(self.to[1] - self.from_[1])
             flipped = self.board.flipped
             for next_column in range(min(flip_coords(self.to[1], flipped=d*flipped), flip_coords(get_value(d, 2, 6), flipped=d*flipped)), self.from_[1], d*flipped):
-                is_legal = is_legal and self.piece.can_move(self.from_[0], next_column)
+                is_legal = is_legal and self.piece.can_move((self.from_[0], next_column))
                 if not is_legal:
                     break
         return is_legal

@@ -203,19 +203,6 @@ class Game:
         # Update the first_move attribute of the piece if it moved
         if isinstance(piece, (King, Rook, Pawn)) and piece.first_move:
             piece.first_move = False
-
-    def is_legal(self, piece: Piece, row: int, column: int) -> bool:
-        is_legal = self.can_move(piece, row, column)
-        # Castling
-        if self.is_castling(piece, row, column):
-            if self.is_king_checked() or self.gamemode == "Giveaway":
-                return False
-            s = sign(column - piece.column)
-            for next_column in range((7 + self.flipped + get_value(s, 4, -4)) // 2, piece.column, -s):
-                is_legal = is_legal and self.can_move(piece, piece.row, next_column)
-                if not is_legal:
-                    break
-        return is_legal
     
     def count_pieces(self) -> int:
         return len(self.get_color_pieces(1)) + len(self.get_color_pieces(-1))

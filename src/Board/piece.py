@@ -16,37 +16,14 @@ class Piece():
         self.moves = []
         self.image = image
 
-    def can_move(self, board, to: tuple[int, int]) -> bool:
-        row, column = to
-        if board.config.rules["giveaway"] == True:
-            return True
-        if (self.row, self.column) == (row, column):
-            return True
-        piece_row, piece_column = self.row, self.column
-        # When called, (row, column) is empty, is occupied by a object with no hitbox or is occupied by a opponent piece
-        # Save the destination square object
-        save_tile = board.get_tile(row, column)
-        self_tile = board.get_tile(self.row, self.column)
-        # Swap the piece with the destination square
-        board.board[(row, column)] = board.board[(self.row, self.column)]
-        del board.board[(self.row, self.column)]
-        self.row, self.column = row, column
-        # Check if the king is in check after the move
-        can_move = not board.is_in_check()
-        # Restore the initial state of the board
-        board.board[(piece_row, piece_column)] = self_tile
-        board.board[(row, column)] = save_tile
-        # Delete the key if the tile was empty
-        if save_tile is None:
-            del board.board[(row, column)]
-        self.row, self.column = piece_row, piece_column
-        return can_move
-
     def is_ally(self, piece: "Piece") -> bool:
         return self.color == piece.color
     
     def is_enemy(self, piece: "Piece") -> bool:
         return not self.is_ally(piece)
+    
+    def get_pos(self):
+        return self.row, self.column
 
 class Pawn(Piece):
     def __init__(self, rules, color: int, image: pygame.Surface = None):
@@ -187,7 +164,7 @@ class King(Piece):
             if board.get_piece(row, column).color == board.turn:
                 continue
             opponent = board.get_piece(row, column)
-            opponent.calc_moves(board, row, column, board.flipped, ep=board.ep)
+            opponent.calc_moves(row, column, board.flipped, ep=board.ep)
             if (self.row, self.column) in opponent.moves:
                 return True
         return False

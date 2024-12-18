@@ -52,8 +52,8 @@ class Board:
                                 if char not in "rnbqkbnpRNBQKBNP":
                                     raise ValueError("Not a valid FEN")
                                 color = 1 if char.isupper() else -1
-                                tile = Tile(r, c, self.config.tile_size, self.config.margin)
-                                tile.piece = notation_to_piece(char)(self.config.rules, color, r, c, self.piece_images[("w" if color == 1 else "b") + char.upper()])
+                                tile = Tile(self, (r, c), self.config.tile_size)
+                                tile.piece = notation_to_piece(char)(self.config.rules, color, self.piece_images[("w" if color == 1 else "b") + char.upper()])
                                 self.board[(r, c)] = tile
                                 self.update_kings(r, c)
                                 c += 1
@@ -164,7 +164,7 @@ class Board:
             piece = self.get_piece(row, column)
             if piece.color != self.turn:
                 continue
-            piece.calc_moves(self, row, column, self.flipped, ep=self.ep)
+            piece.calc_moves(row, column, self.flipped, ep=self.ep)
             if len(list(filter(lambda move: self.convert_to_move((piece.row, piece.column), move).is_legal(), piece.moves))) != 0:
                 return False
         return True
@@ -228,28 +228,28 @@ class Board:
         self.selected = None
         self.turn *= -1
 
-    def update_kings(self, row, column):
-        piece = self.get_piece(row, column)
+    def update_kings(self, pos: tuple[int, int]) -> None:
+        piece = self.get_piece(pos)
         if piece.notation == "K":
-            self.kings[piece.color] = (row, column)
+            self.kings[piece.color] = pos
 
     def is_in_check(self):
         return self.get_piece(*self.kings[self.turn]).in_check(self)
 
-    def get_tile(self, row, column):
-        return self.board.get((row, column), None)
+    def get_tile(self, pos: tuple[int, int]):
+        return self.board.get(pos, None)
     
-    def get_piece(self, row, column):
-        if self.is_empty(row, column):
+    def get_piece(self, pos: tuple[int, int]):
+        if self.is_empty(pos):
             return None
-        return self.get_tile(row, column).piece
+        return self.get_tile(pos).piece
     
     # True = Tile has no object
-    def is_empty(self, row, column):
-        return self.get_tile(row, column) is None
+    def is_empty(self, pos: tuple[int, int]) -> bool:
+        return self.get_tile(pos) is None
     
     def get_empty_tiles(self):
-        return [(r, c) for r, c in self.board.keys() if self.is_empty(r, c)]
+        return [pos for pos in self.board.keys() if self.is_empty(pos)]
     
     def move_piece(self, move: Move):
         print("BOARD BEFORE MOVE", str(self))
@@ -369,7 +369,7 @@ class Board:
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)
         print("CLICK", row, column)
         if not self.is_empty(row, column) and self.get_piece(row, column).color == self.turn:
-            self.get_tile(row, column).calc_moves(self, ep=self.ep)
+            self.get_tile(row, column).calc_moves(ep=self.ep)
         self.select_piece(row, column)
 
     def draw(self, screen):
