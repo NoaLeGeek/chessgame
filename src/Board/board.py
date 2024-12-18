@@ -364,6 +364,25 @@ class Board:
                 moves = list(filter(lambda move: self.convert_to_move((row, column), move).is_legal(), moves))
             self.selected.moves = moves
 
+    def in_bounds(self, pos):
+        return 0 <= pos[0] < self.config.rows and 0 <= pos[1] < self.config.columns
+
+    def in_check(self):
+        if self.config.rules["giveaway"] == True:
+            return False
+        for pos in self.board.keys():
+            # Empty tile
+            if self.is_empty(pos):
+                continue
+            # Not opponent's piece
+            if self.get_piece(pos).color == self.turn:
+                continue
+            opponent_tile = self.get_tile(pos)
+            opponent_tile.calc_moves()
+            if self.kings[self.turn] in opponent_tile.piece.moves:
+                return True
+        return False
+
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
         row, column = get_position(x, y, self.config.margin, self.config.tile_size)

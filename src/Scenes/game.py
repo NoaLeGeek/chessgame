@@ -35,23 +35,21 @@ class Game(Scene):
                 screen.blit(tile.piece.image, (tile.x, tile.y))
 
     def draw_highlight(self, screen):
-        for row in range(self.config.rows):
-            for column in range(self.config.columns):
-                if self.board.is_empty(row, column):
-                    continue
-                tile = self.board.get_tile(row, column)
-                if tile.highlight_color is not None:
-                    transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
-                    transparent_surface.fill(*tile.get_color())
-                    screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
+        for pos in self.board.keys():
+            if self.board.is_empty(pos):
+                continue
+            tile = self.board.get_tile(pos)
+            if tile.highlight_color is not None:
+                transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
+                transparent_surface.fill(*tile.get_color())
+                screen.blit(transparent_surface, (pos[1] * self.config.tile_size + self.config.margin, pos[0] * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
         #print("actual moves", [move.to for move in self.board.selected.moves])
         for move in self.board.selected.moves:
-            row, column = move
             transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (self.config.tile_size // 2, self.config.tile_size // 2), self.config.tile_size // 8)
-            screen.blit(transparent_surface, (column * self.config.tile_size + self.config.margin, row * self.config.tile_size + self.config.margin))
+            screen.blit(transparent_surface, (move[1] * self.config.tile_size + self.config.margin, move[0] * self.config.tile_size + self.config.margin))
 
     def draw_promotion(self, screen):
         pygame.draw.rect(screen, WHITE, (self.promote * self.config.tile_size + self.config.margin, get_value(x, 0, 4) * self.config.tile_size + self.config.margin, self.config.tile_size, 4*self.config.tile_size))
