@@ -55,7 +55,7 @@ class Board:
                                 tile = Tile(self, (r, c), self.config.tile_size)
                                 tile.piece = notation_to_piece(char)(self.config.rules, color, self.piece_images[("w" if color == 1 else "b") + char.upper()])
                                 self.board[(r, c)] = tile
-                                self.update_kings(r, c)
+                                self.update_kings((r, c))
                                 c += 1
                 # Turn
                 case 1:
@@ -155,16 +155,16 @@ class Board:
         return False
     
     def is_checkmate(self):
-        return self.is_king_checked() and self.is_stalemate()
+        return self.is_check() and self.is_stalemate()
 
     def is_stalemate(self):
-        for row, column in self.board.keys():
-            if self.is_empty(row, column):
+        for pos in self.board.keys():
+            if self.is_empty(pos):
                 continue
-            piece = self.get_piece(row, column)
+            piece = self.get_piece(pos)
             if piece.color != self.turn:
                 continue
-            piece.calc_moves(row, column, self.flipped, ep=self.ep)
+            piece.calc_moves()
             if len(list(filter(lambda move: self.convert_to_move((piece.row, piece.column), move).is_legal(), piece.moves))) != 0:
                 return False
         return True
@@ -207,7 +207,7 @@ class Board:
         return Move(self, from_, to)
 
     def make_move(self, move):
-        capture = self.get(*move).piece
+        capture = self.get(move).piece
         self.move_piece(self.selected, move)
         if capture:
             self.capture_piece(capture)
@@ -253,115 +253,115 @@ class Board:
     
     def move_piece(self, move: Move):
         print("BOARD BEFORE MOVE", str(self))
-        piece, row, column = move.piece, *move.to
-        print("PIECE POS BEFORE MOVE", piece.row, piece.column)
-        assert not self.is_empty(piece.row, piece.column), f"There is no piece at {(piece.row, piece.column)}"
-        save_tile = self.board[(piece.row, piece.column)]
+        from_tile, to_tile = move.from_tile, move.to_tile
+        print("PIECE POS BEFORE MOVE", from_tile.pos)
+        assert not self.is_empty(from_tile.pos), f"There is no piece at {from_tile.pos}"
+        save_tile = self.board[from_tile.pos]
         print("SAVE TILE", save_tile.x, save_tile.y)
-        del self.board[(piece.row, piece.column)]
-        self.board[(row, column)] = save_tile
-        self.board[(row, column)].calc_position(self.config.margin)
-        print("AFTER SAVE TILE", self.board[(row, column)].x, self.board[(row, column)].y)
-        piece.move(row, column)
-        print("PIECE POS AFTER MOVE", piece.row, piece.column)
+        del self.board[from_tile.pos]
+        self.board[to_tile.pos] = save_tile
+        self.board[to_tile.pos].calc_position(self.config.margin)
+        print("AFTER SAVE TILE", self.board[to_tile.pos].coord)
+        from_tile.move(to_tile.pos)
+        print("PIECE POS AFTER MOVE", from_tile.pos)
         # Remembering the move for undo
         self.moveLogs.append(move)
-        self.update_kings(row, column)
+        self.update_kings(to_tile.pos)
         # Capture en passant
         if move.is_en_passant():
-            del self.board[(piece.row, column)]
+            del self.board[(from_tile.pos[0], to_tile.pos[1])]
         # Update en passant square
         self.ep = None
-        if piece.notation == "P" and abs(piece.row - row) == 2:
-            self.ep = (piece.row + piece.color, piece.column)
+        if from_tile.piece.notation == "P" and abs(from_tile.pos[0] - to_tile.pos[0]) == 2:
+            self.ep = (from_tile.pos[0] + from_tile.piece.color, from_tile.pos[1])
         # Remembering the current castling rights for undo
         self.castlingLogs.append(self.castling)
-        x = piece.color * self.flipped
+        x = from_tile.piece.color * self.flipped
         # Castling
         if move.is_castling():
-            d = sign(column - piece.column)
+            d = sign(to_tile.pos[1] - from_tile.pos[1])
             # Rook and King's positions are swapped to avoid King's deletion during some 960 castling
-            # King is now at (row, column)
+            # King is now at to_tile.pos
             # Rook is now at (row, piece.column)
-            self.board[(row, column)], self.board[(row, piece.column)] = self.board[(row, piece.column)], self.board[(row, column)]
+            self.board[to_tile.pos], self.board[(to_tile.pos[1], from_tile.pos[1])] = self.board[(to_tile.pos[1], from_tile.pos[1])], self.board[to_tile.pos]
             # Calculate the new position for the rook
             rook_column = flip_coords(castling_rook_pos[d*self.flipped], flipped=d*self.flipped)
             # piece.column hasn't updated, we can use it as the old King's pos where the rook is
-            self.get_piece(row, piece.column).move(row, rook_column)
-            self.board[(row, piece.column)], self.board[(row, rook_column)] = self.board[(row, rook_column)], self.board[(row, piece.column)]
+            self.get_tile((to_tile.pos[0], from_tile.pos[1])).move((to_tile.pos[0], rook_column))
+            self.board[(to_tile.pos[0], from_tile.pos[1])], self.board[(to_tile.pos[0], rook_column)] = self.board[(to_tile.pos[0], rook_column)], self.board[(to_tile.pos[0], from_tile.pos[1])]
             # King's pos is updated
-            self.get_piece(row, column).move(row, column)
+            self.get_tile(to_tile.pos).move(to_tile.pos)
             # Calculate the new position for the king
             column = flip_coords(castling_rook_pos[d*self.flipped]+d, flipped=d*self.flipped)
         # Remembering the en passant square for undo
         self.epLogs.append(self.ep)
-        if column != piece.column or row != piece.row:
-            if not self.is_empty(row, column):
-                del self.board[(row, column)]
-            self.board[(piece.row, piece.column)], self.board[(row, column)] = self.board[(row, column)], self.board[(piece.row, piece.column)]
-            piece.move(row, column)
+        if to_tile.pos[1] != from_tile.pos[1] or from_tile.pos[0] != to_tile.pos[0]:
+            if not self.is_empty(to_tile.pos):
+                del self.board[to_tile.pos]
+            self.board[from_tile.pos], self.board[to_tile.pos] = self.board[to_tile.pos], self.board[from_tile.pos]
+            from_tile.move(to_tile.pos)
         # Update the first_move attribute of the piece if it moved
-        if piece.notation in "KRP" and piece.first_move:
-            piece.first_move = False
+        if from_tile.piece.notation in "KRP" and from_tile.piece.first_move:
+            from_tile.piece.first_move = False
         print("BOARD AFTER MOVE", str(self))
 
-    def select_piece(self, row, column):
+    def select_piece(self, pos: tuple[int, int]):
         if self.selected is not None:
             x = self.selected.color * self.flipped
             # If in the state of promotion
             if self.selected.notation == "P" and self.promotion:
                 # User clicked in the range of promotion
-                if row in range(flip_coords(0, flipped=x), flip_coords(0, flipped=x) + x*len(self.selected.promotion), x) and column == self.promotion[1] + self.selected.column:
-                    self.promote_piece(self.selected.promotion[flip_coords(row, flipped=x)])
+                if pos[0] in range(flip_coords(0, flipped=x), flip_coords(0, flipped=x) + x*len(self.selected.promotion), x) and pos[1] == self.promotion[1] + self.selected.column:
+                    self.promote_piece(self.selected.promotion[flip_coords(pos[0], flipped=x)])
                     return
                 # User did not click in the range of promotion
                 self.promotion = False
                 # Reselect the pawn if clicked
-                if (row, column) == (self.selected.row, self.selected.column):
+                if pos == self.selected.pos:
                     self.selected = None
-                    self.select_piece(row, column)
+                    self.select_piece(pos)
                     return
             # If the player clicks on one of his pieces, it will change the selected piece
-            if not self.is_empty(row, column) and self.get_piece(row, column).is_ally(self.selected) and (row, column) != (self.selected.row, self.selected.column):
+            if not self.is_empty(pos) and self.get_piece(pos).is_ally(self.selected.piece) and pos != self.selected.pos:
                 # Castling move
-                if self.selected.notation == "R" and self.get_piece(row, column).notation == "K" and (row, column) in self.selected.moves:
-                    self.convert_to_move((self.selected.row, self.selected.column), (row, column)).execute()
+                if self.selected.notation == "R" and self.get_piece(pos).notation == "K" and pos in self.selected.moves:
+                    self.convert_to_move((self.selected.row, self.selected.column), pos).execute()
                     return
                 self.selected = None
-                self.select_piece(row, column)
+                self.select_piece(pos)
                 return
             # If the play clicks on the selected piece, the selection is removed
-            if (row, column) == (self.selected.row, self.selected.column):
+            if pos == (self.selected.row, self.selected.column):
                 self.selected = None
                 return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
-            if (row, column) not in self.selected.moves:
+            if pos not in self.selected.moves:
                 self.selected = None
-                if self.kings[self.turn] is None or self.is_in_check():
+                if self.kings[self.turn] is None or self.is_check():
                     play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
-            if self.selected.notation == "P" and row in [0, self.config.rows - 1]:
-                self.selected.move(row, column)
+            if self.selected.notation == "P" and pos[0] in [0, self.config.rows - 1]:
+                self.selected.move(pos)
                 self.promotion = True
                 if self.config.rules["giveaway"] == True:
                     self.promote_piece(self.selected.promotion)
                     return
                 return
-            self.convert_to_move((self.selected.row, self.selected.column), (row, column)).execute()
+            self.convert_to_move(self.selected.pos, pos).execute()
         else:
             # Tile is empty
-            if self.is_empty(row, column):
+            if self.is_empty(pos):
                 return
             # Not the player's piece
-            if self.get_piece(row, column).color != self.turn:
+            if self.get_piece(pos).color != self.turn:
                 return
-            self.selected = self.get_piece(row, column)
+            self.selected = self.get_tile(pos)
             moves = self.selected.moves
-            if self.config.rules["giveaway"] == True and any(lambda move: self.convert_to_move((row, column), move).is_capture(), moves):
-                moves = list(filter(lambda move: self.convert_to_move((row, column), move).is_capture(), moves))
+            if self.config.rules["giveaway"] == True and any(lambda move: self.convert_to_move(pos, move).is_capture(), moves):
+                moves = list(filter(lambda move: self.convert_to_move(pos, move).is_capture(), moves))
             else:
-                moves = list(filter(lambda move: self.convert_to_move((row, column), move).is_legal(), moves))
+                moves = list(filter(lambda move: self.convert_to_move(pos, move).is_legal(), moves))
             self.selected.moves = moves
 
     def in_bounds(self, pos):
@@ -385,11 +385,11 @@ class Board:
 
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
-        row, column = get_position(x, y, self.config.margin, self.config.tile_size)
-        print("CLICK", row, column)
-        if not self.is_empty(row, column) and self.get_piece(row, column).color == self.turn:
-            self.get_tile(row, column).calc_moves(ep=self.ep)
-        self.select_piece(row, column)
+        pos = get_position(x, y, self.config.margin, self.config.tile_size)
+        print("CLICK", pos)
+        if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
+            self.get_tile(pos).calc_moves()
+        self.select_piece(pos)
 
     def draw(self, screen):
         self.draw_tiles(screen)

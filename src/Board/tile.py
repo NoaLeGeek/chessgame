@@ -22,29 +22,28 @@ class Tile:
         self.coord = (self.pos[1] * self.size + margin, self.pos[0] * self.size + margin)
 
     def can_move(self, to: tuple[int, int]) -> bool:
-        row, column = to
         if self.board.config.rules["giveaway"] == True:
             return True
-        if (self.row, self.column) == (row, column):
+        if self.pos == to:
             return True
-        piece_row, piece_column = self.row, self.column
-        # When called, (row, column) is empty, is occupied by a object with no hitbox or is occupied by a opponent piece
+        piece_pos = self.pos
+        # When called, to is empty, is occupied by a object with no hitbox or is occupied by a opponent piece
         # Save the destination square object
-        save_tile = self.board.get_tile(row, column)
-        self_tile = self.board.get_tile(self.row, self.column)
+        save_tile = self.board.get_tile(to)
+        self_tile = self.board.get_tile(self.pos)
         # Swap the piece with the destination square
-        self.board.board[(row, column)] = self.board.board[(self.row, self.column)]
-        del self.board.board[(self.row, self.column)]
-        self.row, self.column = row, column
+        self.board.board[to] = self.board.board[self.pos]
+        del self.board.board[self.pos]
+        self.row, self.column = to
         # Check if the king is in check after the move
-        can_move = not self.board.is_in_check()
+        can_move = not self.board.in_check()
         # Restore the initial state of the board
-        self.board.board[(piece_row, piece_column)] = self_tile
-        self.board.board[(row, column)] = save_tile
+        self.board.board[piece_pos] = self_tile
+        self.board.board[to] = save_tile
         # Delete the key if the tile was empty
         if save_tile is None:
-            del self.board.board[(row, column)]
-        self.row, self.column = piece_row, piece_column
+            del self.board.board[to]
+        self.row, self.column = piece_pos
         return can_move
 
     def get_color(self):

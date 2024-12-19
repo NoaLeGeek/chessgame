@@ -21,9 +21,6 @@ class Piece():
     
     def is_enemy(self, piece: "Piece") -> bool:
         return not self.is_ally(piece)
-    
-    def get_pos(self):
-        return self.row, self.column
 
 class Pawn(Piece):
     def __init__(self, rules, color: int, image: pygame.Surface = None):
@@ -37,7 +34,6 @@ class Pawn(Piece):
     def calc_moves(self, board, from_: tuple[int, int], **kwds) -> None:
         self.moves = []
         d = self.color * board.flipped
-        ep = kwds["ep"] if "ep" in kwds else None
         # Déplacement de base vers l'avant
         if board.in_bounds((from_[0] - d, from_[1])) and board.is_empty((from_[0] - d, from_[1])):
             self.moves.append((from_[0] - d, from_[1]))
@@ -56,7 +52,7 @@ class Pawn(Piece):
                 if piece.is_enemy(self):
                     self.moves.append(new_pos)
                 # Capture en passant
-                if ep is not None and ep == new_pos:
+                if board.ep is not None and board.ep == new_pos:
                     self.moves.append(new_pos)
 
 

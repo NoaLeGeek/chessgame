@@ -32,17 +32,14 @@ class Game(Scene):
                 screen.blit(pygame.font.SysFont("monospace", 15).render(f"({tile.column},{tile.row})", 1, (0, 0, 0)), (tile.row*self.config.tile_size+35, tile.column*self.config.tile_size+60))
             if self.config.piece_asset != "blindfold":
                 assert tile.piece.image, "Piece has no image"
-                screen.blit(tile.piece.image, (tile.x, tile.y))
+                screen.blit(tile.piece.image, tile.coord)
 
     def draw_highlight(self, screen):
-        for pos in self.board.keys():
-            if self.board.is_empty(pos):
-                continue
-            tile = self.board.get_tile(pos)
+        for tile in self.board.board.values():
             if tile.highlight_color is not None:
                 transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
                 transparent_surface.fill(*tile.get_color())
-                screen.blit(transparent_surface, (pos[1] * self.config.tile_size + self.config.margin, pos[0] * self.config.tile_size + self.config.margin))
+                screen.blit(transparent_surface, (tile.pos[1] * self.config.tile_size + self.config.margin, tile.pos[0] * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
         #print("actual moves", [move.to for move in self.board.selected.moves])
