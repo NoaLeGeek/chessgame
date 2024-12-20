@@ -307,9 +307,9 @@ class Board:
 
     def select_piece(self, pos: tuple[int, int]):
         if self.selected is not None:
-            x = self.selected.color * self.flipped
+            x = self.selected.piece.color * self.flipped
             # If in the state of promotion
-            if self.selected.notation == "P" and self.promotion:
+            if self.selected.piece.notation == "P" and self.promotion:
                 # User clicked in the range of promotion
                 if pos[0] in range(flip_coords(0, flipped=x), flip_coords(0, flipped=x) + x*len(self.selected.promotion), x) and pos[1] == self.promotion[1] + self.selected.column:
                     self.promote_piece(self.selected.promotion[flip_coords(pos[0], flipped=x)])
@@ -324,24 +324,24 @@ class Board:
             # If the player clicks on one of his pieces, it will change the selected piece
             if not self.is_empty(pos) and self.get_piece(pos).is_ally(self.selected.piece) and pos != self.selected.pos:
                 # Castling move
-                if self.selected.notation == "R" and self.get_piece(pos).notation == "K" and pos in self.selected.moves:
-                    self.convert_to_move((self.selected.row, self.selected.column), pos).execute()
+                if self.selected.piece.notation == "R" and self.get_piece(pos).notation == "K" and pos in self.selected.piece.moves:
+                    self.convert_to_move(self.selected.pos, pos).execute()
                     return
                 self.selected = None
                 self.select_piece(pos)
                 return
             # If the play clicks on the selected piece, the selection is removed
-            if pos == (self.selected.row, self.selected.column):
+            if pos == self.selected.pos:
                 self.selected = None
                 return
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
-            if pos not in self.selected.moves:
+            if pos not in self.selected.piece.moves:
                 self.selected = None
                 if self.kings[self.turn] is None or self.is_check():
                     play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
-            if self.selected.notation == "P" and pos[0] in [0, self.config.rows - 1]:
+            if self.selected.piece.notation == "P" and pos[0] in [0, self.config.rows - 1]:
                 self.selected.move(pos)
                 self.promotion = True
                 if self.config.rules["giveaway"] == True:
@@ -357,12 +357,12 @@ class Board:
             if self.get_piece(pos).color != self.turn:
                 return
             self.selected = self.get_tile(pos)
-            moves = self.selected.moves
+            moves = self.selected.piece.moves
             if self.config.rules["giveaway"] == True and any(lambda move: self.convert_to_move(pos, move).is_capture(), moves):
                 moves = list(filter(lambda move: self.convert_to_move(pos, move).is_capture(), moves))
             else:
                 moves = list(filter(lambda move: self.convert_to_move(pos, move).is_legal(), moves))
-            self.selected.moves = moves
+            self.selected.piece.moves = moves
 
     def in_bounds(self, pos):
         return 0 <= pos[0] < self.config.rows and 0 <= pos[1] < self.config.columns

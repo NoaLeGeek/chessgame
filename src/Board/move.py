@@ -12,7 +12,7 @@ class Move:
             self.to_tile = board.get_tile((to_pos[0] - self.piece.color*self.board.flipped, to_pos[1]))
         elif not board.is_empty(to_pos):
             self.to_tile = board.get_tile(to_pos)
-        if self.to[0] in [0, board.config.rows - 1] and self.piece.notation == "P":
+        if self.to_pos[0] in [0, board.config.rows - 1] and self.piece.notation == "P":
             self.promotion = promotion
         self.castling = castling
         self.notation = None
