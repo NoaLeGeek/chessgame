@@ -42,8 +42,8 @@ class Game(Scene):
                 screen.blit(transparent_surface, (tile.pos[1] * self.config.tile_size + self.config.margin, tile.pos[0] * self.config.tile_size + self.config.margin))
 
     def draw_moves(self, screen):
-        #print("actual moves", [move.to for move in self.board.selected.moves])
-        for move in self.board.selected.moves:
+        #print("actual moves", [move.to for move in self.board.selected.piece.moves])
+        for move in self.board.selected.piece.moves:
             transparent_surface = pygame.Surface((self.config.tile_size, self.config.tile_size), pygame.SRCALPHA)
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (self.config.tile_size // 2, self.config.tile_size // 2), self.config.tile_size // 8)
             screen.blit(transparent_surface, (move[1] * self.config.tile_size + self.config.margin, move[0] * self.config.tile_size + self.config.margin))

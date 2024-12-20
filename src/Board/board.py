@@ -65,14 +65,14 @@ class Board:
                     # for d in [-1, 1]:
                     #     for row in 
                     # TODO doesn't work with 960
-                    if "K" not in part and self.get_piece(7, 7).notation == "R":
-                        self.get_piece(7, 7).first_move = False
-                    if "Q" not in part and self.get_piece(7, 0).notation == "R":
-                        self.get_piece(7, 0).first_move = False
-                    if "k" not in part and self.get_piece(0, 7).notation == "R":
-                        self.get_piece(0, 7).first_move = False
-                    if "q" not in part and self.get_piece(0, 0).notation == "R":
-                        self.get_piece(0, 0).first_move = False
+                    if "K" not in part and self.get_piece((7, 7)).notation == "R":
+                        self.get_piece((7, 7)).first_move = False
+                    if "Q" not in part and self.get_piece((7, 0)).notation == "R":
+                        self.get_piece((7, 0)).first_move = False
+                    if "k" not in part and self.get_piece((0, 7)).notation == "R":
+                        self.get_piece((0, 7)).first_move = False
+                    if "q" not in part and self.get_piece((0, 0)).notation == "R":
+                        self.get_piece((0, 0)).first_move = False
                 # En passant square
                 case 3:
                     if part not in ['-', '–']:
@@ -139,7 +139,7 @@ class Board:
         for i in range(len(self.moveLogs)-1, -1, -1):
             move = self.moveLogs[i]
             # Irreversible move are captures, pawn moves, castling or losing castling rights
-            if move.capture or move.piece.notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
+            if move.is_capture() or move.from_tile.piece.notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
                 last_index = i
                 break
         for i in range(last_index, len(self.moveLogs)):
@@ -155,17 +155,17 @@ class Board:
         return False
     
     def is_checkmate(self):
-        return self.is_check() and self.is_stalemate()
+        return self.in_check() and self.is_stalemate()
 
     def is_stalemate(self):
         for pos in self.board.keys():
             if self.is_empty(pos):
                 continue
-            piece = self.get_piece(pos)
-            if piece.color != self.turn:
+            tile = self.get_tile(pos)
+            if tile.piece.color != self.turn:
                 continue
-            piece.calc_moves()
-            if len(list(filter(lambda move: self.convert_to_move((piece.row, piece.column), move).is_legal(), piece.moves))) != 0:
+            tile.calc_moves()
+            if len(list(filter(lambda move: self.convert_to_move(tile.pos, move).is_legal(), tile.piece.moves))) != 0:
                 return False
         return True
     
@@ -253,53 +253,54 @@ class Board:
     
     def move_piece(self, move: Move):
         print("BOARD BEFORE MOVE", str(self))
-        from_tile, to_tile = move.from_tile, move.to_tile
+        # from_tile is never None, to_tile can be
+        from_tile, to_pos = move.from_tile, move.to_pos
         print("PIECE POS BEFORE MOVE", from_tile.pos)
         assert not self.is_empty(from_tile.pos), f"There is no piece at {from_tile.pos}"
         save_tile = self.board[from_tile.pos]
-        print("SAVE TILE", save_tile.x, save_tile.y)
+        print("SAVE TILE", save_tile.coord)
         del self.board[from_tile.pos]
-        self.board[to_tile.pos] = save_tile
-        self.board[to_tile.pos].calc_position(self.config.margin)
-        print("AFTER SAVE TILE", self.board[to_tile.pos].coord)
-        from_tile.move(to_tile.pos)
+        self.board[to_pos] = save_tile
+        self.board[to_pos].calc_position(self.config.margin)
+        print("AFTER SAVE TILE", self.board[to_pos].coord)
+        from_tile.move(to_pos)
         print("PIECE POS AFTER MOVE", from_tile.pos)
         # Remembering the move for undo
         self.moveLogs.append(move)
-        self.update_kings(to_tile.pos)
+        self.update_kings(to_pos)
         # Capture en passant
         if move.is_en_passant():
-            del self.board[(from_tile.pos[0], to_tile.pos[1])]
+            del self.board[(from_tile.pos[0], to_pos[1])]
         # Update en passant square
         self.ep = None
-        if from_tile.piece.notation == "P" and abs(from_tile.pos[0] - to_tile.pos[0]) == 2:
+        if from_tile.piece.notation == "P" and abs(from_tile.pos[0] - to_pos[0]) == 2:
             self.ep = (from_tile.pos[0] + from_tile.piece.color, from_tile.pos[1])
         # Remembering the current castling rights for undo
         self.castlingLogs.append(self.castling)
         x = from_tile.piece.color * self.flipped
         # Castling
         if move.is_castling():
-            d = sign(to_tile.pos[1] - from_tile.pos[1])
+            d = sign(to_pos[1] - from_tile.pos[1])
             # Rook and King's positions are swapped to avoid King's deletion during some 960 castling
             # King is now at to_tile.pos
             # Rook is now at (row, piece.column)
-            self.board[to_tile.pos], self.board[(to_tile.pos[1], from_tile.pos[1])] = self.board[(to_tile.pos[1], from_tile.pos[1])], self.board[to_tile.pos]
+            self.board[to_pos], self.board[(to_pos[1], from_tile.pos[1])] = self.board[(to_pos[1], from_tile.pos[1])], self.board[to_pos]
             # Calculate the new position for the rook
             rook_column = flip_coords(castling_rook_pos[d*self.flipped], flipped=d*self.flipped)
             # piece.column hasn't updated, we can use it as the old King's pos where the rook is
-            self.get_tile((to_tile.pos[0], from_tile.pos[1])).move((to_tile.pos[0], rook_column))
-            self.board[(to_tile.pos[0], from_tile.pos[1])], self.board[(to_tile.pos[0], rook_column)] = self.board[(to_tile.pos[0], rook_column)], self.board[(to_tile.pos[0], from_tile.pos[1])]
+            self.get_tile((to_pos[0], from_tile.pos[1])).move((to_pos[0], rook_column))
+            self.board[(to_pos[0], from_tile.pos[1])], self.board[(to_pos[0], rook_column)] = self.board[(to_pos[0], rook_column)], self.board[(to_pos[0], from_tile.pos[1])]
             # King's pos is updated
-            self.get_tile(to_tile.pos).move(to_tile.pos)
+            self.get_tile(to_pos).move(to_pos)
             # Calculate the new position for the king
             column = flip_coords(castling_rook_pos[d*self.flipped]+d, flipped=d*self.flipped)
         # Remembering the en passant square for undo
         self.epLogs.append(self.ep)
-        if to_tile.pos[1] != from_tile.pos[1] or from_tile.pos[0] != to_tile.pos[0]:
-            if not self.is_empty(to_tile.pos):
-                del self.board[to_tile.pos]
-            self.board[from_tile.pos], self.board[to_tile.pos] = self.board[to_tile.pos], self.board[from_tile.pos]
-            from_tile.move(to_tile.pos)
+        """if to_pos[1] != from_tile.pos[1] or from_tile.pos[0] != to_pos[0]:
+            if not self.is_empty(to_pos):
+                del self.board[to_pos]
+            self.board[from_tile.pos], self.board[to_pos] = self.board[to_pos], self.board[from_tile.pos]
+            from_tile.move(to_pos)"""
         # Update the first_move attribute of the piece if it moved
         if from_tile.piece.notation in "KRP" and from_tile.piece.first_move:
             from_tile.piece.first_move = False
@@ -337,7 +338,7 @@ class Board:
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
             if pos not in self.selected.piece.moves:
                 self.selected = None
-                if self.kings[self.turn] is None or self.is_check():
+                if self.kings[self.turn] is None or self.in_check():
                     play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
@@ -407,7 +408,7 @@ class Board:
         for row in range(self.config.rows):
             empty_squares = 0
             for column in range(self.config.columns):
-                piece = self.get_piece(row, column)
+                piece = self.get_piece((row, column))
                 if piece is None:
                     empty_squares += 1
                 else:
@@ -431,9 +432,9 @@ class Board:
             for d in [1, -1]:
                 for i in range(flip_coords(0, flipped=d*self.flipped), column, d*self.flipped):
                     # Skip if empty square
-                    if self.is_empty(row, i):
+                    if self.is_empty((row, i)):
                         continue
-                    piece = self.get_piece(row, i)
+                    piece = self.get_piece((row, i))
                     if piece.notation == "R" and piece.first_move and piece.is_ally(king_tile.piece):
                         # 1 = Queenside, -1 = Kingside
                         char = ("Q" if d == 1 else "K")
