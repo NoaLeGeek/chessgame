@@ -28,8 +28,6 @@ class Game(Scene):
         #print("selected", self.board.selected, ((self.board.selected.row, self.board.selected.column) if self.board.selected else None))
         for tile in self.board.board.values():
             assert tile is not None, "Tile is None"
-            if self.board.debug:
-                screen.blit(pygame.font.SysFont("monospace", 15).render(f"({tile.column},{tile.row})", 1, (0, 0, 0)), (tile.row*self.config.tile_size+35, tile.column*self.config.tile_size+60))
             if self.config.piece_asset != "blindfold":
                 assert tile.piece.image, "Piece has no image"
                 screen.blit(tile.piece.image, tile.coord)

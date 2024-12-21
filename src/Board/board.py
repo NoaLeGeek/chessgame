@@ -2,7 +2,7 @@ import pygame
 import os
 from Board.tile import Tile
 from constants import castling_rook_pos
-from utils import get_position, generate_piece_images, play_sound, generate_board_image, generate_sounds, flip_coords, sign
+from utils import get_position, generate_piece_images, generate_board_image, generate_sounds, flip_coords, sign
 from Board.piece import notation_to_piece, piece_to_notation
 from Board.move import Move
 from config import Config
@@ -33,7 +33,6 @@ class Board:
             self.win_condition = 0
         self.piece_images = generate_piece_images(self.config.piece_asset, self.config.tile_size)
         #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
-        self.debug = False
         self.create_board()
 
     def create_board(self):
@@ -83,7 +82,7 @@ class Board:
                 # Full moves
                 case 5:
                     self.fullMoves = int(part)
-        play_sound(self.sounds, "game-start")         
+        self.play_sound("game-start")         
 
     def generate_960_row(self, parts):
         last_row = [None]*len(self.config.columns)
@@ -106,7 +105,7 @@ class Board:
         return parts
     
     def check_game(self) -> None:
-        if self.config.rules["king_of_the_hill"] == True and any([not self.is_empty(*center) and self.get_piece(*center).notation == "K" for center in self.get_center()]):
+        if self.config.rules["king_of_the_hill"] == True and any([not self.is_empty(center) and self.get_piece(center).notation == "K" for center in self.get_center()]):
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             self.game_over = True
         elif self.config.rules["+3_checks"] == True and self.win_condition >= 3:
@@ -131,7 +130,7 @@ class Board:
             self.game_over = True
             print("Draw by threesold repetition")
         if self.game_over:
-            play_sound("game-end")
+            self.play_sound("game-end")
 
     def is_threesold_repetition(self):
         last_index = 0
@@ -251,30 +250,36 @@ class Board:
     def get_empty_tiles(self):
         return [pos for pos in self.board.keys() if self.is_empty(pos)]
     
+    def play_sound(self, type: str):
+        assert type in self.sounds, f"Sound {type} not found"
+        self.sounds[type].play()
+    
     def move_piece(self, move: Move):
         print("BOARD BEFORE MOVE", str(self))
         # from_tile is never None, to_tile can be
         from_tile, to_pos = move.from_tile, move.to_pos
         print("PIECE POS BEFORE MOVE", from_tile.pos)
+        print("TO POS", to_pos)
         assert not self.is_empty(from_tile.pos), f"There is no piece at {from_tile.pos}"
+        # Capture en passant
+        if move.is_en_passant():
+            print("IM DOING EN PASSANT")
+            del self.board[(from_tile.pos[0], to_pos[1])]
+        # Update en passant square
+        self.ep = None
+        if from_tile.piece.notation == "P" and abs(from_tile.pos[0] - to_pos[0]) == 2:
+            self.ep = (from_tile.pos[0] - from_tile.piece.color, from_tile.pos[1])
         save_tile = self.board[from_tile.pos]
         print("SAVE TILE", save_tile.coord)
         del self.board[from_tile.pos]
         self.board[to_pos] = save_tile
-        self.board[to_pos].calc_position(self.config.margin)
+        self.board[to_pos].calc_position()
         print("AFTER SAVE TILE", self.board[to_pos].coord)
         from_tile.move(to_pos)
         print("PIECE POS AFTER MOVE", from_tile.pos)
         # Remembering the move for undo
         self.moveLogs.append(move)
         self.update_kings(to_pos)
-        # Capture en passant
-        if move.is_en_passant():
-            del self.board[(from_tile.pos[0], to_pos[1])]
-        # Update en passant square
-        self.ep = None
-        if from_tile.piece.notation == "P" and abs(from_tile.pos[0] - to_pos[0]) == 2:
-            self.ep = (from_tile.pos[0] + from_tile.piece.color, from_tile.pos[1])
         # Remembering the current castling rights for undo
         self.castlingLogs.append(self.castling)
         x = from_tile.piece.color * self.flipped
@@ -339,7 +344,7 @@ class Board:
             if pos not in self.selected.piece.moves:
                 self.selected = None
                 if self.kings[self.turn] is None or self.in_check():
-                    play_sound("illegal")
+                    self.play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
             if self.selected.piece.notation == "P" and pos[0] in [0, self.config.rows - 1]:
@@ -365,7 +370,7 @@ class Board:
                 moves = list(filter(lambda move: self.convert_to_move(pos, move).is_legal(), moves))
             self.selected.piece.moves = moves
 
-    def in_bounds(self, pos):
+    def in_bounds(self, pos: tuple[int, int]) -> bool:
         return 0 <= pos[0] < self.config.rows and 0 <= pos[1] < self.config.columns
 
     def in_check(self):
@@ -392,14 +397,14 @@ class Board:
             self.get_tile(pos).calc_moves()
         self.select_piece(pos)
 
-    def draw(self, screen):
+    """def draw(self, screen):
         self.draw_tiles(screen)
         self.draw_pieces(screen)
         if self.selected:
             self.draw_moves(screen)
         self.draw_reserves(screen)
         if self.promotion:
-            self.draw_promotion(screen)
+            self.draw_promotion(screen)"""
 
     # FEN format
     def __str__(self) -> str:
@@ -452,8 +457,8 @@ class Board:
         # Verify if there is a pawn that can be captured en passant
         else:
             x = 1 if self.ep[0] == 3 else -1
-            r, c = self.en_passant
-            if not any([self.get_piece(r + x, c + i).notation == "P" and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
+            r, c = self.ep
+            if not any([not self.is_empty((r + x, c + i)) and self.get_piece((r + x, c + i)).notation == "P" and self.get_piece((r + x, c + i)).color == x*self.flipped for i in [-1, 1]]):
                 en_passant += "-"
         # En passant possible
         if en_passant == " ":

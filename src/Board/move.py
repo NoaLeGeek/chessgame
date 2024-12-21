@@ -1,4 +1,4 @@
-from utils import flip_coords, sign, get_value, play_sound
+from utils import flip_coords, sign, get_value
 
 class Move:
     def __init__(self, board, from_pos, to_pos, castling=False, promotion=None):
@@ -8,8 +8,8 @@ class Move:
         self.from_tile = board.get_tile(from_pos)
         self.to_tile = None
         self.promotion = None
-        if board.ep is not None and not board.is_empty(board.ep) and board.get_piece(board.ep).is_enemy(self.from_tile.piece):
-            self.to_tile = board.get_tile((to_pos[0] - self.from_tile.piece.color*self.board.flipped, to_pos[1]))
+        if board.ep is not None and not board.is_empty((from_pos[0], to_pos[1])) and board.get_piece((from_pos[0], to_pos[1])).is_enemy(self.from_tile.piece):
+            self.to_tile = board.get_tile((from_pos[0], to_pos[1]))
         elif not board.is_empty(to_pos):
             self.to_tile = board.get_tile(to_pos)
         if self.to_pos[0] in [0, board.config.rows - 1] and self.from_tile.piece.notation == "P":
@@ -37,20 +37,20 @@ class Move:
         self.fen = str(self.board)
         self.board.check_game()
 
-    def play_sound(self) -> None:
+    def play_sound_move(self) -> None:
         if self.is_castling():
-            play_sound("castle")
+            self.board.play_sound("castle")
         elif self.board.config.rules["giveaway"] == False and self.board.in_check():
-            play_sound("move-check")
+            self.board.play_sound("move-check")
         elif self.promotion is not None:
-            play_sound("promote")
+            self.board.play_sound("promote")
         elif self.is_capture():
-            play_sound("capture")
+            self.board.play_sound("capture")
         else:
             if self.board.turn * self.board.flipped == 1:
-                play_sound("move-self")
+                self.board.play_sound("move-self")
             else:
-                play_sound("move-opponent")
+                self.board.play_sound("move-opponent")
 
     def is_capture(self) -> bool:
         return self.to_tile is not None

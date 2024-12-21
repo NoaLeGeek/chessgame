@@ -56,7 +56,3 @@ def generate_sounds(asset:str):
         name = os.path.splitext(sound)[0]
         sounds[name] = load_sound(filepath)
     return sounds
-
-def play_sound(sounds, type: str):
-    assert type in sounds, f"Sound {type} not found"
-    sounds[type].play()

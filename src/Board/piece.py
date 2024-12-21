@@ -44,16 +44,17 @@ class Pawn(Piece):
         # Capture diagonale et en passant
         for d_pos in [(-d, -1), (-d, 1)]:  # Diagonales
             new_pos = (from_[0] + d_pos[0], from_[1] + d_pos[1])
-            if board.in_bounds(new_pos):
-                if board.is_empty(new_pos):
-                    continue
-                piece = board.get_piece(new_pos)
-                # Capture normale
-                if piece.is_enemy(self):
-                    self.moves.append(new_pos)
-                # Capture en passant
-                if board.ep is not None and board.ep == new_pos:
-                    self.moves.append(new_pos)
+            if not board.in_bounds(new_pos):
+                continue
+            # En passant
+            if board.ep == new_pos and not board.is_empty((from_[0], from_[1] + d_pos[1])) and board.get_piece((from_[0], from_[1] + d_pos[1])).is_enemy(self):
+                self.moves.append(new_pos)
+            # Capture normale 
+            if board.is_empty(new_pos):
+                continue
+            piece = board.get_piece(new_pos)
+            if piece.is_enemy(self):
+                self.moves.append(new_pos)
 
 
 class Rook(Piece):

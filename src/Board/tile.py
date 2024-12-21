@@ -4,7 +4,7 @@ class Tile:
         self.board = board
         self.pos = pos
         self.size = size
-        self.calc_position(board.config.margin)
+        self.calc_position()
         self.highlight_color = None
         self.piece = None
 
@@ -13,13 +13,13 @@ class Tile:
     
     def move(self, pos: tuple[int, int]) -> None:
         self.pos = pos
-        self.calc_position(self.board.config.margin)
+        self.calc_position()
 
     def calc_moves(self, **kwds):
         self.piece.calc_moves(self.board, self.pos, **kwds)
 
-    def calc_position(self, margin):
-        self.coord = (self.pos[1] * self.size + margin, self.pos[0] * self.size + margin)
+    def calc_position(self):
+        self.coord = (self.pos[1] * self.size + self.board.config.margin, self.pos[0] * self.size + self.board.config.margin)
 
     def can_move(self, to: tuple[int, int]) -> bool:
         if self.board.config.rules["giveaway"] == True:
