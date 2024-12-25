@@ -1,8 +1,7 @@
 import pygame
 from Scenes.scene import Scene, SceneManager
 from Board.board import Board
-from utils import left_click
-from Board.piece import Piece
+from utils import left_click, right_click, get_position, get_color
 from constants import WHITE
 from config import config
 
@@ -11,6 +10,7 @@ class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
         self.board = Board()
+        self.highlighted_squares = {}
         self.game_over = False
 
     def render(self, screen:pygame.Surface):
@@ -34,11 +34,10 @@ class Game(Scene):
                 screen.blit(tile.piece.image, tile.coord)
 
     def draw_highlight(self, screen):
-        for tile in self.board.board.values():
-            if tile.highlight_color is not None:
-                transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
-                transparent_surface.fill(*tile.get_color())
-                screen.blit(transparent_surface, (tile.pos[1] * config.tile_size + config.margin, tile.pos[0] * config.tile_size + config.margin))
+        for pos, highlight_color in self.highlighted_squares.items():
+            transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
+            transparent_surface.fill(get_color(highlight_color))
+            screen.blit(transparent_surface, (pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin))
 
     def draw_moves(self, screen):
         #print("actual moves", [move.to for move in self.board.selected.piece.moves])
@@ -52,12 +51,34 @@ class Game(Scene):
         screen.blit(self.piece_images[self.turn]['+'+self.selected.notation], (self.selected.column*config.tile_size+config.margin, (self.selected.row+1)*config.tile_size+config.margin))
         screen.blit(self.selected.image, (self.selected.column*config.tile_size+config.margin, (self.selected.row+2)*config.tile_size+config.margin))
 
+    def handle_left_click(self):
+        pos = get_position(pygame.mouse.get_pos())
+        print("LEFT CLICK", pos)
+        self.highlighted_squares = {}
+        if self.board.in_bounds(pos) and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
+            self.board.get_tile(pos).calc_moves(self.board)
+        self.board.select_piece(pos)
+
+    def handle_right_click(self):
+        pos = get_position(pygame.mouse.get_pos())
+        print("RIGHT CLICK", pos)
+        if self.board.in_bounds(pos):
+            self.selected = None
+            keys = pygame.key.get_pressed()
+            highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
+            if self.highlighted_squares.get(pos) != highlight:
+                self.highlighted_squares[pos] = highlight
+            else:
+                self.highlighted_squares.pop(pos, None)
+
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :
             if left_click():
-                self.board.handle_left_click()
+                self.handle_left_click()
+            elif right_click():
+                self.handle_right_click()
         elif event.type == pygame.KEYDOWN :
             if event.key == pygame.K_r :
-                self.board = Board(config.rows)
+                self.board = Board()
             if event.key == pygame.K_ESCAPE :
                 self.manager.go_back()

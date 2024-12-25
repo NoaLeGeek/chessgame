@@ -1,7 +1,7 @@
 import pygame
 import config
 
-from Game import Game
+from GameWish import Game
 from GUI import draw_background, draw_settings
 from constants import *
 from Menu import MAIN_MENU, GAMEMODE_MENU, menus, SETTINGS_MENU, FEN_LABEL, MOVE_LABEL

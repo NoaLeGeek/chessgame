@@ -1,8 +1,8 @@
 import pygame
 import os
 from Board.tile import Tile
-from constants import castling_rook_pos
-from utils import get_position, generate_piece_images, generate_board_image, generate_sounds, flip_coords, sign
+from constants import castling_rook_pos, en_passant_row
+from utils import generate_piece_images, generate_board_image, generate_sounds, flip_coords, sign
 from Board.piece import notation_to_piece, piece_to_notation
 from Board.move import Move
 from random import choice
@@ -368,14 +368,6 @@ class Board:
                 return True
         return False
 
-    def handle_left_click(self):
-        x, y = pygame.mouse.get_pos()
-        pos = get_position(x, y)
-        print("CLICK", pos)
-        if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
-            self.get_tile(pos).calc_moves(self)
-        self.select_piece(pos)
-
     """def draw(self, screen):
         self.draw_tiles(screen)
         self.draw_pieces(screen)
@@ -435,9 +427,10 @@ class Board:
             en_passant += "-"
         # Verify if there is a pawn that can be captured en passant
         else:
-            x = 1 if self.ep[0] == 3 else -1
+            # No need to flip the en passant row because it's the same for each board orientation
+            d = en_passant_row[self.ep[0]]
             r, c = self.ep
-            if not any([not self.is_empty((r + x, c + i)) and self.get_piece((r + x, c + i)).notation == "P" and self.get_piece((r + x, c + i)).color == x*self.flipped for i in [-1, 1]]):
+            if not any([not self.is_empty((r + d, c + i)) and self.get_piece((r + d, c + i)).notation == "P" and self.get_piece((r + d, c + i)).color == d*self.flipped for i in [-1, 1]]):
                 en_passant += "-"
         # En passant possible
         if en_passant == " ":

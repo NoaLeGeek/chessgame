@@ -17,7 +17,8 @@ def right_click() -> bool:
 def get_value(flipped: bool, white_value: int, black_value: int) -> int:
     return white_value if flipped == 1 else black_value
 
-def get_position(x: int, y: int) -> tuple[int, int]:
+def get_position(coord: tuple[int, int]) -> tuple[int, int]:
+    x, y = coord
     return (y - config.margin) // config.tile_size, (x - config.margin) // config.tile_size
 
 def flip_coords(*args, **kwds) -> tuple[int, int] | int:
@@ -55,3 +56,26 @@ def generate_sounds():
         name = os.path.splitext(sound)[0]
         sounds[name] = load_sound(filepath)
     return sounds
+
+def get_color(highlight_color):
+    r, g, b, a = None, None, None, None
+    match highlight_color:
+        # Right click
+        case 0:
+            r, g, b, a = 255, 0, 0, 75
+        # Shift + Right click
+        case 1:
+            r, g, b, a = 0, 255, 0, 75
+        # Ctrl + Right click
+        case 2:
+            r, g, b, a = 255, 165, 0, 75
+        # History move
+        case 3:
+            r, g, b, a = 255, 255, 0, 75
+        # Selected piece
+        case 4:
+            r, g, b, a = 0, 255, 255, 75
+        # Void
+        case None:
+            r, g, b, a = 0, 0, 0, 0
+    return r, g, b, a

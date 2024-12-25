@@ -10,6 +10,7 @@ rook_directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 queen_directions = bishop_directions + rook_directions
 # 1 is O-O-O and -1 is O-O
 castling_rook_pos = {1: 6, -1: 2}
+en_passant_row = {2: 1, 5: -1}
 
 ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "0": 0}
 rowsToRanks = {v: k for k, v in ranksToRows.items()}
