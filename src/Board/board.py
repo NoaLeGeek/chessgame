@@ -365,9 +365,7 @@ class Board:
                 continue
             tile.calc_moves(self)
             if self.kings[self.turn] in tile.piece.moves:
-                print("KING CHECKED AT", self.kings[self.turn])
                 return True
-        print("KING NOT CHECKED AT", self.kings[self.turn])
         return False
 
     def handle_left_click(self):
