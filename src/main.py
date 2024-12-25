@@ -1,6 +1,6 @@
 import pygame
 from Scenes.scene import SceneManager
-from config import Config
+from config import config
 from Scenes.menu import MainMenu
 from utils import generate_background_image
 
@@ -8,13 +8,12 @@ def main():
     pygame.init()
     pygame.display.set_caption("Chesspy")
     pygame.mixer.init()
-    config = Config()
     config.set_dimensions(*pygame.display.get_desktop_sizes()[0])
     pygame.mixer.music.set_volume(config.volume)
     screen = pygame.display.set_mode((config.width, config.height))
     clock = pygame.time.Clock()
-    manager = SceneManager(generate_background_image(config.background_asset, (config.width, config.height)))
-    manager.set(MainMenu(manager, config))
+    manager = SceneManager(generate_background_image())
+    manager.set(MainMenu(manager))
     run = True
     while run:
         manager.render(screen)

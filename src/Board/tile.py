@@ -1,9 +1,9 @@
 import pygame
+from config import config
+
 class Tile:
-    def __init__(self, board, pos: tuple[int, int], size):
-        self.board = board
+    def __init__(self, pos: tuple[int, int]):
         self.pos = pos
-        self.size = size
         self.calc_position()
         self.highlight_color = None
         self.piece = None
@@ -15,35 +15,39 @@ class Tile:
         self.pos = pos
         self.calc_position()
 
-    def calc_moves(self, **kwds):
-        self.piece.calc_moves(self.board, self.pos, **kwds)
+    def calc_moves(self, board, **kwds):
+        self.piece.calc_moves(board, self.pos, **kwds)
 
     def calc_position(self):
-        self.coord = (self.pos[1] * self.size + self.board.config.margin, self.pos[0] * self.size + self.board.config.margin)
+        self.coord = (self.pos[1] * config.tile_size + config.margin, self.pos[0] * config.tile_size + config.margin)
 
-    def can_move(self, to: tuple[int, int]) -> bool:
-        if self.board.config.rules["giveaway"] == True:
+    def can_move(self, board, to: tuple[int, int]) -> bool:
+        if config.rules["giveaway"] == True:
             return True
         if self.pos == to:
             return True
         piece_pos = self.pos
         # When called, to is empty, is occupied by a object with no hitbox or is occupied by a opponent piece
         # Save the destination square object
-        save_tile = self.board.get_tile(to)
-        self_tile = self.board.get_tile(self.pos)
+        save_tile = board.get_tile(to)
+        self_tile = board.get_tile(self.pos)
         # Swap the piece with the destination square
-        self.board.board[to] = self.board.board[self.pos]
-        del self.board.board[self.pos]
-        self.row, self.column = to
+        board.board[to] = board.board[self.pos]
+        del board.board[self.pos]
+        self.pos = to
+        if self.piece.notation == "K":
+            board.kings[self.piece.color] = to
         # Check if the king is in check after the move
-        can_move = not self.board.in_check()
+        can_move = not board.is_king_checked()
         # Restore the initial state of the board
-        self.board.board[piece_pos] = self_tile
-        self.board.board[to] = save_tile
+        board.board[piece_pos] = self_tile
+        board.board[to] = save_tile
         # Delete the key if the tile was empty
         if save_tile is None:
-            del self.board.board[to]
-        self.row, self.column = piece_pos
+            del board.board[to]
+        self.pos = piece_pos
+        if self.piece.notation == "K":
+            board.kings[self.piece.color] = piece_pos
         return can_move
 
     def get_color(self):

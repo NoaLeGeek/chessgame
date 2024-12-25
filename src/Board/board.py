@@ -5,16 +5,16 @@ from constants import castling_rook_pos
 from utils import get_position, generate_piece_images, generate_board_image, generate_sounds, flip_coords, sign
 from Board.piece import notation_to_piece, piece_to_notation
 from Board.move import Move
-from config import Config
 from random import choice
+from config import config
 
 class Board:
-    def __init__(self, config: Config, size: int):
-        self.config = config
-        self.image = generate_board_image(self.config.board_asset, self.config.tile_size)
-        self.sounds = generate_sounds(self.config.sound_asset)
+    def __init__(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"):
+        # Keys are (row, column) tuples and values are Tile() objects
+        self.board = {}
+        self.image = generate_board_image()
+        self.sounds = generate_sounds()
         self.sounds.update({name: pygame.mixer.Sound(os.path.join("assets", "sounds", f"{name}.ogg")) for name in ['illegal', 'notify', 'tenseconds']})
-        self.size = size
         self.selected = None
         self.turn = 1
         self.winner = None
@@ -29,14 +29,11 @@ class Board:
         self.castling = Castling(True, True, True, True)
         self.castlingLogs = []
         self.game_over = False
-        if self.config.rules["+3_checks"] == True:
-            self.win_condition = 0
-        self.piece_images = generate_piece_images(self.config.piece_asset, self.config.tile_size)
+        self.piece_images = generate_piece_images()
         #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
-        self.create_board()
+        self.create_board(fen)
 
-    def create_board(self):
-        fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq – 0 1"
+    def create_board(self, fen: str) -> None:
         self.board = {}
         for i, part in enumerate(fen.split()):
             match i:
@@ -51,8 +48,8 @@ class Board:
                                 if char not in "rnbqkbnpRNBQKBNP":
                                     raise ValueError("Not a valid FEN")
                                 color = 1 if char.isupper() else -1
-                                tile = Tile(self, (r, c), self.config.tile_size)
-                                tile.piece = notation_to_piece(char)(self.config.rules, color, self.piece_images[("w" if color == 1 else "b") + char.upper()])
+                                tile = Tile((r, c))
+                                tile.piece = notation_to_piece(char)(color, self.piece_images[("w" if color == 1 else "b") + char.upper()])
                                 self.board[(r, c)] = tile
                                 self.update_kings((r, c))
                                 c += 1
@@ -85,11 +82,11 @@ class Board:
         self.play_sound("game-start")         
 
     def generate_960_row(self, parts):
-        last_row = [None]*len(self.config.columns)
+        last_row = [None]*len(config.columns)
         for index, piece in enumerate(["B", "B", "N", "N", "Q", "R", "K", "R"]):
             # Bishops
             if index < 2:
-                last_row[choice(range(index, self.config.columns, 2))] = piece
+                last_row[choice(range(index, config.columns, 2))] = piece
             # Knights and Queen
             elif index < 5:
                 last_row[choice([i for i, val in enumerate(last_row) if val is None])] = piece
@@ -105,21 +102,14 @@ class Board:
         return parts
     
     def check_game(self) -> None:
-        if self.config.rules["king_of_the_hill"] == True and any([not self.is_empty(center) and self.get_piece(center).notation == "K" for center in self.get_center()]):
-            print("{} Wins".format("Black" if self.turn == 1 else "White"))
-            self.game_over = True
-        elif self.config.rules["+3_checks"] == True and self.win_condition >= 3:
-            print("{} Wins".format("Black" if self.turn == 1 else "White"))
-            self.game_over = True
-        elif self.config.rules["giveaway"] == True and (any([self.dict_color_pieces(color) == dict() for color in [1, -1]]) or self.is_stalemate()):
-            print("{} Wins".format("Black" if self.turn == -1 else "White"))
-            self.game_over = True
-        elif self.config.rules["giveaway"] == False and self.is_checkmate():
-            print("{} Wins".format("Black" if self.turn == 1 else "White"))
-            self.game_over = True
-        elif self.is_stalemate():
-            print("Stalemate")
-            self.game_over = True
+        if self.is_stalemate():
+            if self.is_king_checked():
+                print("{} Wins".format("Black" if self.turn == 1 else "White"))
+                self.game_over = True
+            else:
+                print("Stalemate")
+                print("CHECK?", self.is_king_checked())
+                self.game_over = True
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
             self.game_over = True
@@ -135,7 +125,7 @@ class Board:
     def is_threesold_repetition(self):
         last_index = 0
         # TODO maybe make this a global variable to avoid recalculating it
-        for i in range(len(self.moveLogs)-1, -1, -1):
+        for i in range(len(self.moveLogs) - 1, -1, -1):
             move = self.moveLogs[i]
             # Irreversible move are captures, pawn moves, castling or losing castling rights
             if move.is_capture() or move.from_tile.piece.notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
@@ -152,18 +142,16 @@ class Board:
                     if count == 3:
                         return True
         return False
-    
-    def is_checkmate(self):
-        return self.in_check() and self.is_stalemate()
 
     def is_stalemate(self):
-        for pos in self.board.keys():
+        # We have to copy the keys because .is_legal() will modify the keys and "RuntimeError: dictionary changed size during iteration" will be raised
+        for pos in list(self.board.keys()).copy():
             if self.is_empty(pos):
                 continue
             tile = self.get_tile(pos)
             if tile.piece.color != self.turn:
                 continue
-            tile.calc_moves()
+            tile.calc_moves(self)
             if len(list(filter(lambda move: self.convert_to_move(tile.pos, move).is_legal(), tile.piece.moves))) != 0:
                 return False
         return True
@@ -198,9 +186,6 @@ class Board:
             if piece.piece is not None and piece.piece.color == color:
                 groups[piece.piece.notation] = groups.get(piece.piece.notation, 0) + 1
         return groups
-
-    def get_center(self):
-        return [(i, j) for i in range((self.config.rows-1)//2, (self.config.rows//2)+1) for j in range((self.config.columns-1)//2, (self.config.columns//2)+1)]
     
     def convert_to_move(self, from_, to):
         return Move(self, from_, to)
@@ -218,7 +203,7 @@ class Board:
     
     def promote_piece(self, type_piece):
         new_piece = type_piece(self.selected.color, self.selected.row, self.selected.column)
-        if self.config.piece_asset != "blindfold":
+        if config.piece_asset != "blindfold":
             new_piece.image = self.piece_images[new_piece.notation]
         self.board[(self.selected.row, self.selected.column)].piece = new_piece
         self.promotion = False
@@ -232,9 +217,6 @@ class Board:
         if piece.notation == "K":
             self.kings[piece.color] = pos
 
-    def is_in_check(self):
-        return self.get_piece(*self.kings[self.turn]).in_check(self)
-
     def get_tile(self, pos: tuple[int, int]):
         return self.board.get(pos, None)
     
@@ -243,7 +225,7 @@ class Board:
             return None
         return self.get_tile(pos).piece
     
-    # True = Tile has no object
+    # True = No tile at pos in board
     def is_empty(self, pos: tuple[int, int]) -> bool:
         return self.get_tile(pos) is None
     
@@ -280,6 +262,7 @@ class Board:
         # Remembering the move for undo
         self.moveLogs.append(move)
         self.update_kings(to_pos)
+        print("KINGS", self.kings)
         # Remembering the current castling rights for undo
         self.castlingLogs.append(self.castling)
         x = from_tile.piece.color * self.flipped
@@ -343,14 +326,14 @@ class Board:
             # If the player clicks on a square where the selected piece can't move, it will remove the selection
             if pos not in self.selected.piece.moves:
                 self.selected = None
-                if self.kings[self.turn] is None or self.in_check():
+                if self.kings[self.turn] is None or self.is_king_checked():
                     self.play_sound("illegal")
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
-            if self.selected.piece.notation == "P" and pos[0] in [0, self.config.rows - 1]:
+            if self.selected.piece.notation == "P" and pos[0] in [0, config.rows - 1]:
                 self.selected.move(pos)
                 self.promotion = True
-                if self.config.rules["giveaway"] == True:
+                if config.rules["giveaway"] == True:
                     self.promote_piece(self.selected.promotion)
                     return
                 return
@@ -364,37 +347,35 @@ class Board:
                 return
             self.selected = self.get_tile(pos)
             moves = self.selected.piece.moves
-            if self.config.rules["giveaway"] == True and any(lambda move: self.convert_to_move(pos, move).is_capture(), moves):
+            if config.rules["giveaway"] == True and any(lambda move: self.convert_to_move(pos, move).is_capture(), moves):
                 moves = list(filter(lambda move: self.convert_to_move(pos, move).is_capture(), moves))
             else:
                 moves = list(filter(lambda move: self.convert_to_move(pos, move).is_legal(), moves))
             self.selected.piece.moves = moves
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
-        return 0 <= pos[0] < self.config.rows and 0 <= pos[1] < self.config.columns
+        return 0 <= pos[0] < config.rows and 0 <= pos[1] < config.columns
 
-    def in_check(self):
-        if self.config.rules["giveaway"] == True:
+    def is_king_checked(self):
+        if config.rules["giveaway"] == True:
             return False
-        for pos in self.board.keys():
-            # Empty tile
-            if self.is_empty(pos):
-                continue
+        for tile in self.board.values():
             # Not opponent's piece
-            if self.get_piece(pos).color == self.turn:
+            if tile.piece.color == self.turn:
                 continue
-            opponent_tile = self.get_tile(pos)
-            opponent_tile.calc_moves()
-            if self.kings[self.turn] in opponent_tile.piece.moves:
+            tile.calc_moves(self)
+            if self.kings[self.turn] in tile.piece.moves:
+                print("KING CHECKED AT", self.kings[self.turn])
                 return True
+        print("KING NOT CHECKED AT", self.kings[self.turn])
         return False
 
     def handle_left_click(self):
         x, y = pygame.mouse.get_pos()
-        pos = get_position(x, y, self.config.margin, self.config.tile_size)
+        pos = get_position(x, y)
         print("CLICK", pos)
         if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
-            self.get_tile(pos).calc_moves()
+            self.get_tile(pos).calc_moves(self)
         self.select_piece(pos)
 
     """def draw(self, screen):
@@ -410,9 +391,9 @@ class Board:
     def __str__(self) -> str:
         fen = ""
         # Board
-        for row in range(self.config.rows):
+        for row in range(config.rows):
             empty_squares = 0
-            for column in range(self.config.columns):
+            for column in range(config.columns):
                 piece = self.get_piece((row, column))
                 if piece is None:
                     empty_squares += 1
@@ -424,7 +405,7 @@ class Board:
                     fen += (char if piece.color == 1 else char.lower())
             if empty_squares > 0:
                 fen += str(empty_squares)
-            if row < self.config.rows - 1:
+            if row < config.rows - 1:
                 fen += "/"
         fen += " " + ("w" if self.turn == 1 else "b")
         # Castling rights

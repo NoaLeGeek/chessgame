@@ -1,4 +1,5 @@
 from utils import flip_coords, sign, get_value
+from config import config
 
 class Move:
     def __init__(self, board, from_pos, to_pos, castling=False, promotion=None):
@@ -12,7 +13,7 @@ class Move:
             self.to_tile = board.get_tile((from_pos[0], to_pos[1]))
         elif not board.is_empty(to_pos):
             self.to_tile = board.get_tile(to_pos)
-        if self.to_pos[0] in [0, board.config.rows - 1] and self.from_tile.piece.notation == "P":
+        if self.to_pos[0] in [0, config.rows - 1] and self.from_tile.piece.notation == "P":
             self.promotion = promotion
         self.castling = castling
         self.notation = None
@@ -31,7 +32,7 @@ class Move:
         # Reset halfMoves if it's a capture or a pawn move
         if self.is_capture() or self.from_tile.piece.notation == "P":
             self.board.halfMoves = 0
-        if self.board.config.rules["+3_checks"] == True and self.board.in_check():
+        if config.rules["+3_checks"] == True and self.board.is_king_checked():
             self.board.win_condition += 1
         self.notation = str(self)
         self.fen = str(self.board)
@@ -40,7 +41,7 @@ class Move:
     def play_sound_move(self) -> None:
         if self.is_castling():
             self.board.play_sound("castle")
-        elif self.board.config.rules["giveaway"] == False and self.board.in_check():
+        elif config.rules["giveaway"] == False and self.board.is_king_checked():
             self.board.play_sound("move-check")
         elif self.promotion is not None:
             self.board.play_sound("promote")
@@ -57,14 +58,17 @@ class Move:
     
     def is_legal(self) -> bool:
         if not self.is_castling():
-            return self.from_tile.can_move(self.to_pos)
+            if self.from_tile.piece.notation == "K":
+                print(f"KING VERIFYING MOVE AT {self.from_pos} TO {self.to_pos}") 
+            return self.from_tile.can_move(self.board, self.to_pos)
+        print("BRO I THOUGHT IM CASTLING")
         # Castling
         is_legal = True
         if self.is_castling():
             d = sign(self.to_pos[1] - self.from_pos[1])
             flipped = self.board.flipped
             for next_column in range(min(flip_coords(self.to_pos[1], flipped=d*flipped), flip_coords(get_value(d, 2, 6), flipped=d*flipped)), self.from_pos[1], d*flipped):
-                is_legal = is_legal and self.from_tile.can_move((self.from_pos[0], next_column))
+                is_legal = is_legal and self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
                 if not is_legal:
                     break
         return is_legal
@@ -98,8 +102,8 @@ class Move:
             if self.promotion is not None:
                 string += "=" + self.promotion.notation
         # Add # if it's checkmate or + if it's a check
-        if self.board.in_check():
-            if self.board.is_checkmate():
+        if self.board.is_king_checked():
+            if self.board.is_stalemate():
                 string += "#"
             else:
                 string += "+"

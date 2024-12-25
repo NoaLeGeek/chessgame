@@ -1,6 +1,7 @@
 import pygame
 from constants import bishop_directions, rook_directions, queen_directions, knight_directions
 from utils import flip_coords, get_value
+from config import config
 
 @staticmethod
 def notation_to_piece(notation: str):
@@ -11,7 +12,7 @@ def piece_to_notation(piece: "Piece"):
     return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece.__class__]
 
 class Piece():
-    def __init__(self, rules, color: int, image: pygame.Surface = None) -> None:
+    def __init__(self, color: int, image: pygame.Surface = None) -> None:
         self.color = color
         self.moves = []
         self.image = image
@@ -23,11 +24,11 @@ class Piece():
         return not self.is_ally(piece)
 
 class Pawn(Piece):
-    def __init__(self, rules, color: int, image: pygame.Surface = None):
-        super().__init__(rules, color, image)
+    def __init__(self, color: int, image: pygame.Surface = None):
+        super().__init__(color, image)
         self.notation = 'P'
-        if rules["no_promotion"] == False:
-            self.promotion = (Queen, Rook, Bishop, Knight) if rules["giveaway"] == True else King
+        if config.rules["no_promotion"] == False:
+            self.promotion = (Queen, Rook, Bishop, Knight) if config.rules["giveaway"] == True else King
         # Indicates whether the pawn has moved or not
         self.first_move = True
 
@@ -58,8 +59,8 @@ class Pawn(Piece):
 
 
 class Rook(Piece):
-    def __init__(self, rules, color: int, image: pygame.Surface = None):
-        super().__init__(rules, color, image)
+    def __init__(self, color: int, image: pygame.Surface = None):
+        super().__init__(color, image)
         self.notation = 'R'
         # Indicates whether the rook has moved or not
         self.first_move = True
@@ -79,8 +80,8 @@ class Rook(Piece):
                 new_pos = (new_pos[0] + d_pos[0], new_pos[1] + d_pos[1])
 
 class Bishop(Piece):
-    def __init__(self, rules, color: int, image: pygame.Surface = None):
-        super().__init__(rules, color, image)
+    def __init__(self,  color: int, image: pygame.Surface = None):
+        super().__init__( color, image)
         self.notation = 'B'
 
     def calc_moves(self, board, from_: tuple[int, int], **kwds) -> None:
@@ -99,8 +100,8 @@ class Bishop(Piece):
 
 
 class Knight(Piece):
-    def __init__(self, rules, color: int, image: pygame.Surface = None):
-        super().__init__(rules, color, image)
+    def __init__(self,  color: int, image: pygame.Surface = None):
+        super().__init__( color, image)
         self.notation = 'N'
 
     def calc_moves(self, board, from_: tuple[int, int], **kwds) -> None:
@@ -113,8 +114,8 @@ class Knight(Piece):
 
 
 class Queen(Piece):
-    def __init__(self, rules, color: int, image: pygame.Surface = None):
-        super().__init__(rules, color, image)
+    def __init__(self,  color: int, image: pygame.Surface = None):
+        super().__init__( color, image)
         self.notation = 'Q'
 
     def calc_moves(self, board, from_: tuple[int, int], **kwds) -> None:
@@ -133,8 +134,8 @@ class Queen(Piece):
 
     
 class King(Piece):
-    def __init__(self, rules, color: int, image: pygame.Surface = None):
-        super().__init__(rules, color, image)
+    def __init__(self,  color: int, image: pygame.Surface = None):
+        super().__init__( color, image)
         self.notation = 'K'
         # Indicates whether the king has moved or not
         self.first_move = True
@@ -147,7 +148,7 @@ class King(Piece):
                 self.moves.append(new_pos)
 
         # Castling
-        if self.first_move and board.config.rules["no_castling"] == False and board.config.rules["giveaway"] == False and not board.in_check():
+        if self.first_move and config.rules["no_castling"] == False and config.rules["giveaway"] == False and not board.is_king_checked():
             rooks = {1: None, -1: None}
 
             # 1 = O-O-O, -1 = O-O

@@ -101,7 +101,7 @@ class Game:
         elif self.gamemode == "Giveaway" and (any([self.dict_color_pieces(color) == dict() for color in [1, -1]]) or self.is_stalemate()):
             print("{} Wins".format("Black" if self.turn == -1 else "White"))
             self.game_over = True
-        elif self.gamemode != "Giveaway" and self.is_checkmate():
+        elif self.gamemode != "Giveaway" and self.is_checkmate("check_game()"):
             print("{} Wins".format("Black" if self.turn == 1 else "White"))
             self.game_over = True
         elif self.is_stalemate():

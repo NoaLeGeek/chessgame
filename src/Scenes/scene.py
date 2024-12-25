@@ -1,10 +1,9 @@
 import pygame
-from config import Config
+from config import config
 
 class Scene():
-    def __init__(self, manager, config:Config, buttons=[], labels=[]):
+    def __init__(self, manager, buttons=[], labels=[]):
         self.manager = manager
-        self.config = config
         self.buttons = buttons
         self.labels = labels
         self.enter()
