@@ -1,5 +1,6 @@
 import pygame
 from config import config
+from utils import flip_pos
 
 class Tile:
     def __init__(self, pos: tuple[int, int]):
@@ -20,6 +21,10 @@ class Tile:
 
     def calc_position(self):
         self.coord = (self.pos[1] * config.tile_size + config.margin, self.pos[0] * config.tile_size + config.margin)
+
+    def flip(self):
+        self.pos = flip_pos(self.pos)
+        self.calc_position()
 
     def can_move(self, board, to: tuple[int, int]) -> bool:
         if config.rules["giveaway"] == True:

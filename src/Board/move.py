@@ -1,4 +1,4 @@
-from utils import flip_coords, sign, get_value
+from utils import flip_pos, sign, get_value
 from config import config
 
 class Move:
@@ -6,14 +6,14 @@ class Move:
         self.board = board
         self.from_pos = from_pos
         self.to_pos = to_pos
-        self.from_tile = board.get_tile(from_pos)
-        self.to_tile = None
+        self.piece_tile = board.get_tile(from_pos)
+        self.capture_tile = None
         self.promotion = None
-        if board.ep is not None and not board.is_empty((from_pos[0], to_pos[1])) and board.get_piece((from_pos[0], to_pos[1])).is_enemy(self.from_tile.piece):
-            self.to_tile = board.get_tile((from_pos[0], to_pos[1]))
+        if board.ep is not None and not board.is_empty((from_pos[0], to_pos[1])) and board.get_piece((from_pos[0], to_pos[1])).is_enemy(self.piece_tile.piece):
+            self.capture_tile = board.get_tile((from_pos[0], to_pos[1]))
         elif not board.is_empty(to_pos):
-            self.to_tile = board.get_tile(to_pos)
-        if self.to_pos[0] in [0, config.rows - 1] and self.from_tile.piece.notation == "P":
+            self.capture_tile = board.get_tile(to_pos)
+        if self.to_pos[0] in [0, config.rows - 1] and self.piece_tile.piece.notation == "P":
             self.promotion = promotion
         self.castling = castling
         self.notation = None
@@ -26,15 +26,16 @@ class Move:
         # TODO attention à ça quand draw_highlight
         # Modify the final column of the king if it's a castling move
         """ if self.is_castling():
-            self.to = (row, flip_coords(get_value(d, 2, 6), flipped=d*flipped))) """
+            self.to = (row, flip_pos(get_value(d, 2, 6), flipped=d*flipped))) """
         self.board.change_turn()
         self.board.selected = None
         # Reset halfMoves if it's a capture or a pawn move
-        if self.is_capture() or self.from_tile.piece.notation == "P":
+        if self.is_capture() or self.piece_tile.piece.notation == "P":
             self.board.halfMoves = 0
         if config.rules["+3_checks"] == True and self.board.is_king_checked():
             self.board.win_condition += 1
         self.notation = str(self)
+        # This is the board state after the move
         self.fen = str(self.board)
         self.board.check_game()
 
@@ -54,30 +55,42 @@ class Move:
                 self.board.play_sound("move-opponent")
 
     def is_capture(self) -> bool:
-        return self.to_tile is not None
+        return self.capture_tile is not None
     
     def is_legal(self) -> bool:
         if not self.is_castling():
-            if self.from_tile.piece.notation == "K":
+            if self.piece_tile.piece.notation == "K":
                 print(f"KING VERIFYING MOVE AT {self.from_pos} TO {self.to_pos}") 
-            return self.from_tile.can_move(self.board, self.to_pos)
+            return self.piece_tile.can_move(self.board, self.to_pos)
         print("BRO I THOUGHT IM CASTLING")
         # Castling
         is_legal = True
         if self.is_castling():
             d = sign(self.to_pos[1] - self.from_pos[1])
             flipped = self.board.flipped
-            for next_column in range(min(flip_coords(self.to_pos[1], flipped=d*flipped), flip_coords(get_value(d, 2, 6), flipped=d*flipped)), self.from_pos[1], d*flipped):
-                is_legal = is_legal and self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
+            for next_column in range(min(flip_pos(self.to_pos[1], flipped=d*flipped), flip_pos(get_value(d, 2, 6), flipped=d*flipped)), self.from_pos[1], d*flipped):
+                is_legal = is_legal and self.piece_tile.can_move(self.board, (self.from_pos[0], next_column))
                 if not is_legal:
                     break
         return is_legal
     
     def is_castling(self) -> bool:
-        return self.from_tile.piece.notation == "K" and self.is_capture() and self.to_tile.piece.notation == "R" and self.from_tile.piece.is_ally(self.to_tile.piece) and self.from_tile.piece.first_move and self.to_tile.piece.first_move
+        if not self.is_capture() or self.capture_tile.piece.notation != "R" or self.piece_tile.piece.notation != "K" or self.piece_tile.piece.is_enemy(self.capture_tile.piece):
+            return False
+        if self.piece_tile.piece.color == 1:
+            if self.capture_tile.pos[1] < self.piece_tile.pos[1] and not self.board.castling.wOOO:
+                return False
+            elif self.capture_tile.pos[1] > self.piece_tile.pos[1] and not self.board.castling.wOO:
+                return False
+        elif self.piece_tile.piece.color == -1:
+            if self.capture_tile.pos[1] < self.piece_tile.pos[1] and not self.board.castling.bOOO:
+                return False
+            elif self.capture_tile.pos[1] > self.piece_tile.pos[1] and not self.board.castling.bOO:
+                return False
+        return True
     
     def is_en_passant(self) -> bool:
-        return self.from_tile.piece.notation == "P" and self.is_capture() and self.board.ep is not None and self.to_pos == self.board.ep
+        return self.piece_tile.piece.notation == "P" and self.is_capture() and self.capture_tile.pos != self.to_pos and self.board.ep is not None and self.to_pos == self.board.ep
         
     def __str__(self) -> str:
         string = ""
@@ -87,17 +100,17 @@ class Move:
         else:
             if self.is_capture():
                 # Add the symbol of the piece
-                if self.from_tile.piece.notation != "P":
-                    string += self.from_tile.piece.notation
+                if self.piece_tile.piece.notation != "P":
+                    string += self.piece_tile.piece.notation
                 # Add the starting column if it's a pawn
                 else:
-                    string += chr(flip_coords(self.from_pos[1], flipped = self.board.flipped) + 97)
+                    string += chr(flip_pos(self.from_pos[1], flipped = self.board.flipped) + 97)
                 # Add x if it's a capture
                 string += "x"
             # Add the destination's column
-            string += chr(flip_coords(self.to_pos[1], flipped = self.board.flipped) + 97)
+            string += chr(flip_pos(self.to_pos[1], flipped = self.board.flipped) + 97)
             # Add the destination's row
-            string += str(flip_coords(self.to_pos[0], flipped = -self.board.flipped) + 1)
+            string += str(flip_pos(self.to_pos[0], flipped = -self.board.flipped) + 1)
             # Add promotion
             if self.promotion is not None:
                 string += "=" + self.promotion.notation

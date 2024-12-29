@@ -1,4 +1,4 @@
-from constants import config, window, sign, flip_coords, get_value
+from constants import config, window, sign, flip_pos, get_value
 from Config import play_sound
 from GUI import draw_highlightedSquares, draw_pieces, draw_moves, draw_promotion, draw_board
 from random import choice
@@ -59,7 +59,7 @@ class Game:
                         self.board[0][0].first_move = False
                 case 3:
                     if parts[part] not in ['-', '–']:
-                        self.en_passant = (flip_coords(int(parts[part][1]) - 1, flipped = -self.flipped), flip_coords(ord(parts[part][0]) - 97, flipped = self.flipped))
+                        self.en_passant = (flip_pos(int(parts[part][1]) - 1, flipped = -self.flipped), flip_pos(ord(parts[part][0]) - 97, flipped = self.flipped))
                 case 4:
                     self.halfMoves = int(parts[part])
                 case 5:
@@ -230,7 +230,7 @@ class Game:
                 # Promote the pawn
                 if row in range(get_value(x, 0, 4), get_value(x, 4, 8)) and column == self.promotion[1] + self.selected.column:
                     promotion_row = get_value(x, 0, 7)
-                    self.execute_move(promotion_row, column, [Queen, Knight, Rook, Bishop][flip_coords(row, flipped=x)](self.selected.color, promotion_row, column))
+                    self.execute_move(promotion_row, column, [Queen, Knight, Rook, Bishop][flip_pos(row, flipped=x)](self.selected.color, promotion_row, column))
                     self.promotion = None
                     return
                 # Remove the promotion
@@ -300,17 +300,17 @@ class Game:
         self.flipped *= -1
         self.selected, self.legal_moves, self.promotion = None, [], None
         if self.en_passant:
-            self.en_passant = flip_coords(*self.en_passant)
+            self.en_passant = flip_pos(*self.en_passant)
         if self.moveLogs:
-            self.moveLogs[-1].from_, self.moveLogs[-1].to = flip_coords(*self.moveLogs[-1].from_), flip_coords(*self.moveLogs[-1].to)
-            self.highlightedSquares = {flip_coords(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
+            self.moveLogs[-1].from_, self.moveLogs[-1].to = flip_pos(*self.moveLogs[-1].from_), flip_pos(*self.moveLogs[-1].to)
+            self.highlightedSquares = {flip_pos(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
             
     def flip_board(self) -> None:
         for row in range(len(self.board)):
             for column in range(len(self.board[row])):
                 piece = self.board[row][column]
                 if piece != 0:
-                    piece.piece_move(*flip_coords(piece.row, piece.column))
+                    piece.piece_move(*flip_pos(piece.row, piece.column))
         for row in self.board:
             row.reverse()
         self.board.reverse()
@@ -346,15 +346,15 @@ class Game:
         castling = ""
         white_king = self.get_piece(1, King)
         if white_king is not None and white_king.first_move:
-            if next((self.board[white_king.row][i] for i in range(white_king.column - self.flipped, flip_coords(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[white_king.row][i], Rook) and self.board[white_king.row][i].first_move), None) is not None:
+            if next((self.board[white_king.row][i] for i in range(white_king.column - self.flipped, flip_pos(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[white_king.row][i], Rook) and self.board[white_king.row][i].first_move), None) is not None:
                 castling += "K"
-            if next((self.board[white_king.row][i] for i in range(white_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[white_king.row][i], Rook) and self.board[white_king.row][i].first_move), None) is not None:
+            if next((self.board[white_king.row][i] for i in range(white_king.column + self.flipped, flip_pos(8, flipped = self.flipped), self.flipped) if isinstance(self.board[white_king.row][i], Rook) and self.board[white_king.row][i].first_move), None) is not None:
                 castling += "Q"
         black_king = self.get_piece(-1, King)
         if black_king is not None and black_king.first_move:
-            if next((self.board[black_king.row][i] for i in range(black_king.column - self.flipped, flip_coords(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
+            if next((self.board[black_king.row][i] for i in range(black_king.column - self.flipped, flip_pos(-1, flipped=self.flipped), -self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
                 castling += "k"
-            if next((self.board[black_king.row][i] for i in range(black_king.column + self.flipped, flip_coords(8, flipped = self.flipped), self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
+            if next((self.board[black_king.row][i] for i in range(black_king.column + self.flipped, flip_pos(8, flipped = self.flipped), self.flipped) if isinstance(self.board[black_king.row][i], Rook) and self.board[black_king.row][i].first_move), None) is not None:
                 castling += "q"
         fen += " " + (castling if castling != "" else "-")
         can_en_passant = bool(self.en_passant)
@@ -363,7 +363,7 @@ class Game:
             r, c = self.en_passant
             if not any([-1 < row + i < len(self.board) and isinstance(self.board[r + x][c + i], Pawn) and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
                 can_en_passant = False
-        fen += " " + (chr(97 + flip_coords(self.en_passant[1], flipped = self.flipped)) + str(flip_coords(self.en_passant[0], flipped = -self.flipped) + 1) if can_en_passant else "-")
+        fen += " " + (chr(97 + flip_pos(self.en_passant[1], flipped = self.flipped)) + str(flip_pos(self.en_passant[0], flipped = -self.flipped) + 1) if can_en_passant else "-")
         fen += " " + str(self.halfMoves)
         fen += " " + str(self.fullMoves)
         return fen

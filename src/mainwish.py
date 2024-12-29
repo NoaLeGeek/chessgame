@@ -113,13 +113,13 @@ def main():
                                             config.selected_config = config_type
                             case "game":
                                 if not game.game_over:
-                                    row, column = get_position(*pygame.mouse.get_pos())
+                                    row, column = get_pos(*pygame.mouse.get_pos())
                                     if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
                                         game.select(row, column)
                                 game.highlightedSquares = {}
                     elif right_click():
                         if config["state"] == "game":
-                            row, column = get_position(*pygame.mouse.get_pos())
+                            row, column = get_pos(*pygame.mouse.get_pos())
                             if 0 <= row < len(game.board) and 0 <= column < len(game.board[row]):
                                 game.selected, game.legal_moves, keys = None, [], pygame.key.get_pressed()
                                 highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2

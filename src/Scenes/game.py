@@ -1,7 +1,7 @@
 import pygame
 from Scenes.scene import Scene, SceneManager
 from Board.board import Board
-from utils import left_click, right_click, get_position, get_color
+from utils import left_click, right_click, get_pos, get_color, flip_pos
 from constants import WHITE
 from config import config
 
@@ -9,7 +9,8 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        self.board = Board()
+        castling_fen = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
+        self.board = Board(castling_fen)
         self.highlighted_squares = {}
         self.game_over = False
 
@@ -52,7 +53,7 @@ class Game(Scene):
         screen.blit(self.selected.image, (self.selected.column*config.tile_size+config.margin, (self.selected.row+2)*config.tile_size+config.margin))
 
     def handle_left_click(self):
-        pos = get_position(pygame.mouse.get_pos())
+        pos = get_pos(pygame.mouse.get_pos())
         print("LEFT CLICK", pos)
         self.highlighted_squares = {}
         if self.board.in_bounds(pos) and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
@@ -60,7 +61,7 @@ class Game(Scene):
         self.board.select_piece(pos)
 
     def handle_right_click(self):
-        pos = get_position(pygame.mouse.get_pos())
+        pos = get_pos(pygame.mouse.get_pos())
         print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
             self.selected = None
@@ -82,3 +83,6 @@ class Game(Scene):
                 self.board = Board()
             if event.key == pygame.K_ESCAPE :
                 self.manager.go_back()
+            if event.key == pygame.K_f:
+                self.board.flip_board()
+                self.highlighted_squares = {flip_pos(pos): value for pos, value in self.highlighted_squares.items()}

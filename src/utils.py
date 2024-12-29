@@ -14,16 +14,26 @@ def left_click() -> bool:
 def right_click() -> bool:
     return bool(pygame.mouse.get_pressed()[2])
 
-def get_value(flipped: bool, white_value: int, black_value: int) -> int:
-    return white_value if flipped == 1 else black_value
+def get_value(flipped: int, white_value: int, black_value: int) -> int:
+    assert flipped in (-1, 1), "flipped must be -1 or 1, not " + str(flipped)
+    if flipped == 1:
+        return white_value
+    elif flipped == -1:
+        return black_value
 
-def get_position(coord: tuple[int, int]) -> tuple[int, int]:
+def get_pos(coord: tuple[int, int]) -> tuple[int, int]:
     x, y = coord
     return (y - config.margin) // config.tile_size, (x - config.margin) // config.tile_size
 
-def flip_coords(*args, **kwds) -> tuple[int, int] | int:
-    coords = [get_value(kwds["flipped"], arg, 7 - arg) for arg in args] if kwds else tuple([7 - arg for arg in args])
-    return coords[0] if len(coords) == 1 else coords
+def flip_pos(pos: tuple[int, int] | int, flipped: int = -1) -> tuple[int, int] | int:
+    # No flip if flipped = 1
+    # Flip if flipped = -1
+    if isinstance(pos, int):
+        pos = (pos,)
+    flipped_pos = [get_value(flipped, arg, 7 - arg) for arg in pos]
+    if len(flipped_pos) == 1:
+        return flipped_pos[0]
+    return tuple(flipped_pos)
 
 def load_image(path: str, size: tuple[int, int] = None):
     image = pygame.image.load(path)
