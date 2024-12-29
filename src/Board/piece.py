@@ -1,6 +1,6 @@
 import pygame
-from constants import bishop_directions, rook_directions, queen_directions, knight_directions
-from utils import flip_pos, get_value
+from constants import bishop_directions, rook_directions, queen_directions, knight_directions, castling_king_column
+from utils import flip_pos
 from config import config
 
 @staticmethod
@@ -143,23 +143,16 @@ class King(Piece):
         # Castling
         if not board.is_king_checked():
             rooks = {1: None, -1: None}
-            # 1 = O-O-O, -1 = O-O
-            print("CALCULATING CASTLING")
+            # -1 = O-O-O, 1 = O-O
             # Calculate possible castling
             possible_castling = []
-            if self.color == 1:
-                if board.castling.wOOO:
-                    possible_castling.append(1)
-                if board.castling.wOO:
-                    possible_castling.append(-1)
-            elif self.color == -1:
-                if board.castling.bOOO:
-                    possible_castling.append(1)
-                if board.castling.bOO:
-                    possible_castling.append(-1)
+            if board.castling[self.color][1]:
+                possible_castling.append(1)
+            if board.castling[self.color][-1]:
+                possible_castling.append(-1)
             # Find the rook(s) that can castle
             for d in possible_castling:
-                for i in range(flip_pos(0, flipped=d*board.flipped), from_pos[1], d*board.flipped):
+                for i in range(flip_pos(0, flipped=-d*board.flipped), from_pos[1], -d*board.flipped):
                     # Skip if empty square
                     if board.is_empty((from_pos[0], i)):
                         continue
@@ -173,5 +166,5 @@ class King(Piece):
             for d in possible_castling:
                 if rooks[d] is None:
                     continue
-                if all(board.is_empty((from_pos[0], i)) or i == rooks[d] for i in range(min(flip_pos(i, flipped=d*board.flipped), flip_pos(get_value(d, 2, 6), flipped=d*board.flipped)), from_pos[1], d*board.flipped)):
+                if all(board.is_empty((from_pos[0], i)) or i == rooks[d] for i in range(min(flip_pos(i, flipped=-d*board.flipped), flip_pos(castling_king_column[d], flipped=-d*board.flipped)), from_pos[1], -d*board.flipped)):
                     self.moves.append((from_pos[0], rooks[d]))

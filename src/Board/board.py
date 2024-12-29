@@ -26,7 +26,10 @@ class Board:
         self.fullMoves = 1
         self.flipped = 1
         self.kings = {1: None, -1: None}
-        self.castling = Castling(True, True, True, True)
+        # Castling rights
+        # 1 = White, -1 = Black
+        # 1 = King side O-O, -1 = Queen side O-O-O
+        self.castling = {1: {1: True, -1: True}, -1: {1: True, -1: True}}
         self.castlingLogs = []
         self.game_over = False
         self.piece_images = generate_piece_images()
@@ -59,8 +62,11 @@ class Board:
                     self.turn = 1 if part == "w" else -1
                 # Castling rights
                 case 2:
-                    # for d in [-1, 1]:
-                    #     for row in 
+                    for d, letter in zip([-1, 1], ["K", "Q"]):
+                        for row, color in zip([config.rows-1, 0], [1, -1]):
+                            letter = letter.lower() if color == -1 else letter
+                            if color:
+                                pass
                     # TODO doesn't work with 960
                     if "K" not in part and self.get_piece((7, 7)).notation == "R":
                         self.get_piece((7, 7)).first_move = False
@@ -109,7 +115,6 @@ class Board:
                 self.game_over = True
             else:
                 print("Stalemate")
-                print("CHECK?", self.is_king_checked())
                 self.game_over = True
         elif self.halfMoves >= 100:
             print("Draw by the 50 moves rule")
@@ -233,28 +238,15 @@ class Board:
         self.sounds[type].play()
 
     def update_castling(self, move: Move):
-        moved_piece = move.piece_tile.piece
-        # White
-        if moved_piece.color == 1:
-            # Either a castling move or a normal king move
-            if moved_piece.notation == "K":
-                self.castling.wOO = False
-                self.castling.wOOO = False
-            elif moved_piece.notation == "R":
-                if moved_piece.column < self.kings[1][1]:
-                    self.castling.wOOO = False
-                elif moved_piece.column > self.kings[1][1]:
-                    self.castling.wOO = False
-        # Black
-        elif moved_piece.color == -1:
-            if moved_piece.notation == "K":
-                self.castling.bOO = False
-                self.castling.bOOO = False
-            elif moved_piece.notation == "R":
-                if moved_piece.column < self.kings[-1][1]:
-                    self.castling.bOOO = False
-                elif moved_piece.column > self.kings[-1][1]:
-                    self.castling.bOO = False
+        piece_tile = move.piece_tile
+        # Either a castling move or a normal king move
+        if piece_tile.piece.notation == "K":
+            self.castling[piece_tile.piece.color] = {1: False, -1: False}
+        elif piece_tile.piece.notation == "R":
+            if piece_tile.column < self.kings[piece_tile.piece.color][1]:
+                self.castling[piece_tile.piece.color][-1] = False
+            elif piece_tile.column > self.kings[piece_tile.piece.color][1]:
+                self.castling[piece_tile.piece.color][1] = False
     
     def move_piece(self, move: Move):
         # piece_tile is never None, capture_tile can be
@@ -268,8 +260,6 @@ class Board:
         if piece_tile.piece.notation == "P" and abs(piece_tile.pos[0] - to_pos[0]) == 2:
             self.ep = (piece_tile.pos[0] - piece_tile.piece.color*self.flipped, piece_tile.pos[1])
         # Castling
-        print("CASTLING", move.is_castling())
-        print("CASTLING RIGHTS", self.castling)
         if move.is_castling():
             # Castling's rook is at to_pos
             # We get the rook_tile before the king's movement because the king could overwrite the rook_tile
@@ -431,7 +421,14 @@ class Board:
                 fen += "/"
         fen += " " + ("w" if self.turn == 1 else "b")
         # Castling rights
-        castling = " " + str(self.castling)
+        castling = " "
+        for color in [1, -1]:
+            for d, letter in zip([1, -1], ["K", "Q"]):
+                letter = letter.lower() if color == -1 else letter
+                if self.castling[color][d]:
+                    castling += letter
+        if castling == " ":
+            castling += "-"
         fen += castling
         en_passant = " "
         print("EN PASSANT", self.ep)
@@ -452,24 +449,3 @@ class Board:
         fen += " " + str(self.halfMoves)
         fen += " " + str(self.fullMoves)
         return fen
-
-class Castling:
-    def __init__(self, wOO, wOOO, bOO, bOOO):
-        self.wOO = wOO
-        self.wOOO = wOOO
-        self.bOO = bOO
-        self.bOOO = bOOO
-
-    def __str__(self):
-        string = ""
-        if self.wOO:
-            string += "K"
-        if self.wOOO:
-            string += "Q"
-        if self.bOO:
-            string += "k"
-        if self.bOOO:
-            string += "q"
-        if string == "":
-            string = "-"
-        return string

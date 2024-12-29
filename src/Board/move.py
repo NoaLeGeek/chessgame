@@ -77,16 +77,12 @@ class Move:
     def is_castling(self) -> bool:
         if not self.is_capture() or self.capture_tile.piece.notation != "R" or self.piece_tile.piece.notation != "K" or self.piece_tile.piece.is_enemy(self.capture_tile.piece):
             return False
-        if self.piece_tile.piece.color == 1:
-            if self.capture_tile.pos[1] < self.piece_tile.pos[1] and not self.board.castling.wOOO:
-                return False
-            elif self.capture_tile.pos[1] > self.piece_tile.pos[1] and not self.board.castling.wOO:
-                return False
-        elif self.piece_tile.piece.color == -1:
-            if self.capture_tile.pos[1] < self.piece_tile.pos[1] and not self.board.castling.bOOO:
-                return False
-            elif self.capture_tile.pos[1] > self.piece_tile.pos[1] and not self.board.castling.bOO:
-                return False
+        # O-O-O castling's right
+        if self.capture_tile.pos[1] < self.piece_tile.pos[1] and not self.board.castling[self.piece_tile.piece.color][-1]:
+            return False
+        # O-O castling's right
+        elif self.capture_tile.pos[1] > self.piece_tile.pos[1] and not self.board.castling[self.piece_tile.piece.color][1]:
+            return False
         return True
     
     def is_en_passant(self) -> bool:
