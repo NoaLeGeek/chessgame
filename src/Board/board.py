@@ -382,6 +382,7 @@ class Board:
         return False
     
     def flip_board(self) -> None:
+        # Flipping the board
         board = {}
         for pos, tile in self.board.items():
             tile.flip()
@@ -390,10 +391,12 @@ class Board:
         self.flipped *= -1
         self.selected = None
         self.promotion = None
+        # Flipping the kings' positions
+        self.kings = {color: flip_pos(pos) for color, pos in self.kings.items()}
+        # Flipping the en passant square
         if self.ep:
-            print("EN PASSANT INITIAL", self.ep)
             self.ep = flip_pos(self.ep)
-            print("EN PASSANT FLIPPED", self.ep)
+        # Flipping the last move
         if self.moveLogs:
             self.moveLogs[-1].from_pos, self.moveLogs[-1].to_pos = flip_pos(self.moveLogs[-1].from_pos), flip_pos(self.moveLogs[-1].to_pos)
 

@@ -140,11 +140,11 @@ class King(Piece):
             new_pos = (from_pos[0] + d_pos[0], from_pos[1] + d_pos[1])
             if board.in_bounds(new_pos) and (board.is_empty(new_pos) or board.get_piece(new_pos).is_enemy(self)):
                 self.moves.append(new_pos)
-
         # Castling
         if not board.is_king_checked():
             rooks = {1: None, -1: None}
             # 1 = O-O-O, -1 = O-O
+            print("CALCULATING CASTLING")
             # Calculate possible castling
             possible_castling = []
             if self.color == 1:
