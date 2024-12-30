@@ -9,7 +9,7 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        castling_fen = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1"
+        castling_fen = "r3k2r/p2ppp1p/1Q5B/8/8/1q5b/P2PPP1P/R3K2R w KQkq - 0 1"
         self.board = Board(castling_fen)
         self.highlighted_squares = {}
         self.game_over = False
@@ -27,7 +27,6 @@ class Game(Scene):
         pass
 
     def draw_pieces(self, screen):
-        #print("selected", self.board.selected, ((self.board.selected.row, self.board.selected.column) if self.board.selected else None))
         for tile in self.board.board.values():
             assert tile is not None, "Tile is None"
             if config.piece_asset != "blindfold":
@@ -41,7 +40,6 @@ class Game(Scene):
             screen.blit(transparent_surface, (pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin))
 
     def draw_moves(self, screen):
-        #print("actual moves", [move.to for move in self.board.selected.piece.moves])
         for move in self.board.selected.piece.moves:
             transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)

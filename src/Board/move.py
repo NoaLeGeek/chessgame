@@ -1,5 +1,6 @@
 from utils import flip_pos, sign, get_value
 from config import config
+from constants import castling_king_column
 
 class Move:
     def __init__(self, board, from_pos, to_pos, castling=False, promotion=None):
@@ -59,19 +60,15 @@ class Move:
     
     def is_legal(self) -> bool:
         if not self.is_castling():
-            if self.piece_tile.piece.notation == "K":
-                print(f"KING VERIFYING MOVE AT {self.from_pos} TO {self.to_pos}") 
             return self.piece_tile.can_move(self.board, self.to_pos)
-        print("BRO I THOUGHT IM CASTLING")
         # Castling
         is_legal = True
-        if self.is_castling():
-            d = sign(self.to_pos[1] - self.from_pos[1])
-            flipped = self.board.flipped
-            for next_column in range(min(flip_pos(self.to_pos[1], flipped=d*flipped), flip_pos(get_value(d, 2, 6), flipped=d*flipped)), self.from_pos[1], d*flipped):
-                is_legal = is_legal and self.piece_tile.can_move(self.board, (self.from_pos[0], next_column))
-                if not is_legal:
-                    break
+        d = sign(self.to_pos[1] - self.from_pos[1])
+        for next_column in list(range(self.from_pos[1] + d, flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) + d, d)):
+            condition = self.piece_tile.can_move(self.board, (self.from_pos[0], next_column))
+            is_legal = is_legal and condition
+            if not is_legal:
+                break
         return is_legal
     
     def is_castling(self) -> bool:
