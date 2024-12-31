@@ -22,6 +22,9 @@ class Piece():
     
     def is_enemy(self, piece: "Piece") -> bool:
         return not self.is_ally(piece)
+    
+    def update_image(self, image: pygame.Surface) -> None:
+        self.image = image
 
 class Pawn(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):

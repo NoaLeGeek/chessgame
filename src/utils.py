@@ -40,13 +40,15 @@ def load_image(path: str, size: tuple[int, int] = None):
     return pygame.transform.scale(image, size) if size else image
 
 #TODO changer new_assets to assets
-def generate_piece_images():
-    # TODO paramètres : activer le fait que les noirs soit retournés de 180°, flipped_assets
+def generate_piece_images(flipped: int = 1):
     images = dict()
     for file in os.listdir(os.path.join('new_assets', 'piece', config.piece_asset)):
         filepath = os.path.join('new_assets', 'piece', config.piece_asset, file)
         notation = os.path.splitext(file)[0]
-        images[notation] = load_image(filepath, (config.tile_size, config.tile_size))
+        image = load_image(filepath, (config.tile_size, config.tile_size))
+        if config.flipped_assets and ((flipped == 1 and notation.startswith("b")) or (flipped == -1 and notation.startswith("w"))):
+            image = pygame.transform.flip(image, False, True)
+        images[notation] = image
         # pygame.transform.rotate(image, 180)
     return images
 
@@ -58,7 +60,7 @@ def generate_background_image():
     filepath = os.path.join('new_assets', 'background', config.background_asset + '.png')
     return load_image(filepath, (config.width, config.height))
 
-# TODO voler les sons de lichess
+# TODO prendre les sons de lichess
 def generate_sounds():
     sounds = dict()
     for sound in os.listdir(os.path.join('new_assets', 'sound', config.sound_asset)):

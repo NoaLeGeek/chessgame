@@ -9,8 +9,7 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        castling_fen = "r3k2r/p2ppp1p/1Q5B/8/8/1q5b/P2PPP1P/R3K2R w KQkq - 0 1"
-        self.board = Board(castling_fen)
+        self.board = Board()
         self.highlighted_squares = {}
         self.game_over = False
 

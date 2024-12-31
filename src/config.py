@@ -15,6 +15,7 @@ class Config:
         self.piece_asset = self.config.get('ASSETS', 'piece')
         self.board_asset = self.config.get('ASSETS', 'board')
         self.sound_asset = self.config.get('ASSETS', 'sound')
+        self.flipped_assets = self.config.getboolean('ASSETS', 'flipped_assets')
         self.background_asset = self.config.get('ASSETS', 'background')
         self.rows = self.config.getint('BOARD', 'rows')
         self.columns = self.config.getint('BOARD', 'columns')

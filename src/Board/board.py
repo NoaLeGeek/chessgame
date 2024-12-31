@@ -32,7 +32,7 @@ class Board:
         self.castling = {1: {1: True, -1: True}, -1: {1: True, -1: True}}
         self.castlingLogs = []
         self.game_over = False
-        self.piece_images = generate_piece_images()
+        self.piece_images = generate_piece_images(self.flipped)
         #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
         self.create_board(fen)
 
@@ -389,8 +389,19 @@ class Board:
         # Flipping the last move
         if self.moveLogs:
             self.moveLogs[-1].from_pos, self.moveLogs[-1].to_pos = flip_pos(self.moveLogs[-1].from_pos), flip_pos(self.moveLogs[-1].to_pos)
+        # Regenerating the piece images depending on the flipped state
+        if config.flipped_assets:
+            self.piece_images = generate_piece_images(self.flipped)
+            self.update_images()
+        # Flipping the board image
+        self.image = pygame.transform.flip(self.image, True, False)
 
-    """def draw(self, screen):
+    def update_images(self):
+        for tile in self.board.values():
+            tile.piece.update_image(self.piece_images[("w" if tile.piece.color == 1 else "b") + tile.piece.notation])
+
+    """
+    def draw(self, screen):
         self.draw_tiles(screen)
         self.draw_pieces(screen)
         if self.selected:
@@ -431,7 +442,6 @@ class Board:
             castling += "-"
         fen += castling
         en_passant = " "
-        print("EN PASSANT", self.ep)
         # No en passant
         if self.ep is None:
             en_passant += "-"
