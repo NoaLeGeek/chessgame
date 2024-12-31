@@ -258,7 +258,12 @@ class Board:
         # Update en passant square
         self.ep = None
         if piece_tile.piece.notation == "P" and abs(piece_tile.pos[0] - to_pos[0]) == 2:
-            self.ep = (piece_tile.pos[0] - piece_tile.piece.color*self.flipped, piece_tile.pos[1])
+            # Check if there are opponent pawns that can capture en passant
+            for d in [-1, 1]:
+                if not self.is_empty((to_pos[0] + d, to_pos[1])) and self.get_piece((to_pos[0] + d, to_pos[1])).notation == "P" and self.get_piece((to_pos[0] + d, to_pos[1])).is_enemy(piece_tile.piece):
+                    if self.convert_to_move((to_pos[0] + d, to_pos[1]), ).is_legal():
+                        break
+            self.ep = ((piece_tile.pos[0] + to_pos[0])//2, piece_tile.pos[1])
         # Castling
         if move.is_castling():
             # Castling's rook is at to_pos
