@@ -10,7 +10,7 @@ rook_directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 queen_directions = bishop_directions + rook_directions
 # -1 is O-O-O and 1 is O-O
 castling_king_column = {-1: 2, 1: 6}
-en_passant_row = {2: 1, 5: -1}
+en_passant_direction = {2: 1, 5: -1}
 
 sound_type = ["capture", "castle", "game-start", "game-end", "move-check", "move-opponent", "move-self", "premove", "promote"]
 available_sound = ["beat", "default", "lolz", "marble", "metal", "nature", "newspaper", "silly", "space"]

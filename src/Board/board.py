@@ -1,7 +1,7 @@
 import pygame
 import os
 from Board.tile import Tile
-from constants import castling_king_column, en_passant_row
+from constants import castling_king_column, en_passant_direction
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign
 from Board.piece import notation_to_piece, piece_to_notation
 from Board.move import Move
@@ -258,12 +258,23 @@ class Board:
         # Update en passant square
         self.ep = None
         if piece_tile.piece.notation == "P" and abs(piece_tile.pos[0] - to_pos[0]) == 2:
-            # Check if there are opponent pawns that can capture en passant
+            # Check if there are opponent pawns that can capture en passant legally
             for d in [-1, 1]:
-                if not self.is_empty((to_pos[0] + d, to_pos[1])) and self.get_piece((to_pos[0] + d, to_pos[1])).notation == "P" and self.get_piece((to_pos[0] + d, to_pos[1])).is_enemy(piece_tile.piece):
-                    if self.convert_to_move((to_pos[0] + d, to_pos[1]), ).is_legal():
-                        break
-            self.ep = ((piece_tile.pos[0] + to_pos[0])//2, piece_tile.pos[1])
+                pos = (to_pos[0], to_pos[1] + d)
+                # Need a piece
+                if self.is_empty(pos):
+                    continue
+                # Pawn only
+                if self.get_piece(pos).notation != "P":
+                    continue
+                # Opponent's piece only
+                if self.get_piece(pos).is_ally(piece_tile.piece):
+                    continue
+                ep = ((piece_tile.pos[0] + to_pos[0])//2, piece_tile.pos[1])
+                # Verify if the opponent's pawn can capture en passant legally
+                if self.convert_to_move(pos, ep).is_legal():
+                    self.ep = ep
+                    break
         # Castling
         if move.is_castling():
             # Castling's rook is at to_pos
@@ -299,6 +310,7 @@ class Board:
         self.castlingLogs.append(self.castling)
         # Remembering the en passant square for undo
         self.epLogs.append(self.ep)
+        print("FEN:", str(self))
 
     def select_piece(self, pos: tuple[int, int]):
         if self.selected is not None:
@@ -391,6 +403,7 @@ class Board:
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
+            print("FLIPPED EP", self.ep)
         # Flipping the last move
         if self.moveLogs:
             self.moveLogs[-1].from_pos, self.moveLogs[-1].to_pos = flip_pos(self.moveLogs[-1].from_pos), flip_pos(self.moveLogs[-1].to_pos)
@@ -450,16 +463,27 @@ class Board:
         # No en passant
         if self.ep is None:
             en_passant += "-"
-        # Verify if there is a pawn that can be captured en passant
+        # Verify if there is a pawn that can be captured en passant legally
         else:
             # No need to flip the en passant row because it's the same for each board orientation
-            d = en_passant_row[self.ep[0]]
+            d = en_passant_direction[self.ep[0]]
             r, c = self.ep
-            if not any([not self.is_empty((r + d, c + i)) and self.get_piece((r + d, c + i)).notation == "P" and self.get_piece((r + d, c + i)).color == d*self.flipped for i in [-1, 1]]):
-                en_passant += "-"
-        # En passant possible
-        if en_passant == " ":
-            en_passant += chr(97 + flip_pos(self.ep[1], flipped = self.flipped)) + str(flip_pos(self.ep[0], flipped = -self.flipped) + 1)
+            string_ep = "-"
+            for i in [-1, 1]:
+                # Need a piece
+                if self.is_empty((r + d, c + i)):
+                    continue
+                # Pawn only
+                if self.get_piece((r + d, c + i)).notation != "P":
+                    continue
+                # Opponent's piece only
+                if self.get_piece((r + d, c + i)).color != d*self.flipped:
+                    continue
+                # Verify if the opponent's pawn can capture en passant legally
+                if self.convert_to_move((r + d, c + i), self.ep).is_legal():
+                    string_ep = chr(97 + flip_pos(self.ep[1], flipped = self.flipped)) + str(flip_pos(self.ep[0], flipped = -self.flipped) + 1)
+                    break
+            en_passant += string_ep
         fen += en_passant
         fen += " " + str(self.halfMoves)
         fen += " " + str(self.fullMoves)
