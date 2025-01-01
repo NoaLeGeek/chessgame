@@ -3,7 +3,7 @@ from config import config
 from constants import castling_king_column
 
 class Move:
-    def __init__(self, board, from_pos, to_pos, castling=False, promotion=None):
+    def __init__(self, board, from_pos, to_pos, promotion=None):
         self.board = board
         self.from_pos = from_pos
         self.to_pos = to_pos
@@ -16,7 +16,6 @@ class Move:
             self.capture_tile = board.get_tile(to_pos)
         if self.to_pos[0] in [0, config.rows - 1] and self.piece_tile.piece.notation == "P":
             self.promotion = promotion
-        self.castling = castling
         self.notation = None
 
     def execute(self) -> None:

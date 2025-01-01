@@ -314,12 +314,13 @@ class Board:
 
     def select_piece(self, pos: tuple[int, int]):
         if self.selected is not None:
-            x = self.selected.piece.color * self.flipped
             # If in the state of promotion
-            if self.selected.piece.notation == "P" and self.promotion:
+            if self.selected.piece.notation == "P" and self.promotion == True:
+                d = self.selected.piece.color * self.flipped
+                print("PROMOTION")
                 # User clicked in the range of promotion
-                if pos[0] in range(flip_pos(0, flipped=x), flip_pos(0, flipped=x) + x*len(self.selected.promotion), x) and pos[1] == self.promotion[1] + self.selected.column:
-                    self.promote_piece(self.selected.promotion[flip_pos(pos[0], flipped=x)])
+                if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.promotion[1] + self.selected.column:
+                    self.promote_piece(self.selected.piece.promotion[flip_pos(pos[0], flipped=d)])
                     return
                 # User did not click in the range of promotion
                 self.promotion = False
@@ -352,7 +353,7 @@ class Board:
                 self.selected.move(pos)
                 self.promotion = True
                 if config.rules["giveaway"] == True:
-                    self.promote_piece(self.selected.promotion)
+                    self.promote_piece(self.selected.piece.promotion)
                     return
                 return
             self.convert_to_move(self.selected.pos, pos).execute()

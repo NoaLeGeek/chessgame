@@ -9,7 +9,8 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        self.board = Board()
+        promotion_fen = "r1bqkbnr/pPn1pppp/8/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"
+        self.board = Board(promotion_fen)
         self.highlighted_squares = {}
         self.game_over = False
 
@@ -45,9 +46,14 @@ class Game(Scene):
             screen.blit(transparent_surface, (move[1] * config.tile_size + config.margin, move[0] * config.tile_size + config.margin))
 
     def draw_promotion(self, screen):
-        pygame.draw.rect(screen, WHITE, (self.promote * config.tile_size + config.margin, get_value(x, 0, 4) * config.tile_size + config.margin, config.tile_size, 4*config.tile_size))
-        screen.blit(self.piece_images[self.turn]['+'+self.selected.notation], (self.selected.column*config.tile_size+config.margin, (self.selected.row+1)*config.tile_size+config.margin))
-        screen.blit(self.selected.image, (self.selected.column*config.tile_size+config.margin, (self.selected.row+2)*config.tile_size+config.margin))
+        selected = self.board.selected
+        print("PROMOTION DRAW", selected)
+        pos = selected.pos
+        pygame.draw.rect(screen, WHITE, (pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin, config.tile_size, len(selected.piece.promotion)*config.tile_size))
+
+        #pygame.draw.rect(screen, WHITE, (self.promote * config.tile_size + config.margin, get_value(x, 0, 4) * config.tile_size + config.margin, config.tile_size, 4*config.tile_size))
+        #screen.blit(self.piece_images[self.turn]['+'+self.selected.notation], (self.selected.column*config.tile_size+config.margin, (self.selected.row+1)*config.tile_size+config.margin))
+        #screen.blit(self.selected.piece.image, (self.selected.column*config.tile_size+config.margin, (self.selected.row+2)*config.tile_size+config.margin))
 
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())
