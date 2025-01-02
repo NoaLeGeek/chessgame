@@ -1,6 +1,7 @@
 import pygame
 from Scenes.scene import Scene, SceneManager
 from Board.board import Board
+from Board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, get_color, flip_pos
 from constants import WHITE
 from config import config
@@ -29,9 +30,10 @@ class Game(Scene):
     def draw_pieces(self, screen):
         for tile in self.board.board.values():
             assert tile is not None, "Tile is None"
-            if config.piece_asset != "blindfold":
-                assert tile.piece.image, "Piece has no image"
-                screen.blit(tile.piece.image, tile.coord)
+            if config.piece_asset == "blindfold" or (tile == self.board.selected and self.board.promotion is not None):
+                continue
+            assert tile.piece.image, "Piece has no image"
+            screen.blit(tile.piece.image, tile.coord)
 
     def draw_highlight(self, screen):
         for pos, highlight_color in self.highlighted_squares.items():
@@ -40,6 +42,8 @@ class Game(Scene):
             screen.blit(transparent_surface, (pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin))
 
     def draw_moves(self, screen):
+        if self.board.promotion is not None:
+            return
         for move in self.board.selected.piece.moves:
             transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
@@ -47,13 +51,16 @@ class Game(Scene):
 
     def draw_promotion(self, screen):
         selected = self.board.selected
-        print("PROMOTION DRAW", selected)
-        pos = selected.pos
-        pygame.draw.rect(screen, WHITE, (pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin, config.tile_size, len(selected.piece.promotion)*config.tile_size))
-
-        #pygame.draw.rect(screen, WHITE, (self.promote * config.tile_size + config.margin, get_value(x, 0, 4) * config.tile_size + config.margin, config.tile_size, 4*config.tile_size))
-        #screen.blit(self.piece_images[self.turn]['+'+self.selected.notation], (self.selected.column*config.tile_size+config.margin, (self.selected.row+1)*config.tile_size+config.margin))
-        #screen.blit(self.selected.piece.image, (self.selected.column*config.tile_size+config.margin, (self.selected.row+2)*config.tile_size+config.margin))
+        pos = self.board.promotion
+        # Drawing the promotion's frame
+        # We normalize the rect to avoid negative width or height, this flips the rect and makes it in the right direction when the board is flipped
+        rect = pygame.Rect((pos[1] - min(0, self.board.flipped)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped)) * config.tile_size + config.margin, self.board.flipped * config.tile_size, self.board.flipped * len(selected.piece.promotion) * config.tile_size)
+        rect.normalize()
+        pygame.draw.rect(screen, WHITE, rect)
+        # Drawing the promotion's pieces
+        for i, type_piece in enumerate(selected.piece.promotion):
+            image = self.board.piece_images[("w" if self.board.selected.piece.color == 1 else "b") + piece_to_notation(type_piece)]
+            screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped) * config.tile_size + config.margin))
 
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())

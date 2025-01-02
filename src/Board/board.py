@@ -20,7 +20,7 @@ class Board:
         self.winner = None
         self.ep = None
         self.epLogs = []
-        self.promotion = False
+        self.promotion = None
         self.moveLogs = []
         self.halfMoves = 0
         self.fullMoves = 1
@@ -208,11 +208,12 @@ class Board:
         self.change_turn()
     
     def promote_piece(self, type_piece):
+        print("PROMOTING", type_piece)
         new_piece = type_piece(self.selected.color, self.selected.row, self.selected.column)
         if config.piece_asset != "blindfold":
             new_piece.image = self.piece_images[new_piece.notation]
         self.board[(self.selected.row, self.selected.column)].piece = new_piece
-        self.promotion = False
+        self.promotion = None
 
     def change_turn(self):
         self.selected = None
@@ -315,15 +316,15 @@ class Board:
     def select_piece(self, pos: tuple[int, int]):
         if self.selected is not None:
             # If in the state of promotion
-            if self.selected.piece.notation == "P" and self.promotion == True:
+            if self.selected.piece.notation == "P" and self.promotion is not None:
                 d = self.selected.piece.color * self.flipped
                 print("PROMOTION")
                 # User clicked in the range of promotion
-                if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.promotion[1] + self.selected.column:
+                if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.selected.pos[1]:
                     self.promote_piece(self.selected.piece.promotion[flip_pos(pos[0], flipped=d)])
                     return
                 # User did not click in the range of promotion
-                self.promotion = False
+                self.promotion = None
                 # Reselect the pawn if clicked
                 if pos == self.selected.pos:
                     self.selected = None
@@ -350,11 +351,7 @@ class Board:
                 return
             # If the player push a pawn to one of the last rows, it will be in the state of promotion
             if self.selected.piece.notation == "P" and pos[0] in [0, config.rows - 1]:
-                self.selected.move(pos)
-                self.promotion = True
-                if config.rules["giveaway"] == True:
-                    self.promote_piece(self.selected.piece.promotion)
-                    return
+                self.promotion = pos
                 return
             self.convert_to_move(self.selected.pos, pos).execute()
         else:
@@ -443,7 +440,7 @@ class Board:
                     if empty_squares > 0:
                         fen += str(empty_squares)
                         empty_squares = 0
-                    char = piece_to_notation(piece)
+                    char = piece_to_notation(type(piece))
                     fen += (char if piece.color == 1 else char.lower())
             if empty_squares > 0:
                 fen += str(empty_squares)

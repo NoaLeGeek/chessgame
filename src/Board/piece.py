@@ -9,7 +9,7 @@ def notation_to_piece(notation: str):
     
 @staticmethod
 def piece_to_notation(piece: "Piece"):
-    return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece.__class__]
+    return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece]
 
 class Piece():
     def __init__(self, color: int, image: pygame.Surface = None) -> None:
@@ -30,7 +30,7 @@ class Pawn(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
         super().__init__(color, image)
         self.notation = 'P'
-        self.promotion = (Queen, Rook, Bishop, Knight) if config.rules["giveaway"] == True else King
+        self.promotion = (Queen, Rook, Bishop, Knight)
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> None:
         self.moves = []
