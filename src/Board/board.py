@@ -193,8 +193,8 @@ class Board:
                 groups[piece.piece.notation] = groups.get(piece.piece.notation, 0) + 1
         return groups
     
-    def convert_to_move(self, from_, to):
-        return Move(self, from_, to)
+    def convert_to_move(self, from_, to, promotion=None):
+        return Move(self, from_, to, promotion)
 
     def make_move(self, move):
         capture = self.get(move).piece
@@ -202,17 +202,17 @@ class Board:
         if capture:
             self.capture_piece(capture)
         if (self.selected.row <= 2 and self.turn == -1 or self.selected.row >= 6 and self.turn == 1):
-            self.promotion = True
+            self.promotion = "e"
             self.selected.moves = []
             return
         self.change_turn()
     
     def promote_piece(self, type_piece):
-        print("PROMOTING", type_piece)
-        new_piece = type_piece(self.selected.color, self.selected.row, self.selected.column)
+        new_piece = type_piece(self.selected.piece.color)
         if config.piece_asset != "blindfold":
-            new_piece.image = self.piece_images[new_piece.notation]
-        self.board[(self.selected.row, self.selected.column)].piece = new_piece
+            new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
+        self.board[self.promotion].piece = new_piece
+        del self.board[self.selected.pos]
         self.promotion = None
 
     def change_turn(self):
@@ -318,18 +318,14 @@ class Board:
             # If in the state of promotion
             if self.selected.piece.notation == "P" and self.promotion is not None:
                 d = self.selected.piece.color * self.flipped
-                print("PROMOTION")
                 # User clicked in the range of promotion
-                if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.selected.pos[1]:
-                    self.promote_piece(self.selected.piece.promotion[flip_pos(pos[0], flipped=d)])
+                if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.promotion[1]:
+                    self.convert_to_move(self.selected.pos, self.promotion, self.selected.piece.promotion[flip_pos(pos[0], flipped=d)]).execute()
                     return
                 # User did not click in the range of promotion
                 self.promotion = None
-                # Reselect the pawn if clicked
-                if pos == self.selected.pos:
-                    self.selected = None
-                    self.select_piece(pos)
-                    return
+                self.selected = None
+                return
             # If the player clicks on one of his pieces, it will change the selected piece
             if not self.is_empty(pos) and self.get_piece(pos).is_ally(self.selected.piece) and pos != self.selected.pos:
                 # Castling move

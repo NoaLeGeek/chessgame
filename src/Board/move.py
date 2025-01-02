@@ -1,6 +1,7 @@
 from utils import flip_pos, sign, get_value
 from config import config
 from constants import castling_king_column
+from Board.piece import piece_to_notation
 
 class Move:
     def __init__(self, board, from_pos, to_pos, promotion=None):
@@ -14,13 +15,14 @@ class Move:
             self.capture_tile = board.get_tile((from_pos[0], to_pos[1]))
         elif not board.is_empty(to_pos):
             self.capture_tile = board.get_tile(to_pos)
-        if self.to_pos[0] in [0, config.rows - 1] and self.piece_tile.piece.notation == "P":
+        if promotion is not None:
+            assert self.to_pos[0] in [0, config.rows - 1] and self.piece_tile.piece.notation == "P", "Promotion is only possible for pawns at the last row"
             self.promotion = promotion
         self.notation = None
 
     def execute(self) -> None:
         if self.promotion is not None:
-            self.board.promote_piece(self, self.promotion)
+            self.board.promote_piece(self.promotion)
         else:
             self.board.move_piece(self)
         # TODO attention à ça quand draw_highlight
@@ -105,7 +107,7 @@ class Move:
             string += str(flip_pos(self.to_pos[0], flipped = -self.board.flipped) + 1)
             # Add promotion
             if self.promotion is not None:
-                string += "=" + self.promotion.notation
+                string += "=" + piece_to_notation(self.promotion)
         # Add # if it's checkmate or + if it's a check
         if self.board.is_king_checked():
             if self.board.is_stalemate():

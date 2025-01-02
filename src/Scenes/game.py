@@ -19,9 +19,9 @@ class Game(Scene):
         screen.blit(self.board.image, (config.margin, config.margin))
         self.draw_pieces(screen)
         self.draw_highlight(screen)
-        if self.board.selected:
+        if self.board.selected is not None:
             self.draw_moves(screen)
-        if self.board.promotion:
+        if self.board.promotion is not None:
             self.draw_promotion(screen)
 
     def update(self):
@@ -54,6 +54,7 @@ class Game(Scene):
         pos = self.board.promotion
         # Drawing the promotion's frame
         # We normalize the rect to avoid negative width or height, this flips the rect and makes it in the right direction when the board is flipped
+        # pos needs to be offset by 1 if the board is flipped
         rect = pygame.Rect((pos[1] - min(0, self.board.flipped)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped)) * config.tile_size + config.margin, self.board.flipped * config.tile_size, self.board.flipped * len(selected.piece.promotion) * config.tile_size)
         rect.normalize()
         pygame.draw.rect(screen, WHITE, rect)
