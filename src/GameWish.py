@@ -16,9 +16,9 @@ class Game:
         self.en_passant = None
         self.flipped = 1
         self.legal_moves = []
-        self.halfMoves = 0
-        self.fullMoves = 1
-        self.moveLogs = []
+        self.half_moves = 0
+        self.full_moves = 1
+        self.move_logs = []
         self.highlightedSquares = {}
         self.game_over = False
         self.gamemode = gamemode
@@ -61,9 +61,9 @@ class Game:
                     if parts[part] not in ['-', '–']:
                         self.en_passant = (flip_pos(int(parts[part][1]) - 1, flipped = -self.flipped), flip_pos(ord(parts[part][0]) - 97, flipped = self.flipped))
                 case 4:
-                    self.halfMoves = int(parts[part])
+                    self.half_moves = int(parts[part])
                 case 5:
-                    self.fullMoves = int(parts[part])
+                    self.full_moves = int(parts[part])
         play_sound("game-start")
         FEN_LABEL.text = fen
 
@@ -71,8 +71,8 @@ class Game:
         draw_board(self.flipped)
         if self.selected:
             draw_highlightedSquares({(self.selected.row, self.selected.column): 4})
-        if self.moveLogs:
-            draw_highlightedSquares({self.moveLogs[-1].from_: 3, self.moveLogs[-1].to: 3})
+        if self.move_logs:
+            draw_highlightedSquares({self.move_logs[-1].from_: 3, self.move_logs[-1].to: 3})
         if self.highlightedSquares:
             draw_highlightedSquares(self.highlightedSquares)
         if config["selected_asset"] != "blindfold":
@@ -107,7 +107,7 @@ class Game:
         elif self.is_stalemate():
             print("Stalemate")
             self.game_over = True
-        elif self.halfMoves >= 100:
+        elif self.half_moves >= 100:
             print("Draw by the 50 moves rule")
             self.game_over = True
         elif self.is_insufficient_material():
@@ -115,17 +115,17 @@ class Game:
             print("Draw by insufficient material")
         else:
             last_index = 0
-            for i in range(len(self.moveLogs)-1, 0, -1):
-                move = self.moveLogs[i]
+            for i in range(len(self.move_logs)-1, 0, -1):
+                move = self.move_logs[i]
                 # Irreversible move are captures, pawn moves, castling or losing castling rights
-                if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
+                if move.capture or isinstance(move.piece, Pawn) or self.is_castling(move.piece, *move.to) or move.fen.split(" ")[2] != self.move_logs[i-1].fen.split(" ")[2]:
                     last_index = i
                     break
-            for i in range(last_index, len(self.moveLogs)):
-                fen = self.moveLogs[i].fen.split(" ")[0:4]
+            for i in range(last_index, len(self.move_logs)):
+                fen = self.move_logs[i].fen.split(" ")[0:4]
                 count = 0
-                for j in range(last_index, len(self.moveLogs)):
-                    iterate_fen = self.moveLogs[j].fen.split(" ")
+                for j in range(last_index, len(self.move_logs)):
+                    iterate_fen = self.move_logs[j].fen.split(" ")
                     # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
                     if fen == iterate_fen[0:4]:
                         count += 1
@@ -155,9 +155,9 @@ class Game:
 
     def change_turn(self) -> None:
         if self.turn == -1:
-            self.fullMoves += 1
+            self.full_moves += 1
         self.turn *= -1
-        self.halfMoves += 1
+        self.half_moves += 1
         print(("White" if self.turn == 1 else "Black") + "'s turn")
 
     def get_piece(self, color: int, piece: Piece) -> Piece:
@@ -301,8 +301,8 @@ class Game:
         self.selected, self.legal_moves, self.promotion = None, [], None
         if self.en_passant:
             self.en_passant = flip_pos(*self.en_passant)
-        if self.moveLogs:
-            self.moveLogs[-1].from_, self.moveLogs[-1].to = flip_pos(*self.moveLogs[-1].from_), flip_pos(*self.moveLogs[-1].to)
+        if self.move_logs:
+            self.move_logs[-1].from_, self.move_logs[-1].to = flip_pos(*self.move_logs[-1].from_), flip_pos(*self.move_logs[-1].to)
             self.highlightedSquares = {flip_pos(row, column): value for ((row, column), value) in self.highlightedSquares.items()}
             
     def flip_board(self) -> None:
@@ -364,6 +364,6 @@ class Game:
             if not any([-1 < row + i < len(self.board) and isinstance(self.board[r + x][c + i], Pawn) and self.board[r + x][c + i].color == x*self.flipped for i in [-1, 1]]):
                 can_en_passant = False
         fen += " " + (chr(97 + flip_pos(self.en_passant[1], flipped = self.flipped)) + str(flip_pos(self.en_passant[0], flipped = -self.flipped) + 1) if can_en_passant else "-")
-        fen += " " + str(self.halfMoves)
-        fen += " " + str(self.fullMoves)
+        fen += " " + str(self.half_moves)
+        fen += " " + str(self.full_moves)
         return fen

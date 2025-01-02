@@ -29,13 +29,14 @@ class Move:
         # Modify the final column of the king if it's a castling move
         """ if self.is_castling():
             self.to = (row, flip_pos(get_value(d, 2, 6), flipped=d*flipped))) """
-        self.board.change_turn()
+        if self.board.turn == -1:
+            self.board.full_moves += 1
+        self.board.half_moves += 1
+        self.board.turn *= -1
         self.board.selected = None
-        # Reset halfMoves if it's a capture or a pawn move
+        # Reset half_moves if it's a capture or a pawn move
         if self.is_capture() or self.piece_tile.piece.notation == "P":
-            self.board.halfMoves = 0
-        if config.rules["+3_checks"] == True and self.board.is_king_checked():
-            self.board.win_condition += 1
+            self.board.half_moves = 0
         self.notation = str(self)
         # This is the board state after the move
         self.fen = str(self.board)

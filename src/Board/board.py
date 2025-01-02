@@ -19,21 +19,21 @@ class Board:
         self.turn = 1
         self.winner = None
         self.ep = None
-        self.epLogs = []
+        self.ep_logs = []
         self.promotion = None
-        self.moveLogs = []
-        self.halfMoves = 0
-        self.fullMoves = 1
+        self.move_logs = []
+        self.half_moves = 0
+        self.full_moves = 1
         self.flipped = 1
         self.kings = {1: None, -1: None}
         # Castling rights
         # 1 = White, -1 = Black
         # 1 = King side O-O, -1 = Queen side O-O-O
-        self.castling = {1: {1: True, -1: True}, -1: {1: True, -1: True}}
-        self.castlingLogs = []
+        self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
+        self.castling_logs = []
+        self.last_irreversible_move = 0
         self.game_over = False
         self.piece_images = generate_piece_images(self.flipped)
-        #self.reserves = {player: {piece: [] for piece in 'PLNSGBR'} for player in (-1, 1)}
         self.create_board(fen)
 
     def create_board(self, fen: str) -> None:
@@ -62,30 +62,28 @@ class Board:
                     self.turn = 1 if part == "w" else -1
                 # Castling rights
                 case 2:
-                    for d, letter in zip([-1, 1], ["K", "Q"]):
-                        for row, color in zip([config.rows-1, 0], [1, -1]):
+                    for color in [1, -1]:
+                        for d, letter in zip([1, -1], ["K", "Q"]):
                             letter = letter.lower() if color == -1 else letter
-                            if color:
-                                pass
-                    # TODO doesn't work with 960
-                    if "K" not in part and self.get_piece((7, 7)).notation == "R":
-                        self.get_piece((7, 7)).first_move = False
-                    if "Q" not in part and self.get_piece((7, 0)).notation == "R":
-                        self.get_piece((7, 0)).first_move = False
-                    if "k" not in part and self.get_piece((0, 7)).notation == "R":
-                        self.get_piece((0, 7)).first_move = False
-                    if "q" not in part and self.get_piece((0, 0)).notation == "R":
-                        self.get_piece((0, 0)).first_move = False
+                            if letter not in part:
+                                continue
+                            # Find a rook that can castle in the direction d and for the given color
+                            for i in range(flip_pos(0, flipped=-d*self.flipped), self.kings[color][1], -d*self.flipped):
+                                piece = self.get_piece((self.kings[color][0], i))
+                                if piece.notation == "R" and piece.color == color:
+                                    self.castling[color][d] = True
+                                    break
+                    print(self.castling)
                 # En passant square
                 case 3:
                     if part not in ['-', '–']:
                         self.ep = (flip_pos(int(part[1]) - 1, flipped = -self.flipped), flip_pos(ord(part[0]) - 97, flipped = self.flipped))
                 # Half moves
                 case 4:
-                    self.halfMoves = int(part)
+                    self.half_moves = int(part)
                 # Full moves
                 case 5:
-                    self.fullMoves = int(part)
+                    self.full_moves = int(part)
         self.play_sound("game-start")         
 
     def generate_960_row(self, parts):
@@ -116,7 +114,7 @@ class Board:
             else:
                 print("Stalemate")
                 self.game_over = True
-        elif self.halfMoves >= 100:
+        elif self.half_moves >= 100:
             print("Draw by the 50 moves rule")
             self.game_over = True
         elif self.is_insufficient_material():
@@ -129,19 +127,11 @@ class Board:
             self.play_sound("game-end")
 
     def is_threesold_repetition(self):
-        last_index = 0
-        # TODO maybe make this a global variable to avoid recalculating it
-        for i in range(len(self.moveLogs) - 1, -1, -1):
-            move = self.moveLogs[i]
-            # Irreversible move are captures, pawn moves, castling or losing castling rights
-            if move.is_capture() or move.piece_tile.piece.notation == "P" or move.is_castling() or move.fen.split(" ")[2] != self.moveLogs[i-1].fen.split(" ")[2]:
-                last_index = i
-                break
-        for i in range(last_index, len(self.moveLogs)):
-            position1 = self.moveLogs[i].fen.split(" ")[0:4]
+        for i in range(self.last_irreversible_move, len(self.move_logs)):
+            position1 = self.move_logs[i].fen.split(" ")[0:4]
             count = 0
-            for j in range(last_index, len(self.moveLogs)):
-                position2 = self.moveLogs[j].fen.split(" ")[0:4]
+            for j in range(self.last_irreversible_move, len(self.move_logs)):
+                position2 = self.move_logs[j].fen.split(" ")[0:4]
                 # Two positions are the same if the pieces are in the same position, if it's the same player to play, if the castling rights are the same and if the en passant square is the same
                 if position1 == position2:
                     count += 1
@@ -178,7 +168,7 @@ class Board:
                 return False
     
     def count_pieces(self):
-        return len([piece for piece in self.board.values() if piece.piece is not None])
+        return len([tile for tile in self.board.values() if tile.piece is not None])
     
     def find_tile(self, notation, color):
         for tile in self.board.values():
@@ -195,17 +185,6 @@ class Board:
     
     def convert_to_move(self, from_, to, promotion=None):
         return Move(self, from_, to, promotion)
-
-    def make_move(self, move):
-        capture = self.get(move).piece
-        self.move_piece(self.selected, move)
-        if capture:
-            self.capture_piece(capture)
-        if (self.selected.row <= 2 and self.turn == -1 or self.selected.row >= 6 and self.turn == 1):
-            self.promotion = "e"
-            self.selected.moves = []
-            return
-        self.change_turn()
     
     def promote_piece(self, type_piece):
         new_piece = type_piece(self.selected.piece.color)
@@ -214,10 +193,6 @@ class Board:
         self.board[self.promotion].piece = new_piece
         del self.board[self.selected.pos]
         self.promotion = None
-
-    def change_turn(self):
-        self.selected = None
-        self.turn *= -1
 
     def get_tile(self, pos: tuple[int, int]):
         return self.board.get(pos, None)
@@ -248,6 +223,10 @@ class Board:
                 self.castling[piece_tile.piece.color][-1] = False
             elif piece_tile.column > self.kings[piece_tile.piece.color][1]:
                 self.castling[piece_tile.piece.color][1] = False
+
+    def update_last_irreversible_move(self, move: Move):
+        if move.is_capture() or move.piece_tile.piece.notation == "P" or move.is_castling() or self.castling_logs[-1] != self.castling:
+            self.last_irreversible_move = len(self.move_logs)
     
     def move_piece(self, move: Move):
         # piece_tile is never None, capture_tile can be
@@ -301,17 +280,17 @@ class Board:
             self.board[to_pos].calc_position()
             piece_tile.move(to_pos)
         # Remembering the move for undo
-        self.moveLogs.append(move)
+        self.move_logs.append(move)
         # Update castling rights
         self.update_castling(move)
         # It's important to update the king's position after the update_castling because we don't want the new king's position
         if piece_tile.piece.notation == "K":
             self.kings[piece_tile.piece.color] = to_pos
         # Remembering the current castling rights for undo
-        self.castlingLogs.append(self.castling)
+        self.castling_logs.append(self.castling)
         # Remembering the en passant square for undo
-        self.epLogs.append(self.ep)
-        print("FEN:", str(self))
+        self.ep_logs.append(self.ep)
+        self.update_last_irreversible_move(move)
 
     def select_piece(self, pos: tuple[int, int]):
         if self.selected is not None:
@@ -397,10 +376,9 @@ class Board:
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
-            print("FLIPPED EP", self.ep)
         # Flipping the last move
-        if self.moveLogs:
-            self.moveLogs[-1].from_pos, self.moveLogs[-1].to_pos = flip_pos(self.moveLogs[-1].from_pos), flip_pos(self.moveLogs[-1].to_pos)
+        if self.move_logs:
+            self.move_logs[-1].from_pos, self.move_logs[-1].to_pos = flip_pos(self.move_logs[-1].from_pos), flip_pos(self.move_logs[-1].to_pos)
         # Regenerating the piece images depending on the flipped state
         if config.flipped_assets:
             self.piece_images = generate_piece_images(self.flipped)
@@ -411,16 +389,6 @@ class Board:
     def update_images(self):
         for tile in self.board.values():
             tile.piece.update_image(self.piece_images[("w" if tile.piece.color == 1 else "b") + tile.piece.notation])
-
-    """
-    def draw(self, screen):
-        self.draw_tiles(screen)
-        self.draw_pieces(screen)
-        if self.selected:
-            self.draw_moves(screen)
-        self.draw_reserves(screen)
-        if self.promotion:
-            self.draw_promotion(screen)"""
 
     # FEN format
     def __str__(self) -> str:
@@ -479,6 +447,6 @@ class Board:
                     break
             en_passant += string_ep
         fen += en_passant
-        fen += " " + str(self.halfMoves)
-        fen += " " + str(self.fullMoves)
+        fen += " " + str(self.half_moves)
+        fen += " " + str(self.full_moves)
         return fen

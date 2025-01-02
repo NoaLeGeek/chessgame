@@ -10,8 +10,7 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        promotion_fen = "r1bqkbnr/pPn1pppp/8/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"
-        self.board = Board(promotion_fen)
+        self.board = Board()
         self.highlighted_squares = {}
         self.game_over = False
 
