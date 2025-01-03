@@ -16,31 +16,35 @@ class Game(Scene):
 
     def render(self, screen:pygame.Surface):
         screen.blit(self.board.image, (config.margin, config.margin))
-        self.draw_pieces(screen)
-        self.draw_highlight(screen)
+        self._draw_pieces(screen)
+        self._draw_highlight(screen)
         if self.board.selected is not None:
-            self.draw_moves(screen)
+            self._draw_moves(screen)
         if self.board.promotion is not None:
-            self.draw_promotion(screen)
+            self._draw_promotion(screen)
 
     def update(self):
         pass
 
-    def draw_pieces(self, screen):
+    def _draw_pieces(self, screen):
         for tile in self.board.board.values():
-            assert tile is not None, "Tile is None"
+            if tile is None:
+                raise ValueError("Tile is None")
             if config.piece_asset == "blindfold" or (tile == self.board.selected and self.board.promotion is not None):
                 continue
-            assert tile.piece.image, "Piece has no image"
+            if tile.piece.image is None:
+                raise ValueError(f"Piece image is None for {tile.piece}")
             screen.blit(tile.piece.image, tile.coord)
 
-    def draw_highlight(self, screen):
+    def _draw_highlight(self, screen):
+        """Draws the highlighted squares on the board."""
+        highlight_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
         for pos, highlight_color in self.highlighted_squares.items():
-            transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
-            transparent_surface.fill(get_color(highlight_color))
-            screen.blit(transparent_surface, (pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin))
+            highlight_surface.fill(get_color(highlight_color))
+            x, y = pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin
+            screen.blit(highlight_surface, (x, y))
 
-    def draw_moves(self, screen):
+    def _draw_moves(self, screen):
         if self.board.promotion is not None:
             return
         for move in self.board.selected.piece.moves:
@@ -48,7 +52,7 @@ class Game(Scene):
             pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
             screen.blit(transparent_surface, (move[1] * config.tile_size + config.margin, move[0] * config.tile_size + config.margin))
 
-    def draw_promotion(self, screen):
+    def _draw_promotion(self, screen):
         selected = self.board.selected
         pos = self.board.promotion
         # Drawing the promotion's frame
@@ -65,10 +69,14 @@ class Game(Scene):
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())
         print("LEFT CLICK", pos)
-        self.highlighted_squares = {}
-        if self.board.in_bounds(pos) and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
-            self.board.get_tile(pos).calc_moves(self.board)
-        self.board.select_piece(pos)
+        self.highlighted_squares.clear()
+        if self.board.in_bounds(pos) and not self.board.is_empty(pos):
+            piece = self.board.get_piece(pos)
+            if piece is None:
+                raise ValueError("Piece is None")
+            if piece.color == self.board.turn:
+                self.board.get_tile(pos).calc_moves(self.board)
+        self.board.select(pos)
 
     def handle_right_click(self):
         pos = get_pos(pygame.mouse.get_pos())

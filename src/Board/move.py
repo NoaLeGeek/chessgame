@@ -16,7 +16,8 @@ class Move:
         elif not board.is_empty(to_pos):
             self.capture_tile = board.get_tile(to_pos)
         if promotion is not None:
-            assert self.to_pos[0] in [0, config.rows - 1] and self.piece_tile.piece.notation == "P", "Promotion is only possible for pawns at the last row"
+            if self.to_pos[0] not in [0, config.rows - 1] or self.piece_tile.piece.notation != "P":
+                raise ValueError("Promotion is only possible for pawns at the last row")
             self.promotion = promotion
         self.notation = None
 
@@ -40,6 +41,7 @@ class Move:
         self.notation = str(self)
         # This is the board state after the move
         self.fen = str(self.board)
+        print(self.fen)
         self.board.check_game()
 
     def play_sound_move(self) -> None:

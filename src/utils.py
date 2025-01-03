@@ -15,7 +15,8 @@ def right_click() -> bool:
     return bool(pygame.mouse.get_pressed()[2])
 
 def get_value(flipped: int, white_value: int, black_value: int) -> int:
-    assert flipped in (-1, 1), "flipped must be -1 or 1, not " + str(flipped)
+    if flipped not in (-1, 1):
+        raise ValueError("flipped must be -1 or 1, not " + str(flipped))
     if flipped == 1:
         return white_value
     elif flipped == -1:
@@ -67,6 +68,11 @@ def generate_sounds():
         filepath = os.path.join('new_assets', 'sound', config.sound_asset, sound)
         name = os.path.splitext(sound)[0]
         sounds[name] = load_sound(filepath)
+    custom_sounds = ['illegal', 'notify', 'tenseconds']
+    sounds.update({
+        name: pygame.mixer.Sound(os.path.join("assets", "sounds", f"{name}.ogg"))
+        for name in custom_sounds
+    })
     return sounds
 
 def get_color(highlight_color):
