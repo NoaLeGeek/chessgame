@@ -243,7 +243,7 @@ class Board:
         Returns:
             bool: True if the game is a stalemate, otherwise False.
         """
-        for tile in self.board.values():
+        for tile in list(self.board.values()).copy():
             if not tile.piece or tile.piece.color != self.turn:
                 continue
             tile.calc_moves(self)
@@ -533,7 +533,7 @@ class Board:
         if self.selected is not None:
             if self._trigger_promotion(pos):
                 return
-            if self._trigger_castling(pos):
+            if self._ally_piece(pos):
                 return
             if self._deselect_piece(pos):
                 return
@@ -558,10 +558,15 @@ class Board:
             return True
         return False
 
-    def _trigger_castling(self, pos):
-        """Trigger castling move if the selected piece is a king and the destination is a rook."""
-        if self.selected.piece.notation == "K" and not self.is_empty(pos) and self.get_piece(pos).notation == "R" and pos in self.selected.piece.moves:
-            self.convert_to_move(self.selected.pos, pos).execute()
+    def _ally_piece(self, pos):
+        """Handle the case when the player clicks on an ally piece."""
+        if not self.is_empty(pos) and self.get_piece(pos).is_ally(self.selected.piece) and pos != self.selected.pos:
+            # Castling move
+            if self.selected.piece.notation == "K" and not self.is_empty(pos) and self.get_piece(pos).notation == "R" and pos in self.selected.piece.moves:
+                self.convert_to_move(self.selected.pos, pos).execute()
+                return True
+            self.selected = None
+            self.select(pos)
             return True
         return False
 
