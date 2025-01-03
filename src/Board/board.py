@@ -539,6 +539,8 @@ class Board:
                 return
             if self._handle_illegal_move(pos):
                 return
+            if self._set_promotion(pos):
+                return
             self.convert_to_move(self.selected.pos, pos).execute()
         else:
             self._select_piece(pos)
@@ -550,8 +552,10 @@ class Board:
             if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.promotion[1]:
                 self.convert_to_move(self.selected.pos, self.promotion, self.selected.piece.promotion[flip_pos(pos[0], flipped=d)]).execute()
                 return True
+            # Cancel promotion if the player doesn't click in the range of promotion
             self.promotion = None
             self.selected = None
+            return True
         return False
 
     def _trigger_castling(self, pos):
@@ -576,6 +580,13 @@ class Board:
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
+            return True
+        return False
+    
+    def _set_promotion(self, pos):
+        """Set the promotion square if the selected piece is a pawn and reaches the last rank."""
+        if self.selected.piece.notation == "P" and pos[0] in [0, config.rows - 1]:
+            self.promotion = pos
             return True
         return False
 

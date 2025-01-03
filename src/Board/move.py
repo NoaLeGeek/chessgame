@@ -9,7 +9,7 @@ class Move:
         self.from_pos = from_pos
         self.to_pos = to_pos
         self.piece_tile = board.get_tile(from_pos)
-        self.capture_tile = self._get_capture(board, from_pos, to_pos)
+        self.capture_tile = self._get_capture()
         self.promotion = self._get_promotion(promotion)
         self.notation = None
         self.fen = None
@@ -17,9 +17,9 @@ class Move:
     def _get_capture(self):
         """Get the capture tile during a move."""
         if self.board.ep is not None and not self.board.is_empty((self.from_pos[0], self.to_pos[1])) and self.board.get_piece((self.from_pos[0], self.to_pos[1])).is_enemy(self.piece_tile.piece):
-            self.capture_tile = self.board.get_tile((self.from_pos[0], self.to_pos[1]))
+            return self.board.get_tile((self.from_pos[0], self.to_pos[1]))
         elif not self.board.is_empty(self.to_pos):
-            self.capture_tile = self.board.get_tile(self.to_pos)
+            return self.board.get_tile(self.to_pos)
 
     def _get_promotion(self, promotion) -> None:
         """Validates if the promotion is possible based on the piece's position."""
@@ -88,7 +88,6 @@ class Move:
         """
         if not self.is_capture() or self.capture_tile.piece.notation != "R" or self.piece_tile.piece.notation != "K" or self.piece_tile.piece.is_enemy(self.capture_tile.piece):
             return 
-        
         rook_column = self.capture_tile.pos[1]
         king_column = self.piece_tile.pos[1]
         # O-O-O castling's right
