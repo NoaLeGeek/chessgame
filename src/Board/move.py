@@ -9,19 +9,26 @@ class Move:
         self.from_pos = from_pos
         self.to_pos = to_pos
         self.piece_tile = board.get_tile(from_pos)
-        self.capture_tile = None
-        self.promotion = None
-        if board.ep is not None and not board.is_empty((from_pos[0], to_pos[1])) and board.get_piece((from_pos[0], to_pos[1])).is_enemy(self.piece_tile.piece):
-            self.capture_tile = board.get_tile((from_pos[0], to_pos[1]))
-        elif not board.is_empty(to_pos):
-            self.capture_tile = board.get_tile(to_pos)
-        if promotion is not None:
-            if self.to_pos[0] not in [0, config.rows - 1] or self.piece_tile.piece.notation != "P":
-                raise ValueError("Promotion is only possible for pawns at the last row")
-            self.promotion = promotion
+        self.capture_tile = self._get_capture(board, from_pos, to_pos)
+        self.promotion = self._get_promotion(promotion)
         self.notation = None
+        self.fen = None
+
+    def _get_capture(self):
+        """Get the capture tile during a move."""
+        if self.board.ep is not None and not self.board.is_empty((self.from_pos[0], self.to_pos[1])) and self.board.get_piece((self.from_pos[0], self.to_pos[1])).is_enemy(self.piece_tile.piece):
+            self.capture_tile = self.board.get_tile((self.from_pos[0], self.to_pos[1]))
+        elif not self.board.is_empty(self.to_pos):
+            self.capture_tile = self.board.get_tile(self.to_pos)
+
+    def _get_promotion(self, promotion) -> None:
+        """Validates if the promotion is possible based on the piece's position."""
+        if promotion is not None and (self.to_pos[0] not in [0, config.rows - 1] or self.piece_tile.piece.notation != "P"):
+            raise ValueError("Promotion is only possible for pawns at the last row")
+        return promotion
 
     def execute(self) -> None:
+        """Executes the move on the board and updates the game state."""
         if self.promotion is not None:
             self.board.promote_piece(self.promotion)
         else:
@@ -41,10 +48,10 @@ class Move:
         self.notation = str(self)
         # This is the board state after the move
         self.fen = str(self.board)
-        print(self.fen)
         self.board.check_game()
 
     def play_sound_move(self) -> None:
+        """Plays the appropriate sound based on the move type."""
         if self.is_castling():
             self.board.play_sound("castle")
         elif config.rules["giveaway"] == False and self.board.is_king_checked():
@@ -54,17 +61,17 @@ class Move:
         elif self.is_capture():
             self.board.play_sound("capture")
         else:
-            if self.board.turn * self.board.flipped == 1:
-                self.board.play_sound("move-self")
-            else:
-                self.board.play_sound("move-opponent")
+            self.board.play_sound("move-self" if self.board.turn * self.board.flipped == 1 else "move-opponent")
 
     def is_capture(self) -> bool:
+        """Checks if the move results in a capture."""
         return self.capture_tile is not None
     
     def is_legal(self) -> bool:
+        """Validates if the move is legal according to the game rules."""
         if not self.is_castling():
             return self.piece_tile.can_move(self.board, self.to_pos)
+        
         # Castling
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
@@ -76,20 +83,38 @@ class Move:
         return is_legal
     
     def is_castling(self) -> bool:
+        """
+        Checks if the move is a castling move.
+        """
         if not self.is_capture() or self.capture_tile.piece.notation != "R" or self.piece_tile.piece.notation != "K" or self.piece_tile.piece.is_enemy(self.capture_tile.piece):
-            return False
+            return 
+        
+        rook_column = self.capture_tile.pos[1]
+        king_column = self.piece_tile.pos[1]
         # O-O-O castling's right
-        if self.capture_tile.pos[1] < self.piece_tile.pos[1] and not self.board.castling[self.piece_tile.piece.color][-1]:
+        if rook_column < king_column and not self.board.castling[self.piece_tile.piece.color][-1]:
             return False
         # O-O castling's right
-        elif self.capture_tile.pos[1] > self.piece_tile.pos[1] and not self.board.castling[self.piece_tile.piece.color][1]:
+        elif rook_column > king_column and not self.board.castling[self.piece_tile.piece.color][1]:
             return False
         return True
     
     def is_en_passant(self) -> bool:
-        return self.piece_tile.piece.notation == "P" and self.is_capture() and self.capture_tile.pos != self.to_pos and self.board.ep is not None and self.to_pos == self.board.ep
+        """
+        Checks if the move is an en passant capture.
+        """
+        return (
+            self.piece_tile.piece.notation == "P" and
+            self.is_capture() and
+            self.capture_tile.pos != self.to_pos and
+            self.board.ep is not None and
+            self.to_pos == self.board.ep
+            )
         
     def __str__(self) -> str:
+        """
+        Converts the move into its chess notation.
+        """
         string = ""
         # The move is O-O or O-O-O
         if self.is_castling():
