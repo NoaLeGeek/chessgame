@@ -40,7 +40,7 @@ def load_image(path: str, size: tuple[int, int] = None):
     image = pygame.image.load(path)
     return pygame.transform.scale(image, size) if size else image
 
-#TODO changer new_assets to assets
+#TODO changer new_assets (nom de dossier) to assets
 def generate_piece_images(flipped: int = 1):
     images = dict()
     for file in os.listdir(os.path.join('new_assets', 'piece', config.piece_asset)):
