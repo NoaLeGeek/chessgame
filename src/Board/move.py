@@ -33,6 +33,7 @@ class Move:
             self.board.promote_piece(self.promotion)
         else:
             self.board.move_piece(self)
+        self.play_sound_move()
         # TODO attention à ça quand draw_highlight
         # Modify the final column of the king if it's a castling move
         """ if self.is_castling():

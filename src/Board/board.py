@@ -71,7 +71,7 @@ class Board:
             self.ep = self._parse_en_passant(fen_parts[3])
             self.half_moves = int(fen_parts[4])
             self.full_moves = int(fen_parts[5])
-
+            self.play_sound("game-start")
         except (IndexError, ValueError) as e:
             raise ValueError(f"Failed to parse FEN string: {fen}. Error: {e}")
 
