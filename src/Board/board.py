@@ -219,14 +219,14 @@ class Board:
         elif self.is_insufficient_material():
             self.winner = "Draw by insufficient material"
             self.game_over = True
-        elif self.is_threesold_repetition():
+        elif self.is_threefold_repetition():
             self.winner = "Draw by threefold repetition"
             self.game_over = True
         if self.game_over:
             self.play_sound("game-end")
             print(self.winner)
 
-    def is_threesold_repetition(self):
+    def is_threefold_repetition(self):
         """
         Check if the current position has been repeated three times.
 
