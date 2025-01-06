@@ -1,10 +1,9 @@
 import pygame
-import os
-from Board.tile import Tile
+from board.tile import Tile
 from constants import castling_king_column, en_passant_direction
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign
-from Board.piece import notation_to_piece, piece_to_notation
-from Board.move import Move
+from board.piece import notation_to_piece, piece_to_notation
+from board.move import Move
 from random import choice
 from config import config
 
