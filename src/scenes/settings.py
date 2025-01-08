@@ -1,5 +1,5 @@
 import pygame
-from Scenes.scene import Scene
+from scenes.scene import Scene
 from gui import Label
 
 

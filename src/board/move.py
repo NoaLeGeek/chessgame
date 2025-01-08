@@ -1,7 +1,7 @@
 from utils import flip_pos, sign, get_value
 from config import config
 from constants import castling_king_column
-from Board.piece import piece_to_notation
+from board.piece import piece_to_notation
 
 class Move:
     def __init__(self, board, from_pos, to_pos, promotion=None):

@@ -1,7 +1,7 @@
 import pygame
-from Scenes.scene import Scene, SceneManager
-from Board.board import Board
-from Board.piece import piece_to_notation
+from scenes.scene import Scene, SceneManager
+from board.board import Board
+from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, get_color, flip_pos
 from constants import WHITE
 from config import config
