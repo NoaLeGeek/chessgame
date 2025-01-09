@@ -56,6 +56,7 @@ class Pawn(Piece):
             piece = board.get_piece(new_pos)
             if piece.is_enemy(self):
                 self.moves.append(new_pos)
+        return self.moves
 
 
 class Rook(Piece):
@@ -76,6 +77,7 @@ class Rook(Piece):
                 else:
                     break
                 new_pos = (new_pos[0] + d_pos[0], new_pos[1] + d_pos[1])
+        return self.moves
 
 class Bishop(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
@@ -95,6 +97,7 @@ class Bishop(Piece):
                 else:
                     break
                 new_pos = (new_pos[0] + d_pos[0], new_pos[1] + d_pos[1])
+        return self.moves
 
 
 class Knight(Piece):
@@ -109,6 +112,7 @@ class Knight(Piece):
             if board.in_bounds(new_pos):
                 if board.is_empty(new_pos) or board.get_piece(new_pos).is_enemy(self):
                     self.moves.append(new_pos)
+        return self.moves
 
 
 class Queen(Piece):
@@ -129,6 +133,7 @@ class Queen(Piece):
                 else:  # Pièce alliée
                     break
                 new_pos = (new_pos[0] + d_pos[0], new_pos[1] + d_pos[1])
+        return self.moves
 
     
 class King(Piece):
@@ -170,3 +175,4 @@ class King(Piece):
                     continue
                 if all(board.is_empty((from_pos[0], i)) or i == rooks[d] for i in range(min(flip_pos(i, flipped=-d*board.flipped), flip_pos(castling_king_column[d], flipped=-d*board.flipped)), from_pos[1], -d*board.flipped)):
                     self.moves.append((from_pos[0], rooks[d]))
+        return self.moves

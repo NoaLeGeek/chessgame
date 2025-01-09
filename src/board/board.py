@@ -245,9 +245,9 @@ class Board:
         for tile in list(self.board.values()).copy():
             if not tile.piece or tile.piece.color != self.turn:
                 continue
-            tile.calc_moves(self)
-            if any(self.convert_to_move(tile.pos, move).is_legal() for move in tile.piece.moves):
-                return False
+            for move in tile.calc_moves(self):
+                if self.convert_to_move(tile.pos, move).is_legal():
+                    return False
         return True
     
     def is_insufficient_material(self):
@@ -433,6 +433,17 @@ class Board:
                 if self.convert_to_move(pos, ep).is_legal():
                     self.ep = ep
                     break
+
+    def _is_valid_en_passant(self, pos: tuple[int, int], ep: tuple[int, int]):
+        for d in [-1, 1]:
+                pos = (pos[0], pos[1] + d)
+                if self.is_empty(pos) or self.get_piece(pos).notation != "P":
+                    continue
+                if self.get_piece(pos).is_ally(piece_tile.piece):
+                    continue
+                if self.convert_to_move(pos, ep).is_legal():
+                    self.ep = ep
+                    break
     
     def move_piece(self, move: Move):
         """
@@ -561,7 +572,7 @@ class Board:
         """Handle the case when the player clicks on an ally piece."""
         if not self.is_empty(pos) and self.get_piece(pos).is_ally(self.selected.piece) and pos != self.selected.pos:
             # Castling move
-            if self.selected.piece.notation == "K" and not self.is_empty(pos) and self.get_piece(pos).notation == "R" and pos in self.selected.piece.moves:
+            if self.selected.piece.notation == "K" and not self.is_empty(pos) and self.get_piece(pos).notation == "R" and pos in self.selected.calc_moves(self):
                 self.convert_to_move(self.selected.pos, pos).execute()
                 return True
             self.selected = None
@@ -578,7 +589,7 @@ class Board:
 
     def _handle_illegal_move(self, pos):
         """Handle illegal moves (either not in the possible moves or king is checked)."""
-        if pos not in self.selected.piece.moves:
+        if pos not in self.selected.calc_moves(self):
             self.selected = None
             if self.kings[self.turn] is None or self.is_king_checked():
                 self.play_sound("illegal")
@@ -630,9 +641,9 @@ class Board:
         for tile in self.board.values():
             if tile.piece.color == self.turn or tile.piece.notation == "K":
                 continue
-            tile.calc_moves(self)
-            if self.kings[self.turn] in tile.piece.moves:
-                return True
+            for move in tile.calc_moves(self):
+                if self.kings[self.turn] == move:
+                    return True
         return False
     
     def flip_board(self) -> None:
@@ -698,5 +709,6 @@ class Board:
         castling = "".join(
             k for color in [1, -1] for k in ("KQ" if color == 1 else "kq") if self.castling[color][1 if k.upper() == "K" else -1]
         ) or "-"
-        en_passant = "-" if not self.ep else chr(97 + self.ep[1]) + str(self.ep[0] + 1)
+        en_passant = "-" if self.ep is not None else chr(97 + self.ep[1]) + str(self.ep[0] + 1)
+        # TODO verify if valid en passant
         return f"{fen} {turn} {castling} {en_passant} {self.half_moves} {self.full_moves}"

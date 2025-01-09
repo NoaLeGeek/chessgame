@@ -1,8 +1,8 @@
 BROWN = (92, 64, 51)
 WHITE = (255, 255, 255)
 
-# The different gamemodes available in the game
-gamemodes = ["Classic", "KOTH", "+3 Checks", "Giveaway", "Chess960"]
+# Different values of pieces
+piece_values = {'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 100}
 
 knight_directions = [(-2, -1), (-2, 1), (2, -1), (2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2)]
 bishop_directions = [(1, 1), (-1, -1), (1, -1), (-1, 1)]

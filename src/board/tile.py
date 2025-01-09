@@ -17,7 +17,7 @@ class Tile:
         self.calc_position()
 
     def calc_moves(self, board, **kwds):
-        self.piece.calc_moves(board, self.pos, **kwds)
+        return self.piece.calc_moves(board, self.pos, **kwds)
 
     def calc_position(self):
         self.coord = (self.pos[1] * config.tile_size + config.margin, self.pos[0] * config.tile_size + config.margin)
