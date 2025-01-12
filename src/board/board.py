@@ -419,31 +419,25 @@ class Board:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_logs)
 
+    def _is_valid_en_passant(self, pos: tuple[int, int], ep: tuple[int, int]):
+        d_ep = en_passant_direction[ep[0]]
+        for d_col in [-1, 1]:
+            new_pos = (pos[0], pos[1] + d_col)
+            if self.is_empty(new_pos) or self.get_piece(new_pos).notation != "P":
+                continue
+            if self.get_piece(new_pos).color != d_ep*self.flipped:
+                continue
+            if self.convert_to_move(new_pos, ep).is_legal():
+                return True
+        return False
+
     def _update_en_passant(self, piece_tile, to_pos):
         """Update the en passant square logic after a pawn move."""
         self.ep = None
         if piece_tile.piece.notation == "P" and abs(piece_tile.pos[0] - to_pos[0]) == 2:
-            for d in [-1, 1]:
-                pos = (to_pos[0], to_pos[1] + d)
-                if self.is_empty(pos) or self.get_piece(pos).notation != "P":
-                    continue
-                if self.get_piece(pos).is_ally(piece_tile.piece):
-                    continue
-                ep = ((piece_tile.pos[0] + to_pos[0]) // 2, piece_tile.pos[1])
-                if self.convert_to_move(pos, ep).is_legal():
-                    self.ep = ep
-                    break
-
-    def _is_valid_en_passant(self, pos: tuple[int, int], ep: tuple[int, int]):
-        for d in [-1, 1]:
-                pos = (pos[0], pos[1] + d)
-                if self.is_empty(pos) or self.get_piece(pos).notation != "P":
-                    continue
-                if self.get_piece(pos).is_ally(piece_tile.piece):
-                    continue
-                if self.convert_to_move(pos, ep).is_legal():
-                    self.ep = ep
-                    break
+            ep = ((piece_tile.pos[0] + to_pos[0]) // 2, piece_tile.pos[1])
+            if self._is_valid_en_passant((to_pos[0], to_pos[1]), ep):
+                self.ep = ep
     
     def move_piece(self, move: Move):
         """
@@ -709,6 +703,9 @@ class Board:
         castling = "".join(
             k for color in [1, -1] for k in ("KQ" if color == 1 else "kq") if self.castling[color][1 if k.upper() == "K" else -1]
         ) or "-"
-        en_passant = "-" if self.ep is not None else chr(97 + self.ep[1]) + str(self.ep[0] + 1)
-        # TODO verify if valid en passant
+        en_passant = "-"
+        if self.ep is not None:
+            d_ep = en_passant_direction[self.ep[0]]
+            if self._is_valid_en_passant((self.ep[0] + d_ep, self.ep[1]), self.ep):
+                en_passant = chr(97 + flip_pos(self.ep[1], flipped = self.flipped)) + str(flip_pos(self.ep[0], flipped = -self.flipped) + 1)
         return f"{fen} {turn} {castling} {en_passant} {self.half_moves} {self.full_moves}"
