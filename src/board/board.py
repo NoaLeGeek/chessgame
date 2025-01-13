@@ -57,7 +57,7 @@ class Board:
             - self.half_moves: Number of half moves since the last pawn advance or capture.
             - self.full_moves: Number of full moves in the game.
         """
-        self.board = {}
+        self.board = {(r, c): Tile((r, c)) for r in range(config.rows) for c in range(config.columns)}
         try:
             fen_parts = fen.split()
             if len(fen_parts) != 6:
@@ -336,7 +336,7 @@ class Board:
         Returns:
             Tile or None: The tile at the position, or None if the position is invalid.
         """
-        return self.board.get(pos)
+        return self.board.get(pos, None)
     
     def get_piece(self, pos: tuple[int, int]):
         """
@@ -348,8 +348,7 @@ class Board:
         Returns:
             Piece or None: The piece at the position, or None if the position is empty.
         """
-        tile = self.get_tile(pos)
-        return tile.piece if tile else None
+        return self.get_tile(pos).piece
     
     def is_empty(self, pos):
         """
@@ -361,8 +360,7 @@ class Board:
         Returns:
             bool: True if the position is empty, False otherwise.
         """
-        tile = self.get_tile(pos)
-        return tile is None or tile.piece is None
+        return self.get_tile(pos).piece is None
     
     def get_empty_tiles(self):
         """
@@ -397,13 +395,16 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.piece_tile.piece
+        print("TEST")
+        print(move.from_tile.piece)
+        print(move.to_tile.piece)
+        piece = move.from_tile.piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.piece_tile.pos[1] > self.kings[piece.color][1] else -1
+            side = 1 if move.from_tile.pos[1] > self.kings[piece.color][1] else -1
             self.castling[piece.color][side] = False
 
     def update_last_irreversible_move(self, move: Move):
@@ -415,7 +416,7 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.is_capture() or move.piece_tile.piece.notation == "P" or move.is_castling() or self.castling_logs[-1] != self.castling:
+        if move.is_capture() or move.from_tile.piece.notation == "P" or move.is_castling() or self.castling_logs[-1] != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_logs)
 
@@ -431,11 +432,11 @@ class Board:
                 return True
         return False
 
-    def _update_en_passant(self, piece_tile, to_pos):
+    def _update_en_passant(self, from_pos, to_pos):
         """Update the en passant square logic after a pawn move."""
         self.ep = None
-        if piece_tile.piece.notation == "P" and abs(piece_tile.pos[0] - to_pos[0]) == 2:
-            ep = ((piece_tile.pos[0] + to_pos[0]) // 2, piece_tile.pos[1])
+        if not self.is_empty(from_pos) and self.get_tile(from_pos).piece.notation == "P" and abs(from_pos[0] - to_pos[0]) == 2:
+            ep = ((from_pos[0] + to_pos[0]) // 2, from_pos[1])
             if self._is_valid_en_passant((to_pos[0], to_pos[1]), ep):
                 self.ep = ep
     
@@ -449,33 +450,33 @@ class Board:
         This function handles all move types including normal moves, en passant, and castling,
         and updates the board, castling rights, and en passant square accordingly.
         """
-        piece_tile, to_pos = move.piece_tile, move.to_pos
+        from_pos, to_pos = move.from_pos, move.to_pos
         
-        if self.is_empty(piece_tile.pos):
-            raise ValueError(f"There is no piece at {piece_tile.pos}")
+        if self.is_empty(from_pos):
+            raise ValueError(f"There is no piece at {from_pos}")
 
         # Capture en passant
         if move.is_en_passant():
-            del self.board[(piece_tile.pos[0], to_pos[1])]
+            self.board[(from_pos[0], to_pos[1])].piece = None
 
         # Handle en passant square logic
-        self._update_en_passant(piece_tile, to_pos)
+        self._update_en_passant(from_pos, to_pos)
 
         # Handle castling logic
         if move.is_castling():
-            self._handle_castling(piece_tile, to_pos)
+            self._handle_castling(from_pos, to_pos)
 
         # Handle normal move
         else:
-            self._handle_normal_move(piece_tile, to_pos)
+            self._handle_normal_move(from_pos, to_pos)
 
         # Remember the move for undo
         self.move_logs.append(move)
 
         # Update castling rights and kings' positions
         self.update_castling(move)
-        if piece_tile.piece.notation == "K":
-            self.kings[piece_tile.piece.color] = to_pos
+        if self.get_tile(to_pos).piece.notation == "K":
+            self.kings[self.get_tile(to_pos).piece.color] = to_pos
 
         # Save the current state for undo
         self.castling_logs.append(self.castling)
@@ -496,34 +497,34 @@ class Board:
             new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
         
         self.board[self.promotion].piece = new_piece
-        del self.board[self.selected.pos]
+        self.board[self.selected.pos].piece = None
         self.promotion = None
 
-    def _handle_castling(self, piece_tile, to_pos):
+    def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
         rook_tile = self.get_tile(to_pos)
-        d = sign(to_pos[1] - piece_tile.pos[1])
+        d = sign(to_pos[1] - from_pos[1])
         king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
         rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
         
         # Move the king
-        king_tile = self.get_tile(piece_tile.pos)
-        self.board[(piece_tile.pos[0], king_column)] = king_tile
-        del self.board[piece_tile.pos]
-        king_tile.move((piece_tile.pos[0], king_column))
+        king_tile = self.get_tile(from_pos)
+        self.board[(from_pos[0], king_column)] = king_tile
+        self.board[from_pos].piece = None
+        king_tile.move((from_pos[0], king_column))
 
         # Move the rook
-        self.board[(piece_tile.pos[0], rook_column)] = rook_tile
-        del self.board[to_pos]
-        rook_tile.move((piece_tile.pos[0], rook_column))
+        self.board[(from_pos[0], rook_column)] = rook_tile
+        self.board[to_pos].piece = None
+        rook_tile.move((from_pos[0], rook_column))
 
-    def _handle_normal_move(self, piece_tile, to_pos):
+    def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
-        save_tile = self.board[piece_tile.pos]
-        del self.board[piece_tile.pos]
+        save_tile = self.board[from_pos]
+        self.board[from_pos].piece = None
         self.board[to_pos] = save_tile
         self.board[to_pos].calc_position()
-        piece_tile.move(to_pos)
+        self.get_tile(from_pos).move(to_pos)
 
     def select(self, pos: tuple[int, int]):
         """
@@ -621,7 +622,7 @@ class Board:
         Returns:
             bool: True if the position is within the board's bounds, False otherwise.
         """
-        return 0 <= pos[0] < config.rows and 0 <= pos[1] < config.columns
+        return self.get_tile(pos) is not None
 
     def is_king_checked(self):
         """
@@ -633,6 +634,8 @@ class Board:
         This function scans the board for any opponent's pieces that can attack the current player's king.
         """
         for tile in self.board.values():
+            if self.is_empty(tile.pos):
+                continue
             if tile.piece.color == self.turn or tile.piece.notation == "K":
                 continue
             for move in tile.calc_moves(self):
@@ -688,8 +691,8 @@ class Board:
             row_fen = ""
             for col in range(config.columns):
                 piece = self.get_piece((row, col))
-                if piece:
-                    if empty:
+                if piece is not None:
+                    if empty > 0:
                         row_fen += str(empty)
                         empty = 0
                     row_fen += piece_to_notation(type(piece)) if piece.color == 1 else piece_to_notation(type(piece)).lower()

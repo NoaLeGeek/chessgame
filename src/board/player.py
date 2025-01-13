@@ -3,6 +3,7 @@ class Player:
         self.notation = notation 
         self.pieces = []
         self.king = None
+        self.ia = None
 
     def add_piece(self, piece):
         self.pieces.append(piece)

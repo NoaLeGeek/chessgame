@@ -30,6 +30,8 @@ class Game(Scene):
         for tile in self.board.board.values():
             if tile is None:
                 raise ValueError("Tile is None")
+            if self.board.is_empty(tile.pos):
+                continue
             if config.piece_asset == "blindfold" or (tile == self.board.selected and self.board.promotion is not None):
                 continue
             if tile.piece.image is None:
