@@ -395,16 +395,13 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        print("TEST")
-        print(move.from_tile.piece)
-        print(move.to_tile.piece)
-        piece = move.from_tile.piece
+        piece = move.to_tile.piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.from_tile.pos[1] > self.kings[piece.color][1] else -1
+            side = 1 if move.to_tile.pos[1] > self.kings[piece.color][1] else -1
             self.castling[piece.color][side] = False
 
     def update_last_irreversible_move(self, move: Move):
@@ -464,10 +461,12 @@ class Board:
 
         # Handle castling logic
         if move.is_castling():
+            print("HANDLE CASTLING")
             self._handle_castling(from_pos, to_pos)
 
         # Handle normal move
         else:
+            print("HANDLE NORMAL MOVE")
             self._handle_normal_move(from_pos, to_pos)
 
         # Remember the move for undo
@@ -520,12 +519,11 @@ class Board:
 
     def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
-        save_tile = self.board[from_pos]
+        save_piece = self.board[from_pos].piece
+        self.board[to_pos].piece = save_piece
+        self.get_tile(to_pos).move(to_pos)
         self.board[from_pos].piece = None
-        self.board[to_pos] = save_tile
-        self.board[to_pos].calc_position()
-        self.get_tile(from_pos).move(to_pos)
-
+        
     def select(self, pos: tuple[int, int]):
         """
         Select a piece on the board or execute a move based on the current selection.

@@ -115,8 +115,8 @@ class Move:
         else:
             if self.is_capture():
                 # Add the symbol of the piece
-                if self.from_tile.piece.notation != "P":
-                    string += self.from_tile.piece.notation
+                if self.to_tile.piece.notation != "P":
+                    string += self.to_tile.piece.notation
                 # Add the starting column if it's a pawn
                 else:
                     string += chr(flip_pos(self.from_pos[1], flipped = self.board.flipped) + 97)
