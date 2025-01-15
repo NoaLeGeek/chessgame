@@ -29,6 +29,7 @@ class Config:
         self.width = self.height
         self.margin = self.height//(self.columns*2 + 2)
         self.tile_size = self.height//(self.columns+1)
+        self.width, self.height = width, height
 
     def resource_path(self, relative_path):
         try:

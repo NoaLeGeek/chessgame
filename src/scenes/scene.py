@@ -26,6 +26,11 @@ class Scene():
             button.update(mouse_pos)
             if self.in_enter or self.in_exit :
                 button.set_alpha(self.alpha)
+
+                
+        for label in self.labels :
+            if self.in_enter or self.in_exit :
+                label.set_alpha(self.alpha)
         
     
     def handle_event(self, event:pygame.event.Event):

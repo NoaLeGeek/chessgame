@@ -1,13 +1,13 @@
 import pygame
 
 class RectButton:
-    def __init__(self, x:int, y:int, width:int, height:int, color:str, text:str, font:str, text_color:str, command):
+    def __init__(self, x:int, y:int, width:int, height:int, color:str, text:str, font_name:str, text_color:str, command):
         self.width, self.height = width, height
         self.x, self.y = x-width//2, y-height//2
         self.rect = pygame.Rect(self.x, self.y, width, height)
         self.surface = pygame.Surface((width, height))
         self.surface.fill(color)
-        self.label = Label(self.rect.center, text, pygame.font.Font(font, self.rect.height), text_color, font)
+        self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
         self.color = color
         self.command = command
         self.set_alpha(0)
@@ -25,7 +25,7 @@ class RectButton:
 
     def set_alpha(self, alpha):
         self.surface.set_alpha(alpha)
-        self.label.surface.set_alpha(alpha)     
+        self.label.set_alpha(alpha)     
     
     def update_size(self, new_width, new_height, new_x, new_y):
         self.rect.width, self.rect.height = new_width, new_height
@@ -64,13 +64,13 @@ class ImageButton:
 
 
 class Label:
-    def __init__(self, center:tuple[int, int,], text:str, font:pygame.font.Font, color:str, font_name:str):
+    def __init__(self, center:tuple[int, int,], text:str, font_name:str, font_size:str, color:str):
         self.text = text
         self.center = center 
-        self.font = font 
+        self.font = pygame.font.Font(font_name, font_size)
         self.color = color
         self.font_name = font_name
-        self.surface = font.render(text, True, color)
+        self.surface = self.font.render(text, True, color)
         self.rect = self.surface.get_rect(center=center)
         self.surface.set_alpha(0)
         
@@ -87,4 +87,39 @@ class Label:
         self.surface = pygame.font.Font(self.font_name, size).render(self.text, True, self.color) 
         self.rect = self.surface.get_rect(center = new_center)
         self.center = new_center
+        
+    def set_alpha(self, alpha):
+        self.surface.set_alpha(alpha) 
+
+
+class VideoPlayer:
+    def __init__(self, video_path, width, height):
+        self.video_path = video_path
+        self.screen_width = width
+        self.screen_height = height
+        self.cap = cv2.VideoCapture(video_path)
+
+    def play(self, screen):
+        ret, frame = self.cap.read()
+        if not ret:
+            self.cap.release()
+            self.cap = cv2.VideoCapture(self.video_path)
+            ret, frame = self.cap.read()
+
+        frame_height, frame_width = frame.shape[:2]
+        aspect_ratio = frame_height / frame_width
+        new_width = self.screen_width
+        new_height = int(new_width * aspect_ratio)
+
+        frame = cv2.resize(frame, (new_width, new_height))
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
+        x = (self.screen_width - new_width) // 2
+        y = (self.screen_height - new_height) // 2
+
+        screen.blit(frame, (x, y))
+        pygame.display.flip()
+
+
 
