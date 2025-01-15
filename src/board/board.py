@@ -395,13 +395,13 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.to_tile.piece
+        piece = move.from_tile.piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.to_tile.pos[1] > self.kings[piece.color][1] else -1
+            side = 1 if move.from_tile.pos[1] > self.kings[piece.color][1] else -1
             self.castling[piece.color][side] = False
 
     def update_last_irreversible_move(self, move: Move):
@@ -451,13 +451,26 @@ class Board:
         
         if self.is_empty(from_pos):
             raise ValueError(f"There is no piece at {from_pos}")
+        
+        # Remember the move for undo
+        self.move_logs.append(move)
+
+        # Update castling rights and kings' positions
+        self.update_castling(move)
+        if self.get_tile(to_pos).piece.notation == "K":
+            self.kings[self.get_tile(to_pos).piece.color] = to_pos
+        self.castling_logs.append(self.castling)
+
+        # Handle en passant square logic
+        self._update_en_passant(from_pos, to_pos)
+        self.ep_logs.append(self.ep)
+
+        # Update last irreversible move
+        self.update_last_irreversible_move(move)
 
         # Capture en passant
         if move.is_en_passant():
             self.board[(from_pos[0], to_pos[1])].piece = None
-
-        # Handle en passant square logic
-        self._update_en_passant(from_pos, to_pos)
 
         # Handle castling logic
         if move.is_castling():
@@ -468,21 +481,6 @@ class Board:
         else:
             print("HANDLE NORMAL MOVE")
             self._handle_normal_move(from_pos, to_pos)
-
-        # Remember the move for undo
-        self.move_logs.append(move)
-
-        # Update castling rights and kings' positions
-        self.update_castling(move)
-        if self.get_tile(to_pos).piece.notation == "K":
-            self.kings[self.get_tile(to_pos).piece.color] = to_pos
-
-        # Save the current state for undo
-        self.castling_logs.append(self.castling)
-        self.ep_logs.append(self.ep)
-
-        # Update last irreversible move
-        self.update_last_irreversible_move(move)
 
     def promote_piece(self, type_piece):
         """
@@ -501,7 +499,7 @@ class Board:
 
     def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
-        rook_tile = self.get_tile(to_pos)
+        rook = self.get_piece(to_pos)
         d = sign(to_pos[1] - from_pos[1])
         king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
         rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
