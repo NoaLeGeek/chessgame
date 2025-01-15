@@ -1,6 +1,6 @@
-from Scenes.scene import Scene
-from Scenes.game import Game
-from Scenes.settings import SettingsMenu
+from scenes.scene import Scene
+from scenes.game import Game
+from scenes.settings import SettingsMenu
 from gui import RectButton
 from config import config
 

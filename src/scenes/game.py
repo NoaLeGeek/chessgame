@@ -1,7 +1,7 @@
 import pygame
-from Scenes.scene import Scene, SceneManager
-from Board.board import Board
-from Board.piece import piece_to_notation
+from scenes.scene import Scene, SceneManager
+from board.board import Board
+from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, get_color, flip_pos
 from constants import WHITE
 from config import config
@@ -30,6 +30,8 @@ class Game(Scene):
         for tile in self.board.board.values():
             if tile is None:
                 raise ValueError("Tile is None")
+            if self.board.is_empty(tile.pos):
+                continue
             if config.piece_asset == "blindfold" or (tile == self.board.selected and self.board.promotion is not None):
                 continue
             if tile.piece.image is None:

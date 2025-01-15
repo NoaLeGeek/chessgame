@@ -1,29 +1,22 @@
 from utils import flip_pos, sign, get_value
 from config import config
 from constants import castling_king_column
-from Board.piece import piece_to_notation
+from board.piece import piece_to_notation
 
 class Move:
     def __init__(self, board, from_pos, to_pos, promotion=None):
         self.board = board
         self.from_pos = from_pos
         self.to_pos = to_pos
-        self.piece_tile = board.get_tile(from_pos)
-        self.capture_tile = self._get_capture()
+        self.from_tile = board.get_tile(from_pos)
+        self.to_tile = board.get_tile(to_pos)
         self.promotion = self._get_promotion(promotion)
         self.notation = None
         self.fen = None
 
-    def _get_capture(self):
-        """Get the capture tile during a move."""
-        if self.board.ep is not None and not self.board.is_empty((self.from_pos[0], self.to_pos[1])) and self.board.get_piece((self.from_pos[0], self.to_pos[1])).is_enemy(self.piece_tile.piece):
-            return self.board.get_tile((self.from_pos[0], self.to_pos[1]))
-        elif not self.board.is_empty(self.to_pos):
-            return self.board.get_tile(self.to_pos)
-
     def _get_promotion(self, promotion) -> None:
         """Validates if the promotion is possible based on the piece's position."""
-        if promotion is not None and (self.to_pos[0] not in [0, config.rows - 1] or self.piece_tile.piece.notation != "P"):
+        if promotion is not None and (self.to_pos[0] not in [0, config.rows - 1] or self.from_tile.piece.notation != "P"):
             raise ValueError("Promotion is only possible for pawns at the last row")
         return promotion
 
@@ -33,6 +26,7 @@ class Move:
             self.board.promote_piece(self.promotion)
         else:
             self.board.move_piece(self)
+        self.play_sound_move()
         # TODO attention à ça quand draw_highlight
         # Modify the final column of the king if it's a castling move
         """ if self.is_castling():
@@ -43,7 +37,7 @@ class Move:
         self.board.turn *= -1
         self.board.selected = None
         # Reset half_moves if it's a capture or a pawn move
-        if self.is_capture() or self.piece_tile.piece.notation == "P":
+        if self.is_capture() or self.from_tile.piece.notation == "P":
             self.board.half_moves = 0
         self.notation = str(self)
         # This is the board state after the move
@@ -65,18 +59,18 @@ class Move:
 
     def is_capture(self) -> bool:
         """Checks if the move results in a capture."""
-        return self.capture_tile is not None
+        return self.to_tile.piece is not None
     
     def is_legal(self) -> bool:
         """Validates if the move is legal according to the game rules."""
         if not self.is_castling():
-            return self.piece_tile.can_move(self.board, self.to_pos)
+            return self.from_tile.can_move(self.board, self.to_pos)
         
         # Castling
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
         for next_column in list(range(self.from_pos[1] + d, flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) + d, d)):
-            condition = self.piece_tile.can_move(self.board, (self.from_pos[0], next_column))
+            condition = self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
             is_legal = is_legal and condition
             if not is_legal:
                 break
@@ -86,15 +80,15 @@ class Move:
         """
         Checks if the move is a castling move.
         """
-        if not self.is_capture() or self.capture_tile.piece.notation != "R" or self.piece_tile.piece.notation != "K" or self.piece_tile.piece.is_enemy(self.capture_tile.piece):
+        if not self.is_capture() or self.to_tile.piece.notation != "R" or self.from_tile.piece.notation != "K" or self.from_tile.piece.is_enemy(self.to_tile.piece):
             return 
-        rook_column = self.capture_tile.pos[1]
-        king_column = self.piece_tile.pos[1]
+        rook_column = self.to_tile.pos[1]
+        king_column = self.from_tile.pos[1]
         # O-O-O castling's right
-        if rook_column < king_column and not self.board.castling[self.piece_tile.piece.color][-1]:
+        if rook_column < king_column and not self.board.castling[self.from_tile.piece.color][-1]:
             return False
         # O-O castling's right
-        elif rook_column > king_column and not self.board.castling[self.piece_tile.piece.color][1]:
+        elif rook_column > king_column and not self.board.castling[self.from_tile.piece.color][1]:
             return False
         return True
     
@@ -103,9 +97,9 @@ class Move:
         Checks if the move is an en passant capture.
         """
         return (
-            self.piece_tile.piece.notation == "P" and
+            self.from_tile.piece.notation == "P" and
             self.is_capture() and
-            self.capture_tile.pos != self.to_pos and
+            self.to_tile.pos != self.to_pos and
             self.board.ep is not None and
             self.to_pos == self.board.ep
             )
@@ -121,8 +115,8 @@ class Move:
         else:
             if self.is_capture():
                 # Add the symbol of the piece
-                if self.piece_tile.piece.notation != "P":
-                    string += self.piece_tile.piece.notation
+                if self.to_tile.piece.notation != "P":
+                    string += self.to_tile.piece.notation
                 # Add the starting column if it's a pawn
                 else:
                     string += chr(flip_pos(self.from_pos[1], flipped = self.board.flipped) + 97)

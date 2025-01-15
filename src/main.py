@@ -1,7 +1,7 @@
 import pygame
-from Scenes.scene import SceneManager
+from scenes.scene import SceneManager
 from config import config
-from Scenes.menu import MainMenu
+from scenes.menu import MainMenu
 from utils import generate_background_image
 
 def main():
