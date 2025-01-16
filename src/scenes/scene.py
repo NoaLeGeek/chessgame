@@ -8,6 +8,7 @@ class Scene():
         self.labels = labels
         self.enter()
         self.in_exit = False
+        self.in_enter = False
         
         
     def render(self, screen:pygame.Surface):
@@ -40,10 +41,11 @@ class Scene():
                     button.handle_click()
 
     def enter(self):
-        self.in_enter = True
-        self.alpha = 0
-        for button in self.buttons :
-            button.set_alpha(0)
+        if not self.in_enter :
+            self.in_enter = True
+            self.alpha = 0
+            for button in self.buttons :
+                button.set_alpha(0)
    
     def exit(self):
         self.in_exit = False

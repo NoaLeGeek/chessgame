@@ -43,8 +43,8 @@ def load_image(path: str, size: tuple[int, int] = None):
 #TODO changer new_assets (nom de dossier) to assets
 def generate_piece_images(flipped: int = 1):
     images = dict()
-    for file in os.listdir(os.path.join('new_assets', 'piece', config.piece_asset)):
-        filepath = os.path.join('new_assets', 'piece', config.piece_asset, file)
+    for file in os.listdir(os.path.join('assets', 'piece', config.piece_asset)):
+        filepath = os.path.join('assets', 'piece', config.piece_asset, file)
         notation = os.path.splitext(file)[0]
         image = load_image(filepath, (config.tile_size, config.tile_size))
         if config.flipped_assets and ((flipped == 1 and notation.startswith("b")) or (flipped == -1 and notation.startswith("w"))):
@@ -54,23 +54,23 @@ def generate_piece_images(flipped: int = 1):
     return images
 
 def generate_board_image():
-    filepath = os.path.join('new_assets', 'board', config.board_asset + '.jpg')
+    filepath = os.path.join('assets', 'board', config.board_asset + '.jpg')
     return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
 
 def generate_background_image():
-    filepath = os.path.join('new_assets', 'background', config.background_asset + '.png')
+    filepath = os.path.join('assets', 'background', config.background_asset + '.png')
     return load_image(filepath, (config.width, config.height))
 
 # TODO prendre les sons de lichess
 def generate_sounds():
     sounds = dict()
-    for sound in os.listdir(os.path.join('new_assets', 'sound', config.sound_asset)):
-        filepath = os.path.join('new_assets', 'sound', config.sound_asset, sound)
+    for sound in os.listdir(os.path.join('assets', 'sound', config.sound_asset)):
+        filepath = os.path.join('assets', 'sound', config.sound_asset, sound)
         name = os.path.splitext(sound)[0]
         sounds[name] = load_sound(filepath)
     custom_sounds = ['illegal', 'notify', 'tenseconds']
     sounds.update({
-        name: pygame.mixer.Sound(os.path.join("assets", "sounds", f"{name}.ogg"))
+        name: pygame.mixer.Sound(os.path.join("assets", "sound", f"{name}.ogg"))
         for name in custom_sounds
     })
     return sounds
