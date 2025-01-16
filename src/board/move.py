@@ -10,6 +10,9 @@ class Move:
         self.to_pos = to_pos
         self.from_tile = board.get_tile(from_pos)
         self.to_tile = board.get_tile(to_pos)
+        self.capture = self._is_capture()
+        self.castling = self._is_castling()
+        self.en_passant = self._is_en_passant()
         self.promotion = self._get_promotion(promotion)
         self.notation = None
         self.fen = None
@@ -22,48 +25,53 @@ class Move:
 
     def execute(self) -> None:
         """Executes the move on the board and updates the game state."""
+        # Reset half_moves if it's a capture or a pawn move
+        if self.capture or self.from_tile.piece.notation == "P":
+            self.board.half_moves = 0
         if self.promotion is not None:
             self.board.promote_piece(self.promotion)
         else:
             self.board.move_piece(self)
-        self.play_sound_move()
         # TODO attention à ça quand draw_highlight
         # Modify the final column of the king if it's a castling move
-        """ if self.is_castling():
+        """ if self.castling:
             self.to = (row, flip_pos(get_value(d, 2, 6), flipped=d*flipped))) """
         if self.board.turn == -1:
             self.board.full_moves += 1
         self.board.half_moves += 1
         self.board.turn *= -1
         self.board.selected = None
-        # Reset half_moves if it's a capture or a pawn move
-        if self.is_capture() or self.from_tile.piece.notation == "P":
-            self.board.half_moves = 0
+        self._play_sound_move()
         self.notation = str(self)
         # This is the board state after the move
         self.fen = str(self.board)
         self.board.check_game()
 
-    def play_sound_move(self) -> None:
+    def _play_sound_move(self) -> None:
         """Plays the appropriate sound based on the move type."""
-        if self.is_castling():
+        if self.castling:
+            print("castle sound")
             self.board.play_sound("castle")
-        elif config.rules["giveaway"] == False and self.board.is_king_checked():
+        elif self.board.is_king_checked():
+            print("check sound")
             self.board.play_sound("move-check")
         elif self.promotion is not None:
+            print("promote sound")
             self.board.play_sound("promote")
-        elif self.is_capture():
+        elif self.capture:
+            print("capture sound")
             self.board.play_sound("capture")
         else:
+            print("move sound")
             self.board.play_sound("move-self" if self.board.turn * self.board.flipped == 1 else "move-opponent")
 
-    def is_capture(self) -> bool:
+    def _is_capture(self) -> bool:
         """Checks if the move results in a capture."""
         return self.to_tile.piece is not None
     
     def is_legal(self) -> bool:
         """Validates if the move is legal according to the game rules."""
-        if not self.is_castling():
+        if not self.castling:
             return self.from_tile.can_move(self.board, self.to_pos)
         
         # Castling
@@ -76,11 +84,11 @@ class Move:
                 break
         return is_legal
     
-    def is_castling(self) -> bool:
+    def _is_castling(self) -> bool:
         """
         Checks if the move is a castling move.
         """
-        if not self.is_capture() or self.to_tile.piece.notation != "R" or self.from_tile.piece.notation != "K" or self.from_tile.piece.is_enemy(self.to_tile.piece):
+        if not self.capture or self.to_tile.piece.notation != "R" or self.from_tile.piece.notation != "K" or self.from_tile.piece.is_enemy(self.to_tile.piece):
             return 
         rook_column = self.to_tile.pos[1]
         king_column = self.from_tile.pos[1]
@@ -92,13 +100,13 @@ class Move:
             return False
         return True
     
-    def is_en_passant(self) -> bool:
+    def _is_en_passant(self) -> bool:
         """
         Checks if the move is an en passant capture.
         """
         return (
             self.from_tile.piece.notation == "P" and
-            self.is_capture() and
+            self.capture and
             self.to_tile.pos != self.to_pos and
             self.board.ep is not None and
             self.to_pos == self.board.ep
@@ -110,10 +118,10 @@ class Move:
         """
         string = ""
         # The move is O-O or O-O-O
-        if self.is_castling():
+        if self.castling:
             string += "O" + "-O"*(get_value(sign(self.to_pos[1] - self.from_pos[1]) * self.board.flipped, 1, 2))
         else:
-            if self.is_capture():
+            if self.capture:
                 # Add the symbol of the piece
                 if self.to_tile.piece.notation != "P":
                     string += self.to_tile.piece.notation

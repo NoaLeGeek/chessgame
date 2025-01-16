@@ -69,7 +69,7 @@ def generate_sounds():
         sounds[name] = load_sound(filepath)
     custom_sounds = ['illegal', 'notify', 'tenseconds']
     sounds.update({
-        name: pygame.mixer.Sound(os.path.join("assets", "sounds", f"{name}.ogg"))
+        name: pygame.mixer.Sound(os.path.join("assets", "sound", f"{name}.ogg"))
         for name in custom_sounds
     })
     return sounds

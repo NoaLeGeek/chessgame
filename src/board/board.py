@@ -386,7 +386,7 @@ class Board:
             raise ValueError(f"Sound type '{type}' not found in the sound library.")
         self.sounds[type].play()
 
-    def update_castling(self, move: Move):
+    def _update_castling(self, move: Move):
         """
         Update castling rights after a move.
 
@@ -404,7 +404,7 @@ class Board:
             side = 1 if move.from_tile.pos[1] > self.kings[piece.color][1] else -1
             self.castling[piece.color][side] = False
 
-    def update_last_irreversible_move(self, move: Move):
+    def _update_last_irreversible_move(self, move: Move):
         """
         Update the last irreversible move index based on the current move.
 
@@ -413,7 +413,7 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.is_capture() or move.from_tile.piece.notation == "P" or move.is_castling() or self.castling_logs[-1] != self.castling:
+        if move.capture or move.from_tile.piece.notation == "P" or move.castling or self.castling_logs[-1] != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_logs)
 
@@ -456,9 +456,9 @@ class Board:
         self.move_logs.append(move)
 
         # Update castling rights and kings' positions
-        self.update_castling(move)
-        if self.get_tile(to_pos).piece.notation == "K":
-            self.kings[self.get_tile(to_pos).piece.color] = to_pos
+        self._update_castling(move)
+        if self.get_tile(from_pos).piece.notation == "K":
+            self.kings[self.get_tile(from_pos).piece.color] = to_pos
         self.castling_logs.append(self.castling)
 
         # Handle en passant square logic
@@ -466,20 +466,17 @@ class Board:
         self.ep_logs.append(self.ep)
 
         # Update last irreversible move
-        self.update_last_irreversible_move(move)
+        self._update_last_irreversible_move(move)
 
         # Capture en passant
-        if move.is_en_passant():
+        if move.en_passant:
             self.board[(from_pos[0], to_pos[1])].piece = None
 
         # Handle castling logic
-        if move.is_castling():
-            print("HANDLE CASTLING")
+        if move.castling:
             self._handle_castling(from_pos, to_pos)
-
         # Handle normal move
         else:
-            print("HANDLE NORMAL MOVE")
             self._handle_normal_move(from_pos, to_pos)
 
     def promote_piece(self, type_piece):
@@ -499,26 +496,26 @@ class Board:
 
     def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
-        rook = self.get_piece(to_pos)
+        rook_tile = self.get_tile(to_pos)
         d = sign(to_pos[1] - from_pos[1])
         king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
         rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
         
         # Move the king
         king_tile = self.get_tile(from_pos)
-        self.board[(from_pos[0], king_column)] = king_tile
-        self.board[from_pos].piece = None
+        self.board[(from_pos[0], king_column)].piece = king_tile.piece
         king_tile.move((from_pos[0], king_column))
+        self.board[from_pos].piece = None
 
         # Move the rook
-        self.board[(from_pos[0], rook_column)] = rook_tile
-        self.board[to_pos].piece = None
+        self.board[(from_pos[0], rook_column)].piece = rook_tile.piece
         rook_tile.move((from_pos[0], rook_column))
+        self.board[to_pos].piece = None
 
     def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
-        save_piece = self.board[from_pos].piece
-        self.board[to_pos].piece = save_piece
+        save_tile = self.get_tile(from_pos)
+        self.board[to_pos].piece = save_tile.piece
         self.get_tile(to_pos).move(to_pos)
         self.board[from_pos].piece = None
         
