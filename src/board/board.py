@@ -627,6 +627,16 @@ class Board:
         This function scans the board for any opponent's pieces that can attack the current player's king.
         """
         for tile in self.board.values():
+            print("POS IS: ", tile.pos)
+            print("IS EMPTY: ", self.is_empty(tile.pos))
+            print("IS EMPTY 2: ", tile.piece is None)
+            print("PIECE METHOD 1", tile.piece)
+            print("PIECE METHOD 2", self.get_piece(tile.pos))
+            print("PIECE METHOD 3", self.get_tile(tile.pos).piece)
+            print("TILE 1", tile)
+            print("TILE 2", self.get_tile(tile.pos))
+            print("TILE 2 POS", self.get_tile(tile.pos).pos)
+            print("IS TILE EQUAL?", tile == self.get_tile(tile.pos))
             if self.is_empty(tile.pos):
                 continue
             if tile.piece.color == self.turn or tile.piece.notation == "K":
