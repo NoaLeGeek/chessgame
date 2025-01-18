@@ -10,7 +10,7 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        self.board = Board()
+        self.board = Board("r1bqkbnr/pPpppp1p/N7/8/8/7n/P1PPPPpP/RNBQKB1R w KQkq - 0 1")
         self.highlighted_squares = {}
         self.game_over = False
 
@@ -55,18 +55,18 @@ class Game(Scene):
             screen.blit(transparent_surface, (move[1] * config.tile_size + config.margin, move[0] * config.tile_size + config.margin))
 
     def _draw_promotion(self, screen):
-        selected = self.board.selected
+        piece = self.board.selected.piece
         pos = self.board.promotion
         # Drawing the promotion's frame
         # We normalize the rect to avoid negative width or height, this flips the rect and makes it in the right direction when the board is flipped
         # pos needs to be offset by 1 if the board is flipped
-        rect = pygame.Rect((pos[1] - min(0, self.board.flipped)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped)) * config.tile_size + config.margin, self.board.flipped * config.tile_size, self.board.flipped * len(selected.piece.promotion) * config.tile_size)
+        rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
         rect.normalize()
         pygame.draw.rect(screen, WHITE, rect)
         # Drawing the promotion's pieces
-        for i, type_piece in enumerate(selected.piece.promotion):
-            image = self.board.piece_images[("w" if self.board.selected.piece.color == 1 else "b") + piece_to_notation(type_piece)]
-            screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped) * config.tile_size + config.margin))
+        for i, type_piece in enumerate(piece.promotion):
+            image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
+            screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())

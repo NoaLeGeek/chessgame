@@ -421,9 +421,10 @@ class Board:
         d_ep = en_passant_direction[ep[0]]
         for d_col in [-1, 1]:
             new_pos = (pos[0], pos[1] + d_col)
-            if self.is_empty(new_pos) or self.get_piece(new_pos).notation != "P":
+            if not self.in_bounds(new_pos) or self.is_empty(new_pos):
                 continue
-            if self.get_piece(new_pos).color != d_ep*self.flipped:
+            piece = self.get_piece(new_pos)
+            if piece.notation != "P" or piece.color != d_ep*self.flipped:
                 continue
             if self.convert_to_move(new_pos, ep).is_legal():
                 return True
@@ -448,7 +449,7 @@ class Board:
         and updates the board, castling rights, and en passant square accordingly.
         """
         from_pos, to_pos = move.from_pos, move.to_pos
-        
+
         if self.is_empty(from_pos):
             raise ValueError(f"There is no piece at {from_pos}")
         
@@ -478,6 +479,14 @@ class Board:
         # Handle normal move
         else:
             self._handle_normal_move(from_pos, to_pos)
+        
+        # Verify if no bugs
+        self.testing()
+
+    def testing(self):
+        for pos, tile in self.board.items():
+            if pos != tile.pos:
+                raise ValueError(f"Tile position mismatch: In board position : {pos} != Tile position {tile.pos}")
 
     def promote_piece(self, type_piece):
         """
@@ -504,19 +513,16 @@ class Board:
         # Move the king
         king_tile = self.get_tile(from_pos)
         self.board[(from_pos[0], king_column)].piece = king_tile.piece
-        king_tile.move((from_pos[0], king_column))
         self.board[from_pos].piece = None
 
         # Move the rook
         self.board[(from_pos[0], rook_column)].piece = rook_tile.piece
-        rook_tile.move((from_pos[0], rook_column))
         self.board[to_pos].piece = None
 
     def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
         save_tile = self.get_tile(from_pos)
         self.board[to_pos].piece = save_tile.piece
-        self.get_tile(to_pos).move(to_pos)
         self.board[from_pos].piece = None
         
     def select(self, pos: tuple[int, int]):
@@ -627,7 +633,7 @@ class Board:
         This function scans the board for any opponent's pieces that can attack the current player's king.
         """
         for tile in self.board.values():
-            print("POS IS: ", tile.pos)
+            """print("POS IS: ", tile.pos)
             print("IS EMPTY: ", self.is_empty(tile.pos))
             print("IS EMPTY 2: ", tile.piece is None)
             print("PIECE METHOD 1", tile.piece)
@@ -636,7 +642,7 @@ class Board:
             print("TILE 1", tile)
             print("TILE 2", self.get_tile(tile.pos))
             print("TILE 2 POS", self.get_tile(tile.pos).pos)
-            print("IS TILE EQUAL?", tile == self.get_tile(tile.pos))
+            print("IS TILE EQUAL?", tile == self.get_tile(tile.pos))"""
             if self.is_empty(tile.pos):
                 continue
             if tile.piece.color == self.turn or tile.piece.notation == "K":

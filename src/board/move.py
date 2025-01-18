@@ -50,24 +50,19 @@ class Move:
     def _play_sound_move(self) -> None:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
-            print("castle sound")
             self.board.play_sound("castle")
         elif self.board.is_king_checked():
-            print("check sound")
             self.board.play_sound("move-check")
         elif self.promotion is not None:
-            print("promote sound")
             self.board.play_sound("promote")
         elif self.capture:
-            print("capture sound")
             self.board.play_sound("capture")
         else:
-            print("move sound")
             self.board.play_sound("move-self" if self.board.turn * self.board.flipped == 1 else "move-opponent")
 
     def _is_capture(self) -> bool:
         """Checks if the move results in a capture."""
-        return self.to_tile.piece is not None
+        return self.to_tile.piece is not None or (self.board.ep is not None and not self.board.is_empty((self.from_pos[0], self.to_pos[1])) and self.board.get_piece((self.from_pos[0], self.to_pos[1])).is_enemy(self.from_tile.piece))
     
     def is_legal(self) -> bool:
         """Validates if the move is legal according to the game rules."""
@@ -88,8 +83,8 @@ class Move:
         """
         Checks if the move is a castling move.
         """
-        if not self.capture or self.to_tile.piece.notation != "R" or self.from_tile.piece.notation != "K" or self.from_tile.piece.is_enemy(self.to_tile.piece):
-            return 
+        if not self.capture or self.board.is_empty(self.to_pos) or self.to_tile.piece.notation != "R" or self.from_tile.piece.notation != "K" or self.from_tile.piece.is_enemy(self.to_tile.piece):
+            return False
         rook_column = self.to_tile.pos[1]
         king_column = self.from_tile.pos[1]
         # O-O-O castling's right
@@ -107,7 +102,6 @@ class Move:
         return (
             self.from_tile.piece.notation == "P" and
             self.capture and
-            self.to_tile.pos != self.to_pos and
             self.board.ep is not None and
             self.to_pos == self.board.ep
             )
