@@ -1,7 +1,7 @@
 from scenes.scene import Scene
 from scenes.game import Game
 from scenes.settings import SettingsMenu
-from gui import RectButton, Label
+from gui import RectButton, Label, VideoPlayer
 from config import config
 
 class MainMenu(Scene):
@@ -17,6 +17,8 @@ class MainMenu(Scene):
                             Label((config.width*0.5, config.height*0.17), 'CheckThisOut', "Pacifico",  config.height//5, 'black')
                         ]
                         )
+        self.video_player = VideoPlayer("assets/video/chess.mp4", config.width, config.height)
         
     def render(self, screen):
+        self.video_player.play(screen)
         super().render(screen)

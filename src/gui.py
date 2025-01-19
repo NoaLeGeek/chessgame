@@ -1,4 +1,5 @@
 import pygame
+import cv2
 
 class RectButton:
     def __init__(self, x: int, y: int, width: int, height: int, color: str, text: str, font_name: str, text_color: str, command):
@@ -82,3 +83,33 @@ class Label:
 
     def _create_surface(self) -> pygame.Surface:
         return self.font.render(self.text, True, self.color)
+
+
+class VideoPlayer:
+    def __init__(self, video_path, width, height):
+        self.video_path = video_path
+        self.screen_width = width
+        self.screen_height = height
+        self.cap = cv2.VideoCapture(video_path)
+
+    def play(self, screen):
+        ret, frame = self.cap.read()
+        if not ret:
+            self.cap.release()
+            self.cap = cv2.VideoCapture(self.video_path)
+            ret, frame = self.cap.read()
+
+        frame_height, frame_width = frame.shape[:2]
+        aspect_ratio = frame_height / frame_width
+        new_width = self.screen_width
+        new_height = int(new_width * aspect_ratio)
+
+        frame = cv2.resize(frame, (new_width, new_height))
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
+        x = (self.screen_width - new_width) // 2
+        y = (self.screen_height - new_height) // 2
+        
+        screen.blit(frame, (x, y))
+

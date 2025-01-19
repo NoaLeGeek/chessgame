@@ -6,9 +6,10 @@ class Scene():
         self.manager = manager
         self.buttons = buttons
         self.labels = labels
-        self.enter()
         self.in_exit = False
         self.in_enter = False
+        self.enter()
+        
         
         
     def render(self, screen:pygame.Surface):
