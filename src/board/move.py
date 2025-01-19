@@ -83,15 +83,23 @@ class Move:
         """
         Checks if the move is a castling move.
         """
-        if not self.capture or self.board.is_empty(self.to_pos) or self.to_tile.piece.notation != "R" or self.from_tile.piece.notation != "K" or self.from_tile.piece.is_enemy(self.to_tile.piece):
+        if self.from_tile.piece.notation != "K":
             return False
         rook_column = self.to_tile.pos[1]
         king_column = self.from_tile.pos[1]
+        d = 1 if rook_column > king_column else -1
+        test_column = flip_pos(castling_king_column[d], flipped=d*self.board.flipped)
+        print("TEST COLUMN", test_column)
+        print("CONSTANT", castling_king_column[d])
+        print("D", d)
+        print("DISTANCE BETWEEN", abs(rook_column - king_column))
+        if (config.rules["chess960"] == False and self.to_pos[1] != flip_pos(castling_king_column[d], flipped=d*self.board.flipped)) or (config.rules["chess960"] == True and (not self.capture or self.board.is_empty(self.to_pos) or self.to_tile.piece.notation != "R" or self.from_tile.piece.is_enemy(self.to_tile.piece))):
+            return False
         # O-O-O castling's right
-        if rook_column < king_column and not self.board.castling[self.from_tile.piece.color][-1]:
+        if d == -1 and not self.board.castling[self.from_tile.piece.color][d]:
             return False
         # O-O castling's right
-        elif rook_column > king_column and not self.board.castling[self.from_tile.piece.color][1]:
+        elif d == 1 and not self.board.castling[self.from_tile.piece.color][d]:
             return False
         return True
     

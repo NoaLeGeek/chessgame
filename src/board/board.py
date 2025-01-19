@@ -475,6 +475,7 @@ class Board:
 
         # Handle castling logic
         if move.castling:
+            print("Castling move")
             self._handle_castling(from_pos, to_pos)
         # Handle normal move
         else:

@@ -11,10 +11,6 @@ class Tile:
 
     def get_square_color(self):
         return (sum(self.pos)) % 2
-    
-    def move(self, pos: tuple[int, int]) -> None:
-        self.pos = pos
-        self.calc_position()
 
     def calc_moves(self, board, **kwds):
         return self.piece.calc_moves(board, self.pos, **kwds)

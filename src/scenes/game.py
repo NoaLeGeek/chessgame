@@ -10,7 +10,7 @@ from config import config
 class Game(Scene):
     def __init__(self, manager:SceneManager):
         super().__init__(manager)
-        self.board = Board("r1bqkbnr/pPpppp1p/N7/8/8/7n/P1PPPPpP/RNBQKB1R w KQkq - 0 1")
+        self.board = Board("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
         self.highlighted_squares = {}
         self.game_over = False
 
@@ -72,13 +72,10 @@ class Game(Scene):
         pos = get_pos(pygame.mouse.get_pos())
         print("LEFT CLICK", pos)
         self.highlighted_squares.clear()
-        if self.board.in_bounds(pos) and not self.board.is_empty(pos):
-            piece = self.board.get_piece(pos)
-            if piece is None:
-                raise ValueError("Piece is None")
-            if piece.color == self.board.turn:
+        if self.board.in_bounds(pos):
+            if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                 self.board.get_tile(pos).calc_moves(self.board)
-        self.board.select(pos)
+            self.board.select(pos)
 
     def handle_right_click(self):
         pos = get_pos(pygame.mouse.get_pos())
