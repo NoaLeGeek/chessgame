@@ -12,7 +12,6 @@ class RectButton:
         self.label = Label(self.rect.center, text, font_name, self.rect.height // 2, text_color)
         self.command = command
         self.is_hovered = False
-        self.set_alpha(0)
 
     def draw(self, screen: pygame.Surface):
         screen.blit(self.surface, (self.x, self.y))
@@ -27,15 +26,8 @@ class RectButton:
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             self.command()
 
-    def set_alpha(self, alpha: int):
-        self.surface.set_alpha(alpha)
-        self.label.set_alpha(alpha)
-
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
-
-    def reset(self):
-        self.set_alpha(0)
 
     @staticmethod
     def _create_surface(color: str, width: int, height: int, border_radius: int, alpha: int = None) -> pygame.Surface:
@@ -78,9 +70,6 @@ class Label:
         self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=self.center)
 
-    def set_alpha(self, alpha: int):
-        self.surface.set_alpha(alpha)
-
     def _create_surface(self) -> pygame.Surface:
         return self.font.render(self.text, True, self.color)
 
@@ -91,6 +80,9 @@ class VideoPlayer:
         self.screen_width = width
         self.screen_height = height
         self.cap = cv2.VideoCapture(video_path)
+        _, frame = self.cap.read()
+        self.frame_width = width
+        self.frame_height = int(width*(frame.shape[0]/frame.shape[1]))
 
     def play(self, screen):
         ret, frame = self.cap.read()
@@ -98,18 +90,10 @@ class VideoPlayer:
             self.cap.release()
             self.cap = cv2.VideoCapture(self.video_path)
             ret, frame = self.cap.read()
-
-        frame_height, frame_width = frame.shape[:2]
-        aspect_ratio = frame_height / frame_width
-        new_width = self.screen_width
-        new_height = int(new_width * aspect_ratio)
-
-        frame = cv2.resize(frame, (new_width, new_height))
+            
+        frame = cv2.resize(frame, (self.frame_width, self.frame_height))
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
 
-        x = (self.screen_width - new_width) // 2
-        y = (self.screen_height - new_height) // 2
-        
-        screen.blit(frame, (x, y))
+        screen.blit(frame, (0, 0))
 

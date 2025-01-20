@@ -6,11 +6,6 @@ class Scene():
         self.manager = manager
         self.buttons = buttons
         self.labels = labels
-        self.in_exit = False
-        self.in_enter = False
-        self.enter()
-        
-        
         
     def render(self, screen:pygame.Surface):
         for button in self.buttons:
@@ -20,60 +15,64 @@ class Scene():
 
     def update(self):
         mouse_pos = pygame.mouse.get_pos()
-        if self.in_enter :
-            self.alpha += 3
-            self.in_enter = self.alpha < 255
 
         for button in self.buttons :
             button.update(mouse_pos)
-            if self.in_enter or self.in_exit :
-                button.set_alpha(self.alpha)
-
-                
-        for label in self.labels :
-            if self.in_enter or self.in_exit :
-                label.set_alpha(self.alpha)
-        
-    
+      
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :
             if pygame.mouse.get_pressed()[0]:
                 for button in self.buttons :
                     button.handle_click()
 
-    def enter(self):
-        if not self.in_enter :
-            self.in_enter = True
-            self.alpha = 0
-            for button in self.buttons :
-                button.set_alpha(0)
-   
-    def exit(self):
-        self.in_exit = False
-
-    
 
 class SceneManager:
     def __init__(self, background):
         self.background = background
-
-    def set(self, scene:Scene):
-        self.scenes = [scene]
-    
-    def go_to(self, scene:Scene):
-        self.scenes.append(scene)
-        self.scenes[-1].enter()
-    
-    def go_back(self):
-        self.scenes.pop()
-        self.scenes[-1].enter()
+        self.in_transition = False
+        self.is_fading_out = False
+        self.transition_overlay = pygame.Surface((config.width, config.height))
+        self.transition_overlay.set_alpha(0)
+        self.alpha_value = 0
+        self.next_action = None
+        self.scenes = []
+        self.transition_speed = 500
         
-    def render(self, screen:pygame.Surface):
+    def set(self, scene):
+        self.scenes = [scene]
+
+    def go_to(self, scene):
+        self.next_action = lambda: self.scenes.append(scene)
+        self.start_transition()
+
+    def go_back(self):
+        self.next_action = lambda: self.scenes.pop()
+        self.start_transition()
+
+    def start_transition(self):
+        self.in_transition = True
+        self.is_fading_out = True
+
+    def render(self, screen):
         screen.blit(self.background, (0, 0))
         self.scenes[-1].render(screen)
-    
-    def update(self):
-        self.scenes[-1].update()
-    
-    def handle_event(self, event:pygame.event.Event):
-        self.scenes[-1].handle_event(event)
+        if self.in_transition:
+            screen.blit(self.transition_overlay, (0, 0))
+
+    def update(self, dt):
+        if self.in_transition:
+            self.alpha_value += dt*self.transition_speed if self.is_fading_out else -dt*self.transition_speed
+            self.transition_overlay.set_alpha(self.alpha_value)
+            if self.alpha_value >= 255 and self.is_fading_out:
+                self.alpha_value = 255
+                self.next_action()
+                self.is_fading_out = False
+            elif self.alpha_value <= 0:
+                self.alpha_value = 0
+                self.in_transition = False
+        else:
+            self.scenes[-1].update()
+
+    def handle_event(self, event):
+        if not self.in_transition:
+            self.scenes[-1].handle_event(event)
