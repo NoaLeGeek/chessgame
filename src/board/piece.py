@@ -173,11 +173,9 @@ class King(Piece):
             for d in possible_castling:
                 if rooks[d] is None:
                     continue
-                print("what", ("OOO" if d == -1 else "OO"), "rooks", rooks)
-                rook_pos = flip_pos(rooks[d], flipped=board.flipped) * board.flipped
-                king_pos = flip_pos(castling_king_column[d * board.flipped], flipped=board.flipped) * board.flipped
-                start = board.flipped * min(rook_pos, king_pos)
-                print("rook_pos", rook_pos, "king_pos", king_pos, "start", start)
+                rook_pos = flip_pos(rooks[d*board.flipped], flipped=board.flipped) * board.flipped*d
+                king_pos = flip_pos(castling_king_column[d*board.flipped], flipped=board.flipped) * board.flipped*d
+                start = d*board.flipped * max(rook_pos, king_pos)
                 if all(board.is_empty((from_pos[0], i)) or i == rooks[d] for i in range(start, from_pos[1], -d*board.flipped)):
                     castling_column = rooks[d] if config.rules["chess960"] == True else flip_pos(castling_king_column[d * board.flipped], flipped=board.flipped)
                     self.moves.append((from_pos[0], castling_column))

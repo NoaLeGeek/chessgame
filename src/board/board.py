@@ -506,19 +506,19 @@ class Board:
 
     def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
-        rook_tile = self.get_tile(to_pos)
         d = sign(to_pos[1] - from_pos[1])
+        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], to_pos[1] + d*(1 if d*self.flipped == 1 else 2))
+        # Destinations columns
         king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
         rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
         
-        # Move the king
-        king_tile = self.get_tile(from_pos)
-        self.board[(from_pos[0], king_column)].piece = king_tile.piece
+        # Move the king (from_pos is the king's position before castling)
+        self.board[(from_pos[0], king_column)].piece = self.get_tile(from_pos).piece
         self.board[from_pos].piece = None
 
-        # Move the rook
-        self.board[(from_pos[0], rook_column)].piece = rook_tile.piece
-        self.board[to_pos].piece = None
+        # Move the rook (rook_pos is the rook's position before castling)
+        self.board[(from_pos[0], rook_column)].piece = self.get_tile(rook_pos).piece
+        self.board[rook_pos].piece = None
 
     def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
