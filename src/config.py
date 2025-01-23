@@ -120,11 +120,13 @@ class Config:
         pass
 
     def set_dimensions(self, width, height):
-        self.dimensions = (width, height)
-        self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
-        self.width = self.height
+        #self.dimensions = (width, height)
+        #self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
+        #self.width = self.height
+        self.width, self.height = width, height
         self.margin = self.height//(self.columns*2 + 2)
         self.tile_size = self.height//(self.columns+1)
+        
 
     def update_rule(self, rule, value = None):
         if value is None:
