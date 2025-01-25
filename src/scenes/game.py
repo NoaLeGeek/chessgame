@@ -2,7 +2,7 @@ import pygame
 from scenes.scene import Scene, SceneManager
 from board.board import Board
 from board.piece import piece_to_notation
-from utils import left_click, right_click, get_pos, get_color, flip_pos
+from utils import left_click, right_click, get_pos, get_color, flip_pos, debug_print
 from constants import WHITE
 from config import config
 
@@ -70,7 +70,7 @@ class Game(Scene):
 
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())
-        print("LEFT CLICK", pos)
+        debug_print("LEFT CLICK", pos)
         self.highlighted_squares.clear()
         if self.board.in_bounds(pos):
             if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
@@ -79,7 +79,7 @@ class Game(Scene):
 
     def handle_right_click(self):
         pos = get_pos(pygame.mouse.get_pos())
-        print("RIGHT CLICK", pos)
+        debug_print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
             self.selected = None
             keys = pygame.key.get_pressed()

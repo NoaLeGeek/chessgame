@@ -1,7 +1,7 @@
 import pygame
 from board.tile import Tile
 from constants import castling_king_column, en_passant_direction
-from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign
+from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
 from board.piece import notation_to_piece, piece_to_notation
 from board.move import Move
 from random import choice
@@ -41,9 +41,9 @@ class Board:
         self.sounds = generate_sounds()
 
         # Initialize the board from the FEN string
-        self.create_board(fen)
+        self._create_board(fen)
 
-    def create_board(self, fen: str) -> None:
+    def _create_board(self, fen: str) -> None:
         """
         Create the chess board from a FEN string.
 
@@ -59,6 +59,9 @@ class Board:
         """
         self.board = {(r, c): Tile((r, c)) for r in range(config.rows) for c in range(config.columns)}
         try:
+            # Chess960 row generation
+            fen = self._transform_960_fen(fen)
+
             fen_parts = fen.split()
             if len(fen_parts) != 6:
                 raise ValueError("Invalid FEN format: Must contain exactly 6 parts.")
@@ -161,9 +164,9 @@ class Board:
         col = flip_pos(ord(ep_part[0]) - ord('a'), flipped=self.flipped)
         return row, col    
 
-    def generate_960_row(self, parts):
+    def _transform_960_fen(self, fen: str):
         """
-        Generate a Chess960 starting position for one rank.
+        Transform a fen into a Chess960 starting position for the last ranks.
 
         This function generates a randomized starting position for a Chess960 game
         following the rules:
@@ -172,13 +175,13 @@ class Board:
         - The remaining pieces (knights and queen) are placed in the empty squares.
 
         Args:
-            parts (list): A list containing the FEN parts of the board configuration.
+            fen (str): The FEN of the board configuration.
 
         Returns:
-            list: Updated `parts` with the new Chess960 row included.
+            list: Updated `fen` with the new Chess960 row included.
         """
         # Initialize the row
-        last_row = [None] * len(config.columns)
+        last_row = [None] * config.columns
 
         # Place the bishops on opposite-colored squares
         light_square_indices = list(range(0, config.columns, 2))
@@ -187,20 +190,24 @@ class Board:
         last_row[choice(dark_square_indices)] = "B"
 
         # Place the remaining pieces: knights, queen, rooks, and king
-        pieces = ["N", "N", "Q", "R", "K", "R"]
+        pieces = ["N", "N", "Q"]
         empty_indices = [i for i, val in enumerate(last_row) if val is None]
         for piece in pieces:
             selected_index = choice(empty_indices)
             last_row[selected_index] = piece
             empty_indices.remove(selected_index)
+        for piece, index in zip(["R", "K", "R"], sorted(empty_indices)):
+            last_row[index] = piece
+
+        fen_parts = fen.split()
 
         # Update the FEN string for the board
-        rows = parts[0].split("/")
+        rows = fen_parts[0].split("/")
         for row in [0, 7]:
             rows[row] = "".join(last_row).lower() if row == 0 else "".join(last_row)
-        parts[0] = "/".join(rows)
+        fen_parts[0] = "/".join(rows)
 
-        return parts
+        return " ".join(fen_parts)
     
     def check_game(self):
         """
@@ -536,16 +543,24 @@ class Board:
         This function handles piece selection, move execution, promotion logic, and special moves like castling.
         """
         if self.selected is not None:
+            debug_print("SELECTED", self.selected.pos)
+            debug_print("POS", pos)
+            debug_print("TRIGGER PROMOTION")
             if self._trigger_promotion(pos):
                 return
+            debug_print("ALLY PIECE")
             if self._ally_piece(pos):
                 return
+            debug_print("DESELECT PIECE")
             if self._deselect_piece(pos):
                 return
+            debug_print("HANDLE ILLEGAL MOVE")
             if self._handle_illegal_move(pos):
                 return
+            debug_print("SET PROMOTION")
             if self._set_promotion(pos):
                 return
+            debug_print("EXECUTE MOVE")
             self.convert_to_move(self.selected.pos, pos).execute()
         else:
             self._select_piece(pos)
@@ -584,9 +599,12 @@ class Board:
 
     def _handle_illegal_move(self, pos):
         """Handle illegal moves (either not in the possible moves or king is checked)."""
-        if pos not in self.selected.calc_moves(self):
+        debug_print("POS", pos)
+        debug_print("SELECTED", self.selected.pos)
+        debug_print("SELECTED PIECE MOVES", self.selected.piece.moves)
+        if pos not in self.selected.piece.moves:
             self.selected = None
-            if self.kings[self.turn] is None or self.is_king_checked():
+            if self.kings[self.turn] is None or self.is_king_checked(self.turn):
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
@@ -624,7 +642,7 @@ class Board:
         """
         return self.get_tile(pos) is not None
 
-    def is_king_checked(self):
+    def is_king_checked(self, king_color):
         """
         Check if the current player's king is in check.
 
@@ -633,6 +651,7 @@ class Board:
         
         This function scans the board for any opponent's pieces that can attack the current player's king.
         """
+        debug_print("king_color", king_color)
         for tile in self.board.values():
             """print("POS IS: ", tile.pos)
             print("IS EMPTY: ", self.is_empty(tile.pos))
@@ -646,7 +665,8 @@ class Board:
             print("IS TILE EQUAL?", tile == self.get_tile(tile.pos))"""
             if self.is_empty(tile.pos):
                 continue
-            if tile.piece.color == self.turn or tile.piece.notation == "K":
+            debug_print("PIECE", tile.piece.notation, tile.piece.color)
+            if tile.piece.color == king_color and tile.piece.notation == "K":
                 continue
             for move in tile.calc_moves(self):
                 if self.kings[self.turn] == move:

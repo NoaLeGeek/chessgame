@@ -51,7 +51,7 @@ class Move:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
             self.board.play_sound("castle")
-        elif self.board.is_king_checked():
+        elif self.board.is_king_checked(self.to_tile.piece.color):
             self.board.play_sound("move-check")
         elif self.promotion is not None:
             self.board.play_sound("promote")
@@ -68,8 +68,9 @@ class Move:
         """Validates if the move is legal according to the game rules."""
         if not self.castling:
             return self.from_tile.can_move(self.board, self.to_pos)
-        
         # Castling
+        if self.board.is_king_checked(self.from_tile.piece.color):
+            return False
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
         for next_column in list(range(self.from_pos[1] + d, flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) + d, d)):
@@ -133,7 +134,7 @@ class Move:
             if self.promotion is not None:
                 string += "=" + piece_to_notation(self.promotion)
         # Add # if it's checkmate or + if it's a check
-        if self.board.is_king_checked():
+        if self.board.is_king_checked(self.to_tile.piece.color):
             if self.board.is_stalemate():
                 string += "#"
             else:

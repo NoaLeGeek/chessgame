@@ -17,13 +17,14 @@ class Config:
         self.background_asset = self.config.get('ASSETS', 'background')
         self.rows = self.config.getint('BOARD', 'rows')
         self.columns = self.config.getint('BOARD', 'columns')
+        self.debug = self.config.getboolean('GENERAL', 'debug')
         self.rules = {
             "puissance_4_pawns": False,
             "mutation_chess": False,
             "king_of_the_hill": False,
             "+3_checks": False,
             "giveaway": False,
-            "chess960": False,
+            "chess960": True,
             "random_position": False,
             "random_promotion": False,
             "no_promotion": False,
