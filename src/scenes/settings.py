@@ -4,7 +4,7 @@ from gui import Label
 
 
 class SettingsMenu(Scene):
-    def __init__(self, manager):
-        super().__init__(manager)
+    def __init__(self):
+        super().__init__()
 
 

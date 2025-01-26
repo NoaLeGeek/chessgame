@@ -57,10 +57,6 @@ def generate_board_image():
     filepath = os.path.join('assets', 'board', config.board_asset + '.jpg')
     return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
 
-def generate_background_image():
-    filepath = os.path.join('assets', 'background', config.background_asset + '.png')
-    return load_image(filepath, (config.width, config.height))
-
 # TODO prendre les sons de lichess
 def generate_sounds():
     sounds = dict()
@@ -97,3 +93,13 @@ def get_color(highlight_color):
         case None:
             r, g, b, a = 0, 0, 0, 0
     return r, g, b, a
+
+def singleton(cls):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return get_instance
