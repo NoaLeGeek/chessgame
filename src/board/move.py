@@ -79,7 +79,7 @@ class Move:
         dest_king_column = flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) * self.board.flipped*d
         start = self.board.flipped * d * min(self.from_pos[1], dest_rook_column)
         end = self.board.flipped * d * max(rook_pos[1], dest_king_column)
-        for next_column in list(range(start + d*self.board.flipped, end + d*self.board.flipped, d*self.board.flipped)):
+        for next_column in range(start + d*self.board.flipped, end + d*self.board.flipped, d*self.board.flipped):
             condition = self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
             is_legal = is_legal and condition
             if not is_legal:

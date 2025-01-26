@@ -177,7 +177,9 @@ class King(Piece):
             dest_king_column = flip_pos(castling_king_column[d*board.flipped], flipped=board.flipped) * board.flipped*d
             start = board.flipped * d * min(from_pos[1], dest_rook_column)
             end = board.flipped * d * max(rook_column, dest_king_column)
-            if all(board.is_empty((from_pos[0], i)) or i == rooks[d*board.flipped] for i in range(start + d*board.flipped, end + d*board.flipped, d*board.flipped)):
+            columns = list(range(start + d*board.flipped, end + d*board.flipped, d*board.flipped))
+            debug_print("rook_column", rook_column, "\ndest_rook_column", dest_rook_column, "\ndest_king_column", dest_king_column, "\nstart", start, "\nend", end, "\ncolumns", columns)
+            if all(board.is_empty((from_pos[0], i)) or i == rooks[d*board.flipped] for i in columns):
                 castling_column = rooks[d] if config.rules["chess960"] == True else flip_pos(castling_king_column[d*board.flipped], flipped=board.flipped)
                 self.moves.append((from_pos[0], castling_column))
         return self.moves
