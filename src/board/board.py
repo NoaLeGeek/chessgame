@@ -60,7 +60,8 @@ class Board:
         self.board = {(r, c): Tile((r, c)) for r in range(config.rows) for c in range(config.columns)}
         try:
             # Chess960 row generation
-            fen = self._transform_960_fen(fen)
+            if config.rules["chess960"] == True:
+                fen = self._transform_960_fen(fen)
 
             fen_parts = fen.split()
             if len(fen_parts) != 6:

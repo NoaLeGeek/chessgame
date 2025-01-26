@@ -1,6 +1,6 @@
 import pygame
 from constants import bishop_directions, rook_directions, queen_directions, knight_directions, castling_king_column
-from utils import flip_pos
+from utils import flip_pos, debug_print
 from config import config
 
 @staticmethod
