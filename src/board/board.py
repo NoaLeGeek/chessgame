@@ -514,7 +514,7 @@ class Board:
     def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
         d = sign(to_pos[1] - from_pos[1])
-        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], to_pos[1] + d*(1 if d*self.flipped == 1 else 2))
+        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d*self.flipped == 1 else 0))
         # Destinations columns
         king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
         rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
@@ -599,9 +599,6 @@ class Board:
 
     def _handle_illegal_move(self, pos):
         """Handle illegal moves (either not in the possible moves or king is checked)."""
-        debug_print("POS", pos)
-        debug_print("SELECTED", self.selected.pos)
-        debug_print("SELECTED PIECE MOVES", self.selected.piece.moves)
         if pos not in self.selected.piece.moves:
             self.selected = None
             if self.kings[self.turn] is None or self.is_king_checked(self.turn):
@@ -651,21 +648,9 @@ class Board:
         
         This function scans the board for any opponent's pieces that can attack the current player's king.
         """
-        debug_print("king_color", king_color)
         for tile in self.board.values():
-            """print("POS IS: ", tile.pos)
-            print("IS EMPTY: ", self.is_empty(tile.pos))
-            print("IS EMPTY 2: ", tile.piece is None)
-            print("PIECE METHOD 1", tile.piece)
-            print("PIECE METHOD 2", self.get_piece(tile.pos))
-            print("PIECE METHOD 3", self.get_tile(tile.pos).piece)
-            print("TILE 1", tile)
-            print("TILE 2", self.get_tile(tile.pos))
-            print("TILE 2 POS", self.get_tile(tile.pos).pos)
-            print("IS TILE EQUAL?", tile == self.get_tile(tile.pos))"""
             if self.is_empty(tile.pos):
                 continue
-            debug_print("PIECE", tile.piece.notation, tile.piece.color)
             if tile.piece.color == king_color and tile.piece.notation == "K":
                 continue
             for move in tile.calc_moves(self):

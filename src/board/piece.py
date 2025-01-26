@@ -172,10 +172,12 @@ class King(Piece):
         for d in possible_castling:
             if rooks[d] is None:
                 continue
-            rook_pos = flip_pos(rooks[d*board.flipped], flipped=board.flipped) * board.flipped*d
-            king_pos = flip_pos(castling_king_column[d*board.flipped], flipped=board.flipped) * board.flipped*d
-            start = d*board.flipped * max(rook_pos, king_pos)
-            if all(board.is_empty((from_pos[0], i)) or i == rooks[d] for i in range(start, from_pos[1], -d*board.flipped)):
-                castling_column = rooks[d] if config.rules["chess960"] == True else flip_pos(castling_king_column[d * board.flipped], flipped=board.flipped)
+            rook_column = rooks[d*board.flipped] * board.flipped*d
+            dest_rook_column = flip_pos(castling_king_column[d*board.flipped] - d * board.flipped, flipped=board.flipped) * board.flipped*d
+            dest_king_column = flip_pos(castling_king_column[d*board.flipped], flipped=board.flipped) * board.flipped*d
+            start = board.flipped * d * min(from_pos[1], dest_rook_column)
+            end = board.flipped * d * max(rook_column, dest_king_column)
+            if all(board.is_empty((from_pos[0], i)) or i == rooks[d*board.flipped] for i in range(start + d*board.flipped, end + d*board.flipped, d*board.flipped)):
+                castling_column = rooks[d] if config.rules["chess960"] == True else flip_pos(castling_king_column[d*board.flipped], flipped=board.flipped)
                 self.moves.append((from_pos[0], castling_column))
         return self.moves
