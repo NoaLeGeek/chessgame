@@ -515,19 +515,21 @@ class Board:
     def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
         d = sign(to_pos[1] - from_pos[1])
+        # Save the pieces
+        king = self.get_tile(from_pos).piece
         rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d*self.flipped == 1 else 0))
+        rook = self.get_tile(rook_pos).piece
+
         # Destinations columns
-        king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
-        rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
+        dest_king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
+        dest_rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
         
-        # Move the king (from_pos is the king's position before castling)
-        self.board[(from_pos[0], king_column)].piece = self.get_tile(from_pos).piece
+        # Castling move
         self.board[from_pos].piece = None
-
-        # Move the rook (rook_pos is the rook's position before castling)
-        self.board[(from_pos[0], rook_column)].piece = self.get_tile(rook_pos).piece
         self.board[rook_pos].piece = None
-
+        self.board[(from_pos[0], dest_king_column)].piece = king
+        self.board[(from_pos[0], dest_rook_column)].piece = rook
+        
     def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
         save_tile = self.get_tile(from_pos)
@@ -625,8 +627,8 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = tile.piece.moves
-        return [move for move in moves if self.convert_to_move(tile.pos, move).is_legal()]
+        moves = map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves)
+        return list(filter(lambda move: move.is_legal(), moves))
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """
