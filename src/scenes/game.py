@@ -53,11 +53,11 @@ class Game(Scene):
             transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
             # Capture move
             if move.capture == True:
-                pygame.draw.circle(transparent_surface, (255, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size, config.tile_size // 8)
+                pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 2, config.tile_size // 12)
             # Normal move
             else:
                 pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
-            screen.blit(transparent_surface, (move[1] * config.tile_size + config.margin, move[0] * config.tile_size + config.margin))
+            screen.blit(transparent_surface, (move.to_pos[1] * config.tile_size + config.margin, move.to_pos[0] * config.tile_size + config.margin))
 
     def _draw_promotion(self, screen):
         piece = self.board.selected.piece

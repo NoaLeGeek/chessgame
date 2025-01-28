@@ -602,7 +602,7 @@ class Board:
 
     def _handle_illegal_move(self, pos):
         """Handle illegal moves (either not in the possible moves or king is checked)."""
-        if pos not in self.selected.piece.moves:
+        if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
             self.selected = None
             if self.kings[self.turn] is None or self.is_king_checked(self.turn):
                 self.play_sound("illegal")
