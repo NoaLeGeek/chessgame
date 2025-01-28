@@ -24,7 +24,7 @@ class Config:
             "king_of_the_hill": False,
             "+3_checks": False,
             "giveaway": False,
-            "chess960": True,
+            "chess960": False,
             "random_position": False,
             "random_promotion": False,
             "no_promotion": False,
