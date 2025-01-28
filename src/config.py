@@ -17,13 +17,14 @@ class Config:
         self.background_asset = self.config.get('ASSETS', 'background')
         self.rows = self.config.getint('BOARD', 'rows')
         self.columns = self.config.getint('BOARD', 'columns')
+        self.debug = self.config.getboolean('GENERAL', 'debug')
         self.rules = {
             "puissance_4_pawns": False,
             "mutation_chess": False,
             "king_of_the_hill": False,
             "+3_checks": False,
             "giveaway": False,
-            "chess960": False,
+            "chess960": True,
             "random_position": False,
             "random_promotion": False,
             "no_promotion": False,
@@ -120,11 +121,13 @@ class Config:
         pass
 
     def set_dimensions(self, width, height):
-        self.dimensions = (width, height)
-        self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
-        self.width = self.height
+        #self.dimensions = (width, height)
+        #self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
+        #self.width = self.height
+        self.width, self.height = width, height
         self.margin = self.height//(self.columns*2 + 2)
         self.tile_size = self.height//(self.columns+1)
+        
 
     def update_rule(self, rule, value = None):
         if value is None:

@@ -1,61 +1,50 @@
 import pygame
+import cv2
 
 class RectButton:
-    def __init__(self, x:int, y:int, width:int, height:int, color:str, text:str, font:str, text_color:str, command):
+    def __init__(self, x: int, y: int, width: int, height: int, color: str, text: str, font_name: str, text_color: str, command):
         self.width, self.height = width, height
-        self.x, self.y = x-width//2, y-height//2
+        self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
-        self.surface = pygame.Surface((width, height))
-        self.surface.fill(color)
-        self.label = Label(self.rect.center, text, pygame.font.Font(font, self.rect.height), text_color, font)
         self.color = color
+        self.surface = self._create_surface(color, width, height, border_radius=int(height // 2))
+        self.filter = self._create_surface("black", width, height, border_radius=int(height // 2), alpha=50)
+        self.label = Label(self.rect.center, text, font_name, self.rect.height // 2, text_color)
         self.command = command
-        self.set_alpha(0)
+        self.is_hovered = False
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface):
         screen.blit(self.surface, (self.x, self.y))
         self.label.draw(screen)
+        if not self.is_hovered:
+            screen.blit(self.filter, (self.x, self.y))
 
-    def update(self, mouse_pos):
-        is_collision = self.rect.collidepoint(mouse_pos)
-        if is_collision and self.rect.width < self.width + 10 :
-            self.update_size(self.rect.width+2, self.rect.height+2, self.rect.x-1, self.rect.y-1)    
-        elif not is_collision and self.rect.width > self.width :
-            self.update_size(self.rect.width-2, self.rect.height-2, self.rect.x+1, self.rect.y+1)
-
-    def set_alpha(self, alpha):
-        self.surface.set_alpha(alpha)
-        self.label.surface.set_alpha(alpha)     
-    
-    def update_size(self, new_width, new_height, new_x, new_y):
-        self.rect.width, self.rect.height = new_width, new_height
-        self.rect.x, self.rect.y = new_x, new_y
-        self.x, self.y = new_x, new_y
-        self.surface = pygame.Surface((new_width, new_height))
-        self.surface.fill(self.color)
-        self.label.update_size(self.rect.height, self.rect.center)
-
-    def update_text(self, new_text):
-        self.label.update_text(new_text)
+    def update(self, mouse_pos: tuple[int, int]):
+        self.is_hovered = self.rect.collidepoint(mouse_pos)
 
     def handle_click(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             self.command()
-    
-    def reset(self):
-        self.alpha = 0
-        self.surface.set_alpha(0)
-        self.label.surface.set_alpha(0)
+
+    def update_text(self, new_text: str):
+        self.label.update_text(new_text)
+
+    @staticmethod
+    def _create_surface(color: str, width: int, height: int, border_radius: int, alpha: int = None) -> pygame.Surface:
+        surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        pygame.draw.rect(surface, color, (0, 0, width, height), border_radius=border_radius)
+        if alpha is not None:
+            surface.set_alpha(alpha)
+        return surface
 
 
 class ImageButton:
-    def __init__(self, center:tuple[int, int], image:pygame.Surface, command):
+    def __init__(self, center: tuple[int, int], image: pygame.Surface, command):
         self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.center = center
+        self.rect = self.image.get_rect(center=center)
         self.command = command
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface):
         screen.blit(self.image, self.rect)
 
     def handle_click(self):
@@ -64,27 +53,47 @@ class ImageButton:
 
 
 class Label:
-    def __init__(self, center:tuple[int, int,], text:str, font:pygame.font.Font, color:str, font_name:str):
+    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str):
         self.text = text
-        self.center = center 
-        self.font = font 
+        self.center = center
+        self.font_path = f"assets/font/{font_name}.ttf"
+        self.font = pygame.font.Font(self.font_path, font_size)
         self.color = color
-        self.font_name = font_name
-        self.surface = font.render(text, True, color)
+        self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=center)
-        self.surface.set_alpha(0)
-        
 
-    def draw(self,  screen:pygame.Surface):
+    def draw(self, screen: pygame.Surface):
         screen.blit(self.surface, self.rect)
 
-    def update_text(self, new_text):
-        self.surface = self.font.render(new_text, True, self.color) 
-        self.rect = self.surface.get_rect(center = self.center)
+    def update_text(self, new_text: str):
         self.text = new_text
-    
-    def update_size(self, size, new_center):
-        self.surface = pygame.font.Font(self.font_name, size).render(self.text, True, self.color) 
-        self.rect = self.surface.get_rect(center = new_center)
-        self.center = new_center
+        self.surface = self._create_surface()
+        self.rect = self.surface.get_rect(center=self.center)
+
+    def _create_surface(self) -> pygame.Surface:
+        return self.font.render(self.text, True, self.color)
+
+
+class VideoPlayer:
+    def __init__(self, video_path, width, height):
+        self.video_path = video_path
+        self.screen_width = width
+        self.screen_height = height
+        self.cap = cv2.VideoCapture(video_path)
+        _, frame = self.cap.read()
+        self.frame_width = width
+        self.frame_height = int(width*(frame.shape[0]/frame.shape[1]))
+
+    def play(self, screen):
+        ret, frame = self.cap.read()
+        if not ret:
+            self.cap.release()
+            self.cap = cv2.VideoCapture(self.video_path)
+            ret, frame = self.cap.read()
+            
+        frame = cv2.resize(frame, (self.frame_width, self.frame_height))
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+
+        screen.blit(frame, (0, 0))
 

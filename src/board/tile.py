@@ -37,7 +37,7 @@ class Tile:
         if self.piece.notation == "K":
             board.kings[self.piece.color] = to
         # Check if the king is in check after the move
-        can_move = not board.is_king_checked()
+        can_move = not board.is_king_checked(self.piece.color)
         # Restore the initial state of the board
         board.board[piece_pos] = self_tile
         board.board[to] = save_tile
