@@ -1,7 +1,7 @@
 import torch
 import copy
 
-from model import ChessModel
+from ia.ml.model import ChessModel
 
 
 class Builder:

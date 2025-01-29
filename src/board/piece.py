@@ -3,13 +3,14 @@ from constants import bishop_directions, rook_directions, queen_directions, knig
 from utils import flip_pos, debug_print
 from config import config
 
-@staticmethod
 def notation_to_piece(notation: str):
     return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
     
-@staticmethod
 def piece_to_notation(piece: "Piece"):
     return {Pawn:'P', King:'K', Rook:'R', Bishop:'B', Knight:'N', Queen:'Q'}[piece]
+
+def piece_to_num(piece):
+    return {Pawn:0, Knight:1, Bishop:2, Rook:3, Queen:4, King:5}[piece]
 
 class Piece():
     def __init__(self, color: int, image: pygame.Surface = None) -> None:

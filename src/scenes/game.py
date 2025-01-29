@@ -106,3 +106,6 @@ class Game(Scene):
             if event.key == pygame.K_f:
                 self.board.flip_board()
                 self.highlighted_squares = {flip_pos(pos): value for pos, value in self.highlighted_squares.items()}
+            if event.key == pygame.K_SPACE :
+                move = self.board.ia.predict(self.board)
+                move.execute()

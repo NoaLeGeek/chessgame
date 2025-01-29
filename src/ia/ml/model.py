@@ -34,4 +34,24 @@ class ChessModel(nn.Module):
         return x
 
     def predict(self, board):
-        pass
+        device = torch_directml.device()
+        self.to(device)
+
+        X = board.to_matrix()
+
+        X = torch.tensor(X, dtype=torch.float32).unsqueeze(0).to(device)
+
+        with torch.no_grad():
+            logits = self(X)
+
+        logits = logits.squeeze(0)
+        probabilities = torch.softmax(logits, dim=0).cpu().numpy()
+        sorted_indices = np.argsort(probabilities)[::-1]
+
+        for move_index in sorted_indices:
+            uci_move = self.decoded_moves.get(move_index)
+            move = board.convert_uci_to_move(uci_move)
+            if move :
+                if move.is_legal():
+                    return move
+                

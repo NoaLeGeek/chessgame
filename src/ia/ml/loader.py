@@ -2,7 +2,7 @@ import yaml
 import json
 import torch
 
-from builder import build_model, build_optimizer, build_scheduler
+from ia.ml.builder import build_model, build_optimizer, build_scheduler
 
 
 def load_encoded_moves(filepath):
