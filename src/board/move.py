@@ -32,6 +32,7 @@ class Move:
             self.board.promote_piece(self.promotion)
         else:
             self.board.move_piece(self)
+        # This is the board state after the move
         # TODO attention à ça quand draw_highlight
         # Modify the final column of the king if it's a castling move
         """ if self.castling:
@@ -42,8 +43,8 @@ class Move:
         self.board.turn *= -1
         self.board.selected = None
         self._play_sound_move()
-        self.notation = str(self)
-        # This is the board state after the move
+        #self.notation = str(self)
+        # TODO ne pas oublier de remettre ça
         self.fen = str(self.board)
         self.board.check_game()
 
@@ -51,7 +52,7 @@ class Move:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
             self.board.play_sound("castle")
-        elif self.board.is_king_checked():
+        elif self.board.is_king_checked(self.to_tile.piece.color):
             self.board.play_sound("move-check")
         elif self.promotion is not None:
             self.board.play_sound("promote")
@@ -68,11 +69,17 @@ class Move:
         """Validates if the move is legal according to the game rules."""
         if not self.castling:
             return self.from_tile.can_move(self.board, self.to_pos)
-        
         # Castling
+        if self.board.is_king_checked(self.from_tile.piece.color):
+            return False
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
-        for next_column in list(range(self.from_pos[1] + d, flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) + d, d)):
+        rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))
+        dest_rook_column = flip_pos(castling_king_column[d * self.board.flipped] - d * self.board.flipped, flipped=self.board.flipped) * self.board.flipped*d
+        dest_king_column = flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) * self.board.flipped*d
+        start = self.board.flipped * d * min(self.from_pos[1], dest_rook_column)
+        end = self.board.flipped * d * max(rook_pos[1], dest_king_column)
+        for next_column in range(start + d*self.board.flipped, end + d*self.board.flipped, d*self.board.flipped):
             condition = self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
             is_legal = is_legal and condition
             if not is_legal:
@@ -133,7 +140,7 @@ class Move:
             if self.promotion is not None:
                 string += "=" + piece_to_notation(self.promotion)
         # Add # if it's checkmate or + if it's a check
-        if self.board.is_king_checked():
+        if self.board.is_king_checked(self.to_tile.piece.color):
             if self.board.is_stalemate():
                 string += "#"
             else:

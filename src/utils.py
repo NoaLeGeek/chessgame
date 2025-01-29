@@ -96,3 +96,7 @@ def get_color(highlight_color):
         case None:
             r, g, b, a = 0, 0, 0, 0
     return r, g, b, a
+
+def debug_print(*args):
+    if config.debug:
+        print(*args)
