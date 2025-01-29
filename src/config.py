@@ -1,5 +1,4 @@
 import configparser
-import ctypes
 import sys
 import os
 
