@@ -103,6 +103,7 @@ class Game(Scene):
         elif event.type == pygame.KEYDOWN :
             if event.key == pygame.K_r :
                 self.board = Board()
+                self.board.flip_board()
             if event.key == pygame.K_f:
                 self.board.flip_board()
                 self.highlighted_squares = {flip_pos(pos): value for pos, value in self.highlighted_squares.items()}

@@ -100,8 +100,9 @@ class Board:
                     piece_image_key = f"{'w' if color == 1 else 'b'}{char.upper()}"
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
-
-                    tile.piece = piece_type(color, self.piece_images[piece_image_key])
+                    
+                    if char.upper() in ["K", "R", "P"]:
+                        tile.piece = piece_type(color, self.piece_images[piece_image_key])
                     self.board[(r, c)] = tile
 
                     if char.upper() == "K":  # Track kings' positions
@@ -356,7 +357,10 @@ class Board:
         Returns:
             Piece or None: The piece at the position, or None if the position is empty.
         """
-        return self.get_tile(pos).piece
+        try:
+            return self.get_tile(pos).piece
+        except AttributeError:
+            print("COULDNT GET PIECE", pos)
     
     def is_empty(self, pos):
         """

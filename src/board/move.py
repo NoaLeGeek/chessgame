@@ -74,12 +74,14 @@ class Move:
             return False
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
+        # -1 for O-O-O, 1 for O-O
+        castling_direction = d*self.board.flipped
         rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))
-        dest_rook_column = flip_pos(castling_king_column[d * self.board.flipped] - d * self.board.flipped, flipped=self.board.flipped) * self.board.flipped*d
-        dest_king_column = flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped) * self.board.flipped*d
-        start = self.board.flipped * d * min(self.from_pos[1], dest_rook_column)
-        end = self.board.flipped * d * max(rook_pos[1], dest_king_column)
-        for next_column in range(start + d*self.board.flipped, end + d*self.board.flipped, d*self.board.flipped):
+        dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=self.board.flipped) * castling_direction
+        dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=self.board.flipped) * castling_direction
+        start = castling_direction * min(self.from_pos[1] * castling_direction, dest_rook_column)
+        end = castling_direction * max(rook_pos[1] * castling_direction, dest_king_column)
+        for next_column in range(start + castling_direction, end + castling_direction, castling_direction):
             condition = self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
             is_legal = is_legal and condition
             if not is_legal:
