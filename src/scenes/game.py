@@ -2,19 +2,28 @@ import pygame
 from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
-from utils import left_click, right_click, get_pos, get_color, flip_pos
+from utils import left_click, right_click, get_pos, get_color, flip_pos, load_image
 from constants import WHITE
 from config import config
+from gui import RectButton
 
 
 class Game(Scene):
     def __init__(self):
-        super().__init__()
         self.board = Board()
         self.highlighted_squares = {}
         self.game_over = False
+        super().__init__()
+
+    def create_buttons(self):
+        self.buttons = {
+            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'QUIT', 'Geizer.otf', 'black', self.manager.go_back),
+            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), 'white', '', 'Geizer.otf', 'black', self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
+        }
+        
 
     def render(self, screen:pygame.Surface):
+        super().render(screen)
         screen.blit(self.board.image, (config.margin, config.margin))
         self._draw_pieces(screen)
         self._draw_highlight(screen)
@@ -24,7 +33,7 @@ class Game(Scene):
             self._draw_promotion(screen)
 
     def update(self):
-        pass
+        super().update()
 
     def _draw_pieces(self, screen):
         for tile in self.board.board.values():
@@ -93,6 +102,7 @@ class Game(Scene):
                 self.highlighted_squares.pop(pos, None)
 
     def handle_event(self, event:pygame.event.Event):
+        super().handle_event(event)
         if event.type == pygame.MOUSEBUTTONDOWN :
             if left_click():
                 self.handle_left_click()

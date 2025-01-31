@@ -9,20 +9,25 @@ def create_rect_surface(color: str, width: int, height: int, border_radius: int,
         return surface
 
 class RectButton:
-    def __init__(self, x: int, y: int, width: int, height: int, color: str, text: str, font_name: str, text_color: str, command):
+    def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: str, text: str, font_name: str, text_color: str, command, image: pygame.Surface = None):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
         self.color = color
-        self.surface = create_rect_surface(color, width, height, border_radius=int(height // 2))
-        self.filter = create_rect_surface("black", width, height, border_radius=int(height // 2), alpha=50)
-        self.label = Label(self.rect.center, text, font_name, self.rect.height // 2, text_color)
+        self.surface = create_rect_surface(color, width, height, border_radius)
+        self.filter = create_rect_surface("black", width, height, border_radius, alpha=50)
+        self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
         self.command = command
         self.is_hovered = False
+        self.image = image
+        if image: 
+            self.image_pos = (self.rect.centerx-image.get_width()//2, self.rect.centery-image.get_height()//2)
 
     def draw(self, screen: pygame.Surface):
         screen.blit(self.surface, (self.x, self.y))
         self.label.draw(screen)
+        if self.image:
+            screen.blit(self.image, self.image_pos)
         if not self.is_hovered:
             screen.blit(self.filter, (self.x, self.y))
 
@@ -36,34 +41,18 @@ class RectButton:
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
 
-
-
-class ImageButton:
-    def __init__(self, center: tuple[int, int], image: pygame.Surface, command):
-        self.image = image
-        self.rect = self.image.get_rect(center=center)
-        self.command = command
-
-    def draw(self, screen: pygame.Surface):
-        screen.blit(self.image, self.rect)
-
-    def handle_click(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
-            self.command()
-
-
 class Label:
     def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str, background: pygame.Surface = None, background_pos = None):
         self.text = text
         self.center = center
-        self.font_path = f"assets/font/{font_name}.ttf"
+        self.font_path = f"assets/font/{font_name}"
         self.font = pygame.font.Font(self.font_path, font_size)
         self.color = color
         self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=center)
         self.background = background
-        self.background_pos = background_pos
-
+        if background_pos: 
+            self.background_pos = (background_pos[0]-background.get_width()//2, background_pos[1]-background.get_height()//2)
 
     def draw(self, screen: pygame.Surface):
         if self.background :
@@ -77,7 +66,6 @@ class Label:
 
     def _create_surface(self) -> pygame.Surface:
         return self.font.render(self.text, True, self.color)
-
 
 class VideoPlayer:
     def __init__(self, video_path, width, height):
