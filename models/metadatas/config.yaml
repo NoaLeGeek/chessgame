@@ -25,13 +25,16 @@ architecture:
       args: [512, "num_classes"]
 
 optimizer:
-  Adam: 
-    lr: 0.001
+  SGD: 
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
 
 scheduler:
-  CosineAnnealingLR:  
-    T_max: 25
-    lr_min: 0.00001
+  CosineAnnealingWarmRestarts:  
+    T_0: 15
+    T_mult: 2
+    eta_min: 0.00001
 
 epochs: 100
 batch_size: 8192
@@ -40,7 +43,7 @@ num_workers: 4
 encoded_moves_path: "data/encoded_moves.json"
 training_data_path: "data/dataset/training_data.pgn"
 validation_data_path: "data/dataset/validation_data.pgn"
-checkpoint_path: ""
+checkpoint_path: "models/checkpoints/checkpoint_4.pth"
 
 logs_save_path: "models/metadatas"
 checkpoint_save_path: "models/checkpoints"

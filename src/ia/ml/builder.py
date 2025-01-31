@@ -1,7 +1,10 @@
 import torch
 import copy
 
-from ia.ml.model import ChessModel
+try :
+    from model import ChessModel
+except:
+    from ia.ml.model import ChessModel
 
 
 class Builder:
