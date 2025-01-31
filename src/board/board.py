@@ -101,8 +101,7 @@ class Board:
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     
-                    if char.upper() in ["K", "R", "P"]:
-                        tile.piece = piece_type(color, self.piece_images[piece_image_key])
+                    tile.piece = piece_type(color, self.piece_images[piece_image_key])
                     self.board[(r, c)] = tile
 
                     if char.upper() == "K":  # Track kings' positions
