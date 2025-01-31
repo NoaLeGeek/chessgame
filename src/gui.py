@@ -53,7 +53,7 @@ class ImageButton:
 
 
 class Label:
-    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str, background: pygame.Surface = None):
+    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str, background: pygame.Surface = None, background_pos = None):
         self.text = text
         self.center = center
         self.font_path = f"assets/font/{font_name}.ttf"
@@ -62,8 +62,8 @@ class Label:
         self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=center)
         self.background = background
-        if background : 
-            self.background_pos = (self.rect.centerx - background.get_width()//2, self.rect.centery - background.get_height()//2)
+        self.background_pos = background_pos
+
 
     def draw(self, screen: pygame.Surface):
         if self.background :

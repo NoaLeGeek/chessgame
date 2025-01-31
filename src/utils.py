@@ -3,7 +3,9 @@ import os
 from config import config
 
 def load_sound(filepath: str):
-    return pygame.mixer.Sound(filepath)
+    sound = pygame.mixer.Sound(filepath)
+    sound.set_volume(config.volume)
+    return sound 
 
 def sign(x: int) -> int:
     return (x >= 0) - (x < 0)
