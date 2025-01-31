@@ -59,15 +59,15 @@ def compute_accuracy(outputs, labels):
     correct = (predicted == labels).sum().item()
     return correct
 
-def save_logs(logs, logs_path):
+def save_logs(logs, filepath):
     """
     Save training logs to a CSV file.
 
     Args:
         logs (list): List of logs to save.
-        logs_path (str): Path to the logs file.
+        filepath (str): Path to save the logs file.
     """
-    with open(logs_path, mode='a', newline='') as file:
+    with open(f"{filepath}/training_logs.csv", mode='a', newline='') as file:
         writer = csv.writer(file)
         if file.tell() == 0:
             writer.writerow(["Epoch", "Training Loss", "Training Accuracy (%)", "Validation Loss", "Validation Accuracy (%)", "Time (min:sec)", "Learning Rate"])
@@ -92,17 +92,7 @@ def save_checkpoint(model, optimizer, scheduler, epoch, loss, filepath):
         'scheduler_state_dict': scheduler.state_dict(),
         'loss': loss,
     }
-    torch.save(checkpoint, filepath)
-
-def save_model(model, filepath):
-    """
-    Save the model's state dictionary.
-
-    Args:
-        model (torch.nn.Module): The model to save.
-        filepath (str): Path to save the model.
-    """
-    torch.save(model.state_dict(), filepath)
+    torch.save(checkpoint, f"{filepath}/checkpoint_{epoch}.pth")
 
 def validate_model(model, dataloader, criterion, device):
     """
@@ -250,11 +240,8 @@ def main():
     train_model(
         model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device,
         config["epochs"], config["batch_size"],
-        config["checkpoint_path"], config["logs_path"], start_epoch
+        config["checkpoint_save_path"], config["logs_save_path"], start_epoch
     )
-
-    save_model(model, config["model_path"])
-
 
 if __name__ == "__main__":
     main()

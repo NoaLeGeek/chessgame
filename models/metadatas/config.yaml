@@ -18,8 +18,6 @@ architecture:
       args: [256]
   - ReLU: {}
   - Flatten: {}
-  - Dropout:
-      args: [0.5]
   - Linear:
       args: [16384, 512]
   - ReLU: {}
@@ -29,18 +27,22 @@ architecture:
 optimizer:
   Adam: 
     lr: 0.001
-    weight_decay: 0.001
 
 scheduler:
   CosineAnnealingLR:  
-    T_max: 100  
+    T_max: 25
+    lr_min: 0.00001
 
 epochs: 100
 batch_size: 8192
 num_workers: 4
+
 encoded_moves_path: "data/encoded_moves.json"
-training_data_path: ""
-validation_data_path: ""
-model_path: "models/ChessModel.pth"
-checkpoint_path: " models/checkpoint.pth"
-logs_path: models/metadatas/training_logs.csv
+training_data_path: "data/dataset/training_data.pgn"
+validation_data_path: "data/dataset/validation_data.pgn"
+checkpoint_path: ""
+
+logs_save_path: "models/metadatas"
+checkpoint_save_path: "models/checkpoints"
+
+
