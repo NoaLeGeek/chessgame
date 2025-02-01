@@ -2,7 +2,7 @@ import pygame
 from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
-from utils import left_click, right_click, get_pos, get_color, flip_pos, load_image
+from utils import left_click, right_click, get_pos, get_color, flip_pos, debug_print, load_image
 from constants import WHITE
 from config import config
 from gui import RectButton
@@ -60,38 +60,40 @@ class Game(Scene):
             return
         for move in self.board.selected.piece.moves:
             transparent_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
-            pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
-            screen.blit(transparent_surface, (move[1] * config.tile_size + config.margin, move[0] * config.tile_size + config.margin))
+            # Capture move
+            if move.capture == True:
+                pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 2, config.tile_size // 12)
+            # Normal move
+            else:
+                pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
+            screen.blit(transparent_surface, (move.to_pos[1] * config.tile_size + config.margin, move.to_pos[0] * config.tile_size + config.margin))
 
     def _draw_promotion(self, screen):
-        selected = self.board.selected
+        piece = self.board.selected.piece
         pos = self.board.promotion
         # Drawing the promotion's frame
         # We normalize the rect to avoid negative width or height, this flips the rect and makes it in the right direction when the board is flipped
         # pos needs to be offset by 1 if the board is flipped
-        rect = pygame.Rect((pos[1] - min(0, self.board.flipped)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped)) * config.tile_size + config.margin, self.board.flipped * config.tile_size, self.board.flipped * len(selected.piece.promotion) * config.tile_size)
+        rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
         rect.normalize()
         pygame.draw.rect(screen, WHITE, rect)
         # Drawing the promotion's pieces
-        for i, type_piece in enumerate(selected.piece.promotion):
-            image = self.board.piece_images[("w" if self.board.selected.piece.color == 1 else "b") + piece_to_notation(type_piece)]
-            screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped) * config.tile_size + config.margin))
+        for i, type_piece in enumerate(piece.promotion):
+            image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
+            screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())
-        print("LEFT CLICK", pos)
+        debug_print("LEFT CLICK", pos)
         self.highlighted_squares.clear()
-        if self.board.in_bounds(pos) and not self.board.is_empty(pos):
-            piece = self.board.get_piece(pos)
-            if piece is None:
-                raise ValueError("Piece is None")
-            if piece.color == self.board.turn:
+        if self.board.in_bounds(pos):
+            if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                 self.board.get_tile(pos).calc_moves(self.board)
-        self.board.select(pos)
+            self.board.select(pos)
 
     def handle_right_click(self):
         pos = get_pos(pygame.mouse.get_pos())
-        print("RIGHT CLICK", pos)
+        debug_print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
             self.selected = None
             keys = pygame.key.get_pressed()

@@ -1,9 +1,10 @@
 import pygame
 from board.tile import Tile
 from constants import castling_king_column, en_passant_direction
-from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign
+from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
 from board.piece import notation_to_piece, piece_to_notation
 from board.move import Move
+from board.player import Player
 from random import choice
 from config import config
 
@@ -27,9 +28,10 @@ class Board:
         self.half_moves = 0
         self.full_moves = 1
         self.flipped = 1
-        self.kings = {1: None, -1: None}
         self.last_irreversible_move = 0
         self.game_over = False
+        self.current_player = Player(1)
+        self.waiting_player = Player(-1)
 
         # Castling rights
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
@@ -41,9 +43,9 @@ class Board:
         self.sounds = generate_sounds()
 
         # Initialize the board from the FEN string
-        self.create_board(fen)
+        self._create_board(fen)
 
-    def create_board(self, fen: str) -> None:
+    def _create_board(self, fen: str) -> None:
         """
         Create the chess board from a FEN string.
 
@@ -59,13 +61,17 @@ class Board:
         """
         self.board = {(r, c): Tile((r, c)) for r in range(config.rows) for c in range(config.columns)}
         try:
+            # Chess960 row generation
+            if config.rules["chess960"] == True:
+                fen = self._transform_960_fen(fen)
+
             fen_parts = fen.split()
             if len(fen_parts) != 6:
                 raise ValueError("Invalid FEN format: Must contain exactly 6 parts.")
 
             # Initialize board state
-            self._initialize_pieces(fen_parts[0])
             self.turn = 1 if fen_parts[1] == "w" else -1
+            self._initialize_pieces(fen_parts[0])
             self._initialize_castling(fen_parts[2])
             self.ep = self._parse_en_passant(fen_parts[3])
             self.half_moves = int(fen_parts[4])
@@ -96,12 +102,15 @@ class Board:
                     piece_image_key = f"{'w' if color == 1 else 'b'}{char.upper()}"
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
-
-                    tile.piece = piece_type(color, self.piece_images[piece_image_key])
+                    
+                    piece = piece_type(color, self.piece_images[piece_image_key])
+                    self.get_player(color).add_piece(piece)
+                    tile.piece = piece
                     self.board[(r, c)] = tile
 
-                    if char.upper() == "K":  # Track kings' positions
-                        self.kings[color] = (r, c)
+                    # Track kings' positions
+                    if char.upper() == "K":  
+                        self.get_player(color).king = tile.pos
 
                     c += 1
 
@@ -135,7 +144,7 @@ class Board:
         Returns:
             bool: True if a valid rook is found for castling, otherwise False.
         """
-        row, king_col = self.kings[color]
+        row, king_col = self.get_player(color).king
         for col in range(king_col, -1 if direction == -1 else config.columns, direction):
             piece = self.get_piece((row, col))
             if piece and piece.notation == "R" and piece.color == color:
@@ -161,9 +170,9 @@ class Board:
         col = flip_pos(ord(ep_part[0]) - ord('a'), flipped=self.flipped)
         return row, col    
 
-    def generate_960_row(self, parts):
+    def _transform_960_fen(self, fen: str):
         """
-        Generate a Chess960 starting position for one rank.
+        Transform a fen into a Chess960 starting position for the last ranks.
 
         This function generates a randomized starting position for a Chess960 game
         following the rules:
@@ -172,13 +181,13 @@ class Board:
         - The remaining pieces (knights and queen) are placed in the empty squares.
 
         Args:
-            parts (list): A list containing the FEN parts of the board configuration.
+            fen (str): The FEN of the board configuration.
 
         Returns:
-            list: Updated `parts` with the new Chess960 row included.
+            list: Updated `fen` with the new Chess960 row included.
         """
         # Initialize the row
-        last_row = [None] * len(config.columns)
+        last_row = [None] * config.columns
 
         # Place the bishops on opposite-colored squares
         light_square_indices = list(range(0, config.columns, 2))
@@ -187,27 +196,31 @@ class Board:
         last_row[choice(dark_square_indices)] = "B"
 
         # Place the remaining pieces: knights, queen, rooks, and king
-        pieces = ["N", "N", "Q", "R", "K", "R"]
+        pieces = ["N", "N", "Q"]
         empty_indices = [i for i, val in enumerate(last_row) if val is None]
         for piece in pieces:
             selected_index = choice(empty_indices)
             last_row[selected_index] = piece
             empty_indices.remove(selected_index)
+        for piece, index in zip(["R", "K", "R"], sorted(empty_indices)):
+            last_row[index] = piece
+
+        fen_parts = fen.split()
 
         # Update the FEN string for the board
-        rows = parts[0].split("/")
+        rows = fen_parts[0].split("/")
         for row in [0, 7]:
             rows[row] = "".join(last_row).lower() if row == 0 else "".join(last_row)
-        parts[0] = "/".join(rows)
+        fen_parts[0] = "/".join(rows)
 
-        return parts
+        return " ".join(fen_parts)
     
     def check_game(self):
         """
         Determine if the game has ended and update the game state accordingly.
         """
         if self.is_stalemate():
-            if self.is_king_checked():
+            if self.current_player.is_king_check(self, self.waiting_player):
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
                 self.winner = "Stalemate"
@@ -348,7 +361,10 @@ class Board:
         Returns:
             Piece or None: The piece at the position, or None if the position is empty.
         """
-        return self.get_tile(pos).piece
+        try:
+            return self.get_tile(pos).piece
+        except AttributeError:
+            print("COULDNT GET PIECE", pos)
     
     def is_empty(self, pos):
         """
@@ -386,7 +402,7 @@ class Board:
             raise ValueError(f"Sound type '{type}' not found in the sound library.")
         self.sounds[type].play()
 
-    def update_castling(self, move: Move):
+    def _update_castling(self, move: Move):
         """
         Update castling rights after a move.
 
@@ -395,16 +411,16 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.to_tile.piece
+        piece = move.from_tile.piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.to_tile.pos[1] > self.kings[piece.color][1] else -1
+            side = 1 if move.from_tile.pos[1] > self.current_player.king[1] else -1
             self.castling[piece.color][side] = False
 
-    def update_last_irreversible_move(self, move: Move):
+    def _update_last_irreversible_move(self, move: Move):
         """
         Update the last irreversible move index based on the current move.
 
@@ -413,7 +429,7 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.is_capture() or move.from_tile.piece.notation == "P" or move.is_castling() or self.castling_logs[-1] != self.castling:
+        if move.capture or move.from_tile.piece.notation == "P" or move.castling or self.castling_logs[-1] != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_logs)
 
@@ -421,9 +437,10 @@ class Board:
         d_ep = en_passant_direction[ep[0]]
         for d_col in [-1, 1]:
             new_pos = (pos[0], pos[1] + d_col)
-            if self.is_empty(new_pos) or self.get_piece(new_pos).notation != "P":
+            if not self.in_bounds(new_pos) or self.is_empty(new_pos):
                 continue
-            if self.get_piece(new_pos).color != d_ep*self.flipped:
+            piece = self.get_piece(new_pos)
+            if piece.notation != "P" or piece.color != d_ep*self.flipped:
                 continue
             if self.convert_to_move(new_pos, ep).is_legal():
                 return True
@@ -448,41 +465,49 @@ class Board:
         and updates the board, castling rights, and en passant square accordingly.
         """
         from_pos, to_pos = move.from_pos, move.to_pos
-        
+
         if self.is_empty(from_pos):
             raise ValueError(f"There is no piece at {from_pos}")
-
-        # Capture en passant
-        if move.is_en_passant():
-            self.board[(from_pos[0], to_pos[1])].piece = None
-
-        # Handle en passant square logic
-        self._update_en_passant(from_pos, to_pos)
-
-        # Handle castling logic
-        if move.is_castling():
-            print("HANDLE CASTLING")
-            self._handle_castling(from_pos, to_pos)
-
-        # Handle normal move
-        else:
-            print("HANDLE NORMAL MOVE")
-            self._handle_normal_move(from_pos, to_pos)
-
+        
         # Remember the move for undo
         self.move_logs.append(move)
 
         # Update castling rights and kings' positions
-        self.update_castling(move)
-        if self.get_tile(to_pos).piece.notation == "K":
-            self.kings[self.get_tile(to_pos).piece.color] = to_pos
-
-        # Save the current state for undo
+        self._update_castling(move)
+        if self.get_tile(from_pos).piece.notation == "K":
+            self.current_player.king = to_pos
         self.castling_logs.append(self.castling)
+
+        # Handle en passant square logic
+        self._update_en_passant(from_pos, to_pos)
         self.ep_logs.append(self.ep)
 
         # Update last irreversible move
-        self.update_last_irreversible_move(move)
+        self._update_last_irreversible_move(move)
+
+        # Update player's pieces
+        if move.capture:
+            self.waiting_player.remove_piece(self.get_piece(to_pos))
+
+        # Capture en passant
+        if move.en_passant:
+            self.board[(from_pos[0], to_pos[1])].piece = None
+
+        # Handle castling logic
+        if move.castling:
+            print("Castling move")
+            self._handle_castling(from_pos, to_pos)
+        # Handle normal move
+        else:
+            self._handle_normal_move(from_pos, to_pos)
+        
+        # Verify if no bugs
+        self.testing()
+
+    def testing(self):
+        for pos, tile in self.board.items():
+            if pos != tile.pos:
+                raise ValueError(f"Tile position mismatch: In board position : {pos} != Tile position {tile.pos}")
 
     def promote_piece(self, type_piece):
         """
@@ -501,27 +526,26 @@ class Board:
 
     def _handle_castling(self, from_pos, to_pos):
         """Handle the logic for castling move."""
-        rook_tile = self.get_tile(to_pos)
         d = sign(to_pos[1] - from_pos[1])
-        king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
-        rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
+        # Save the pieces
+        king = self.get_tile(from_pos).piece
+        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d*self.flipped == 1 else 0))
+        rook = self.get_tile(rook_pos).piece
+
+        # Destinations columns
+        dest_king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
+        dest_rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
         
-        # Move the king
-        king_tile = self.get_tile(from_pos)
-        self.board[(from_pos[0], king_column)] = king_tile
+        # Castling move
         self.board[from_pos].piece = None
-        king_tile.move((from_pos[0], king_column))
-
-        # Move the rook
-        self.board[(from_pos[0], rook_column)] = rook_tile
-        self.board[to_pos].piece = None
-        rook_tile.move((from_pos[0], rook_column))
-
+        self.board[rook_pos].piece = None
+        self.board[(from_pos[0], dest_king_column)].piece = king
+        self.board[(from_pos[0], dest_rook_column)].piece = rook
+        
     def _handle_normal_move(self, from_pos, to_pos):
         """Handle a normal move of a piece."""
-        save_piece = self.board[from_pos].piece
-        self.board[to_pos].piece = save_piece
-        self.get_tile(to_pos).move(to_pos)
+        save_tile = self.get_tile(from_pos)
+        self.board[to_pos].piece = save_tile.piece
         self.board[from_pos].piece = None
         
     def select(self, pos: tuple[int, int]):
@@ -534,16 +558,24 @@ class Board:
         This function handles piece selection, move execution, promotion logic, and special moves like castling.
         """
         if self.selected is not None:
+            debug_print("SELECTED", self.selected.pos)
+            debug_print("POS", pos)
+            debug_print("TRIGGER PROMOTION")
             if self._trigger_promotion(pos):
                 return
+            debug_print("ALLY PIECE")
             if self._ally_piece(pos):
                 return
+            debug_print("DESELECT PIECE")
             if self._deselect_piece(pos):
                 return
+            debug_print("HANDLE ILLEGAL MOVE")
             if self._handle_illegal_move(pos):
                 return
+            debug_print("SET PROMOTION")
             if self._set_promotion(pos):
                 return
+            debug_print("EXECUTE MOVE")
             self.convert_to_move(self.selected.pos, pos).execute()
         else:
             self._select_piece(pos)
@@ -582,9 +614,9 @@ class Board:
 
     def _handle_illegal_move(self, pos):
         """Handle illegal moves (either not in the possible moves or king is checked)."""
-        if pos not in self.selected.calc_moves(self):
+        if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
             self.selected = None
-            if self.kings[self.turn] is None or self.is_king_checked():
+            if self.current_player.is_king_check(self, self.waiting_player):
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
@@ -607,8 +639,8 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = tile.piece.moves
-        return [move for move in moves if self.convert_to_move(tile.pos, move).is_legal()]
+        moves = map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves)
+        return list(filter(lambda move: move.is_legal(), moves))
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """
@@ -621,25 +653,6 @@ class Board:
             bool: True if the position is within the board's bounds, False otherwise.
         """
         return self.get_tile(pos) is not None
-
-    def is_king_checked(self):
-        """
-        Check if the current player's king is in check.
-
-        Returns:
-            bool: True if the king is in check, False otherwise.
-        
-        This function scans the board for any opponent's pieces that can attack the current player's king.
-        """
-        for tile in self.board.values():
-            if self.is_empty(tile.pos):
-                continue
-            if tile.piece.color == self.turn or tile.piece.notation == "K":
-                continue
-            for move in tile.calc_moves(self):
-                if self.kings[self.turn] == move:
-                    return True
-        return False
     
     def flip_board(self) -> None:
         """
@@ -648,7 +661,10 @@ class Board:
         """
         self._flip_board_tiles()
         # Flipping the kings' positions
-        self.kings = {color: flip_pos(pos) for color, pos in self.kings.items()}
+        for color in [1, -1]:
+            player = self.get_player(color)
+            player.king = flip_pos(player.king)
+            player.pieces = {type_piece: list(map(lambda pos: flip_pos(pos), list_pos)) for type_piece, list_pos in player.pieces.items()}
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
@@ -679,6 +695,18 @@ class Board:
         """
         for tile in self.board.values():
             tile.piece.update_image(self.piece_images[("w" if tile.piece.color == 1 else "b") + tile.piece.notation])
+
+    def get_player(self, color: int) -> Player:
+        """
+        Get the player object based on the color.
+
+        Args:
+            color (int): The color of the player (1 for white, -1 for black).
+
+        Returns:
+            Player: The player object corresponding to the color.
+        """
+        return self.current_player if color == self.turn else self.waiting_player
 
     # FEN format
     def __str__(self):

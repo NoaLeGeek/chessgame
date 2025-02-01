@@ -11,10 +11,6 @@ class Tile:
 
     def get_square_color(self):
         return (sum(self.pos)) % 2
-    
-    def move(self, pos: tuple[int, int]) -> None:
-        self.pos = pos
-        self.calc_position()
 
     def calc_moves(self, board, **kwds):
         return self.piece.calc_moves(board, self.pos, **kwds)
@@ -29,26 +25,20 @@ class Tile:
     def can_move(self, board, to: tuple[int, int]) -> bool:
         if self.pos == to:
             return True
-        piece_pos = self.pos
-        # When called, to is empty, is occupied by a object with no hitbox or is occupied by a opponent piece
+        # When called, to is empty or occupied by a opponent piece
         # Save the destination square object
-        save_tile = board.get_tile(to)
-        self_tile = self
+        save_piece = board.get_piece(to)
+        self_piece = self.piece
         # Swap the piece with the destination square
-        board.board[to] = board.board[self.pos]
-        board.board[self.pos] = Tile(self.pos)
-        self.pos = to
         if self.piece.notation == "K":
-            board.kings[self.piece.color] = to
+            board.get_player(self.piece.color).king = to
+        board.get_tile(to).piece = self.piece
+        self.piece = None
         # Check if the king is in check after the move
-        can_move = not board.is_king_checked()
+        can_move = not board.current_player.is_king_check(board, board.waiting_player)
         # Restore the initial state of the board
-        board.board[piece_pos] = self_tile
-        board.board[to] = save_tile
-        # Empty the tile if it was empty
-        if save_tile is None:
-            board.board[to].piece = None
-        self.pos = piece_pos
+        self.piece = self_piece
+        board.get_tile(to).piece = save_piece
         if self.piece.notation == "K":
-            board.kings[self.piece.color] = piece_pos
+            board.get_player(self.piece.color).king = self.pos
         return can_move

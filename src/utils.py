@@ -42,7 +42,6 @@ def load_image(path: str, size: tuple[int, int] = None):
     image = pygame.image.load(path)
     return pygame.transform.scale(image, size) if size else image
 
-#TODO changer new_assets (nom de dossier) to assets
 def generate_piece_images(flipped: int = 1):
     images = dict()
     for file in os.listdir(os.path.join('assets', 'piece', config.piece_asset)):
@@ -96,6 +95,10 @@ def get_color(highlight_color):
             r, g, b, a = 0, 0, 0, 0
     return r, g, b, a
 
+def debug_print(*args):
+    if config.debug:
+        print(*args)
+        
 def singleton(cls):
     instances = {}
 
