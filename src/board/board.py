@@ -273,17 +273,17 @@ class Board:
             bool: True if neither player can checkmate, otherwise False.
         """
         piece_count = self.count_pieces()
+        # Only kings remain
         if piece_count == 2:
-            return True  # Only kings remain
+            return True  
         if piece_count == 3:
             return any(
-                self.dict_color_pieces(color).get("B", 0) == 1 or
-                self.dict_color_pieces(color).get("K", 0) == 1
+                len(self.get_player(color).pieces.get("B")) == 1 or
+                len(self.get_player(color).pieces.get("K")) == 1
                 for color in [-1, 1]
             )
         if piece_count == 4:
-            bishops = [self.dict_color_pieces(color).get("B", 0) for color in [-1, 1]]
-            if all(b == 1 for b in bishops):
+            if all(len(self.get_player(color).pieces.get("B")) == 1 for color in [-1, 1]):
                 square_colors = [self.find_tile("B", color).get_square_color() for color in [-1, 1]]
                 if square_colors[0] == square_colors[1]:
                     return True
@@ -310,22 +310,6 @@ class Board:
             Tile or None: The tile with the matching piece, or None if no such tile exists.
         """
         return next((tile for tile in self.board.values() if tile.piece and tile.piece.notation == notation and tile.piece.color == color), None)
-    
-    def dict_color_pieces(self, color):
-        """
-        Count the pieces by their type and color on the board.
-        
-        Args:
-            color (int): The color of the pieces to count (1 for white, -1 for black).
-        
-        Returns:
-            dict: A dictionary where keys are piece notations, and values are the count of each piece type for the given color.
-        """
-        counts = {}
-        for tile in self.board.values():
-            if tile.piece and tile.piece.color == color:
-                counts[tile.piece.notation] = counts.get(tile.piece.notation, 0) + 1
-        return counts
     
     def convert_to_move(self, from_, to, promotion=None):
         """
