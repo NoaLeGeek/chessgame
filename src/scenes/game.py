@@ -12,7 +12,6 @@ class Game(Scene):
     def __init__(self):
         self.board = Board()
         self.highlighted_squares = {}
-        self.game_over = False
         super().__init__()
 
     def create_buttons(self):
@@ -86,7 +85,7 @@ class Game(Scene):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
         self.highlighted_squares.clear()
-        if self.board.in_bounds(pos):
+        if self.board.in_bounds(pos) and self.board.game_over == False:
             if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                 self.board.get_tile(pos).calc_moves(self.board)
             self.board.select(pos)
