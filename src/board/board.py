@@ -47,6 +47,8 @@ class Board:
         # Initialize the board from the FEN string
         self._create_board(fen)
 
+        self.ia = load_model_from_checkpoint()
+
     def _create_board(self, fen: str) -> None:
         """
         Create the chess board from a FEN string.
