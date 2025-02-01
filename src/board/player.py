@@ -26,7 +26,9 @@ class Player:
                 continue
             if tile.piece.color != self.color:
                 continue
+            print("tile", tile, tile.piece, tile.pos)
             moves += tile.calc_moves(board)
+        return moves
     
     def is_king_check(self, board, opponent):
         return self.king in opponent.get_moves(board)
