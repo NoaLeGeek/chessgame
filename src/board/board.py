@@ -4,6 +4,7 @@ from constants import castling_king_column, en_passant_direction
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
 from board.piece import notation_to_piece, piece_to_notation
 from board.move import Move
+from board.player import Player
 from random import choice
 from config import config
 
@@ -27,9 +28,10 @@ class Board:
         self.half_moves = 0
         self.full_moves = 1
         self.flipped = 1
-        self.kings = {1: None, -1: None}
         self.last_irreversible_move = 0
         self.game_over = False
+        self.current_player = Player(1)
+        self.waiting_player = Player(-1)
 
         # Castling rights
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
@@ -68,8 +70,8 @@ class Board:
                 raise ValueError("Invalid FEN format: Must contain exactly 6 parts.")
 
             # Initialize board state
-            self._initialize_pieces(fen_parts[0])
             self.turn = 1 if fen_parts[1] == "w" else -1
+            self._initialize_pieces(fen_parts[0])
             self._initialize_castling(fen_parts[2])
             self.ep = self._parse_en_passant(fen_parts[3])
             self.half_moves = int(fen_parts[4])
@@ -101,11 +103,14 @@ class Board:
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     
-                    tile.piece = piece_type(color, self.piece_images[piece_image_key])
+                    piece = piece_type(color, self.piece_images[piece_image_key])
+                    self.get_player(color).add_piece(piece)
+                    tile.piece = piece
                     self.board[(r, c)] = tile
 
-                    if char.upper() == "K":  # Track kings' positions
-                        self.kings[color] = (r, c)
+                    # Track kings' positions
+                    if char.upper() == "K":  
+                        self.get_player(color).king = tile.pos
 
                     c += 1
 
@@ -139,7 +144,7 @@ class Board:
         Returns:
             bool: True if a valid rook is found for castling, otherwise False.
         """
-        row, king_col = self.kings[color]
+        row, king_col = self.get_player(color).king
         for col in range(king_col, -1 if direction == -1 else config.columns, direction):
             piece = self.get_piece((row, col))
             if piece and piece.notation == "R" and piece.color == color:
@@ -215,7 +220,7 @@ class Board:
         Determine if the game has ended and update the game state accordingly.
         """
         if self.is_stalemate():
-            if self.is_king_checked():
+            if self.current_player.is_king_check(self, self.waiting_player):
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
                 self.winner = "Stalemate"
@@ -412,7 +417,7 @@ class Board:
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.from_tile.pos[1] > self.kings[piece.color][1] else -1
+            side = 1 if move.from_tile.pos[1] > self.current_player.king[1] else -1
             self.castling[piece.color][side] = False
 
     def _update_last_irreversible_move(self, move: Move):
@@ -470,7 +475,7 @@ class Board:
         # Update castling rights and kings' positions
         self._update_castling(move)
         if self.get_tile(from_pos).piece.notation == "K":
-            self.kings[self.get_tile(from_pos).piece.color] = to_pos
+            self.current_player.king = to_pos
         self.castling_logs.append(self.castling)
 
         # Handle en passant square logic
@@ -479,6 +484,10 @@ class Board:
 
         # Update last irreversible move
         self._update_last_irreversible_move(move)
+
+        # Update player's pieces
+        if move.capture:
+            self.waiting_player.remove_piece(self.get_piece(to_pos))
 
         # Capture en passant
         if move.en_passant:
@@ -607,7 +616,7 @@ class Board:
         """Handle illegal moves (either not in the possible moves or king is checked)."""
         if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
             self.selected = None
-            if self.kings[self.turn] is None or self.is_king_checked(self.turn):
+            if self.current_player.is_king_check(self, self.waiting_player):
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
@@ -644,25 +653,6 @@ class Board:
             bool: True if the position is within the board's bounds, False otherwise.
         """
         return self.get_tile(pos) is not None
-
-    def is_king_checked(self, king_color):
-        """
-        Check if the current player's king is in check.
-
-        Returns:
-            bool: True if the king is in check, False otherwise.
-        
-        This function scans the board for any opponent's pieces that can attack the current player's king.
-        """
-        for tile in self.board.values():
-            if self.is_empty(tile.pos):
-                continue
-            if tile.piece.color == king_color and tile.piece.notation == "K":
-                continue
-            for move in tile.calc_moves(self):
-                if self.kings[self.turn] == move:
-                    return True
-        return False
     
     def flip_board(self) -> None:
         """
@@ -671,7 +661,10 @@ class Board:
         """
         self._flip_board_tiles()
         # Flipping the kings' positions
-        self.kings = {color: flip_pos(pos) for color, pos in self.kings.items()}
+        for color in [1, -1]:
+            player = self.get_player(color)
+            player.king = flip_pos(player.king)
+            player.pieces = {type_piece: list(map(lambda pos: flip_pos(pos), list_pos)) for type_piece, list_pos in player.pieces.items()}
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
@@ -702,6 +695,18 @@ class Board:
         """
         for tile in self.board.values():
             tile.piece.update_image(self.piece_images[("w" if tile.piece.color == 1 else "b") + tile.piece.notation])
+
+    def get_player(self, color: int) -> Player:
+        """
+        Get the player object based on the color.
+
+        Args:
+            color (int): The color of the player (1 for white, -1 for black).
+
+        Returns:
+            Player: The player object corresponding to the color.
+        """
+        return self.current_player if color == self.turn else self.waiting_player
 
     # FEN format
     def __str__(self):

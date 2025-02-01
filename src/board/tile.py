@@ -31,14 +31,14 @@ class Tile:
         self_piece = self.piece
         # Swap the piece with the destination square
         if self.piece.notation == "K":
-            board.kings[self.piece.color] = to
+            board.get_player(self.piece.color).king = to
         board.get_tile(to).piece = self.piece
         self.piece = None
         # Check if the king is in check after the move
-        can_move = not board.is_king_checked(self_piece.color)
+        can_move = not board.current_player.is_king_check(board, board.waiting_player)
         # Restore the initial state of the board
         self.piece = self_piece
         board.get_tile(to).piece = save_piece
         if self.piece.notation == "K":
-            board.kings[self.piece.color] = self.pos
+            board.get_player(self.piece.color).king = self.pos
         return can_move

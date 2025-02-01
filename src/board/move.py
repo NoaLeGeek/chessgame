@@ -41,6 +41,7 @@ class Move:
             self.board.full_moves += 1
         self.board.half_moves += 1
         self.board.turn *= -1
+        self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
         self.board.selected = None
         self._play_sound_move()
         #self.notation = str(self)
@@ -52,7 +53,7 @@ class Move:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
             self.board.play_sound("castle")
-        elif self.board.is_king_checked(self.to_tile.piece.color):
+        elif self.board.current_player.is_king_check(self.board, self.board.waiting_player):
             self.board.play_sound("move-check")
         elif self.promotion is not None:
             self.board.play_sound("promote")
@@ -70,7 +71,7 @@ class Move:
         if not self.castling:
             return self.from_tile.can_move(self.board, self.to_pos)
         # Castling
-        if self.board.is_king_checked(self.from_tile.piece.color):
+        if self.board.current_player.is_king_check(self.board, self.board.waiting_player):
             return False
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
@@ -142,7 +143,7 @@ class Move:
             if self.promotion is not None:
                 string += "=" + piece_to_notation(self.promotion)
         # Add # if it's checkmate or + if it's a check
-        if self.board.is_king_checked(self.to_tile.piece.color):
+        if self.board.current_player.is_king_check(self.board, self.board.waiting_player):
             if self.board.is_stalemate():
                 string += "#"
             else:

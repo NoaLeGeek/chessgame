@@ -1,27 +1,32 @@
 class Player:
-    def __init__(self, notation:int):
-        self.notation = notation 
-        self.pieces = []
+    def __init__(self, color: int):
+        self.color = color
+        # Pieces' position depending on their type
+        self.pieces = {"P": [], "R": [], "N": [], "B": [], "Q": [], "K": []}
+        # King's position
         self.king = None
         self.ia = None
 
     def add_piece(self, piece):
-        self.pieces.append(piece)
+        self.pieces[piece.notation].append(piece)
         if piece.notation == 'K':
             self.king = piece
 
+    def remove_piece(self, piece):
+        self.pieces[piece.notation].remove(piece)
+        if piece.notation == 'K':
+            self.king = None
+
     def get_moves(self, board):
         moves = []
-        for piece in self.pieces :
-            moves += piece.get_moves(piece.row, piece.column, board)
-        return moves
-            
-    def get_piece_from_reserve(self, column):
-        piece_type = list(self.reserve.keys())[column - 1]
-        if self.reserve[piece_type]:
-            piece = self.reserve[piece_type][0]
-            return piece
-        return None
+        for tile in board.board.values():
+            if tile is None:
+                raise ValueError("Tile is None")
+            if board.is_empty(tile.pos):
+                continue
+            if tile.piece.color != self.color:
+                continue
+            moves += tile.calc_moves(board)
     
     def is_king_check(self, board, opponent):
-        return (self.king.row, self.king.column) in opponent.get_moves(board)
+        return self.king in opponent.get_moves(board)
