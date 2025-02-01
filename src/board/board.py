@@ -502,6 +502,7 @@ class Board:
             self._handle_normal_move(from_pos, to_pos)
         
         # Verify if no bugs
+        # TODO TEST UNIT
         self.testing()
 
     def testing(self):
@@ -664,7 +665,6 @@ class Board:
         for color in [1, -1]:
             player = self.get_player(color)
             player.king = flip_pos(player.king)
-            player.pieces = {type_piece: list(map(lambda pos: flip_pos(pos), list_pos)) for type_piece, list_pos in player.pieces.items()}
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
