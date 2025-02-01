@@ -26,7 +26,6 @@ class Player:
                 continue
             if tile.piece.color != self.color:
                 continue
-            print("tile", tile, tile.piece, tile.pos)
             moves += tile.calc_moves(board)
         return moves
     
