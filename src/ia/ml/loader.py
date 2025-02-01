@@ -71,7 +71,7 @@ def load_model_from_checkpoint():
     config = load_config("models/metadatas/config.yaml")
     encoded_moves = load_encoded_moves(config["encoded_moves_path"])
     model = build_model(config["architecture"], {"num_classes": len(encoded_moves)}, encoded_moves)
-    checkpoint = torch.load("models/checkpoint.pth")
+    checkpoint = torch.load(config["checkpoint_path"])
     model.load_state_dict(checkpoint["model_state_dict"])
     return model
 
