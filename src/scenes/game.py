@@ -1,5 +1,5 @@
 import pygame
-from scenes.scene import Scene, SceneManager
+from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, get_color, flip_pos, debug_print
@@ -8,8 +8,8 @@ from config import config
 
 
 class Game(Scene):
-    def __init__(self, manager:SceneManager):
-        super().__init__(manager)
+    def __init__(self):
+        super().__init__()
         self.board = Board()
         self.highlighted_squares = {}
         self.game_over = False

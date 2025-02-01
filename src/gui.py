@@ -1,14 +1,21 @@
 import pygame
 import cv2
 
+def create_rect_surface(color: str, width: int, height: int, border_radius: int, alpha: int = 255) -> pygame.Surface:
+        surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        pygame.draw.rect(surface, color, (0, 0, width, height), border_radius=border_radius)
+        if alpha is not None:
+            surface.set_alpha(alpha)
+        return surface
+
 class RectButton:
     def __init__(self, x: int, y: int, width: int, height: int, color: str, text: str, font_name: str, text_color: str, command):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
         self.color = color
-        self.surface = self._create_surface(color, width, height, border_radius=int(height // 2))
-        self.filter = self._create_surface("black", width, height, border_radius=int(height // 2), alpha=50)
+        self.surface = create_rect_surface(color, width, height, border_radius=int(height // 2))
+        self.filter = create_rect_surface("black", width, height, border_radius=int(height // 2), alpha=50)
         self.label = Label(self.rect.center, text, font_name, self.rect.height // 2, text_color)
         self.command = command
         self.is_hovered = False
@@ -29,13 +36,6 @@ class RectButton:
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
 
-    @staticmethod
-    def _create_surface(color: str, width: int, height: int, border_radius: int, alpha: int = None) -> pygame.Surface:
-        surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        pygame.draw.rect(surface, color, (0, 0, width, height), border_radius=border_radius)
-        if alpha is not None:
-            surface.set_alpha(alpha)
-        return surface
 
 
 class ImageButton:
@@ -53,7 +53,7 @@ class ImageButton:
 
 
 class Label:
-    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str):
+    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str, background: pygame.Surface = None):
         self.text = text
         self.center = center
         self.font_path = f"assets/font/{font_name}.ttf"
@@ -61,8 +61,13 @@ class Label:
         self.color = color
         self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=center)
+        self.background = background
+        if background : 
+            self.background_pos = (self.rect.centerx - background.get_width()//2, self.rect.centery - background.get_height()//2)
 
     def draw(self, screen: pygame.Surface):
+        if self.background :
+            screen.blit(self.background, self.background_pos)
         screen.blit(self.surface, self.rect)
 
     def update_text(self, new_text: str):
@@ -77,8 +82,6 @@ class Label:
 class VideoPlayer:
     def __init__(self, video_path, width, height):
         self.video_path = video_path
-        self.screen_width = width
-        self.screen_height = height
         self.cap = cv2.VideoCapture(video_path)
         _, frame = self.cap.read()
         self.frame_width = width

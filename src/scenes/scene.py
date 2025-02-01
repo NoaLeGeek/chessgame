@@ -1,34 +1,41 @@
 import pygame
 from config import config
+from utils import singleton
 
 class Scene():
-    def __init__(self, manager, buttons=[], labels=[]):
-        self.manager = manager
-        self.buttons = buttons
-        self.labels = labels
+    def __init__(self):
+        self.manager = SceneManager()
+        self.create_buttons()
+        self.create_labels()
+
+    def create_buttons(self):
+        self.buttons = {}
+
+    def create_labels(self):
+        self.labels = {}
         
     def render(self, screen:pygame.Surface):
-        for button in self.buttons:
+        for button in self.buttons.values():
             button.draw(screen)
-        for label in self.labels:
+        for label in self.labels.values():
             label.draw(screen)
 
     def update(self):
         mouse_pos = pygame.mouse.get_pos()
 
-        for button in self.buttons :
+        for button in self.buttons.values() :
             button.update(mouse_pos)
       
     def handle_event(self, event:pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN :
             if pygame.mouse.get_pressed()[0]:
-                for button in self.buttons :
+                for button in self.buttons.values() :
                     button.handle_click()
 
 
+@singleton
 class SceneManager:
-    def __init__(self, background):
-        self.background = background
+    def __init__(self):
         self.in_transition = False
         self.is_fading_out = False
         self.transition_overlay = pygame.Surface((config.width, config.height))
@@ -54,7 +61,6 @@ class SceneManager:
         self.is_fading_out = True
 
     def render(self, screen):
-        screen.blit(self.background, (0, 0))
         self.scenes[-1].render(screen)
         if self.in_transition:
             screen.blit(self.transition_overlay, (0, 0))
@@ -76,3 +82,4 @@ class SceneManager:
     def handle_event(self, event):
         if not self.in_transition:
             self.scenes[-1].handle_event(event)
+

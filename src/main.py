@@ -2,7 +2,6 @@ import pygame
 from scenes.scene import SceneManager
 from config import config
 from scenes.menu import MainMenu
-from utils import generate_background_image
 
 def main():
     pygame.init()
@@ -12,8 +11,8 @@ def main():
     pygame.mixer.music.set_volume(config.volume)
     screen = pygame.display.set_mode((config.width, config.height))
     clock = pygame.time.Clock()
-    manager = SceneManager(generate_background_image())
-    manager.set(MainMenu(manager))
+    manager = SceneManager()
+    manager.set(MainMenu())
     run = True
     while run:
         manager.render(screen)
