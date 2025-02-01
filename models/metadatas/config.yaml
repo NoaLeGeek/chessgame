@@ -1,0 +1,51 @@
+architecture:
+  - Conv2d:
+      args: [14, 64, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [64]
+  - ReLU: {}
+  - Conv2d:
+      args: [64, 128, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [128]
+  - ReLU: {}
+  - Conv2d:
+      args: [128, 256, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [256]
+  - ReLU: {}
+  - Flatten: {}
+  - Linear:
+      args: [16384, 512]
+  - ReLU: {}
+  - Linear:
+      args: [512, "num_classes"]
+
+optimizer:
+  SGD: 
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
+
+scheduler:
+  CosineAnnealingWarmRestarts:  
+    T_0: 15
+    T_mult: 2
+    eta_min: 0.00001
+
+epochs: 100
+batch_size: 8192
+num_workers: 4
+
+encoded_moves_path: "data/encoded_moves.json"
+training_data_path: "data/dataset/training_data.pgn"
+validation_data_path: "data/dataset/validation_data.pgn"
+checkpoint_path: "models/checkpoints/checkpoint_4.pth"
+
+logs_save_path: "models/metadatas"
+checkpoint_save_path: "models/checkpoints"
+
+

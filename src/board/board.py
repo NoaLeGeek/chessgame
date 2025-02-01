@@ -1,12 +1,14 @@
 import pygame
+import numpy as np
 from board.tile import Tile
 from constants import castling_king_column, en_passant_direction
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
-from board.piece import notation_to_piece, piece_to_notation
+from board.piece import notation_to_piece, piece_to_notation, piece_to_num
 from board.move import Move
 from board.player import Player
 from random import choice
 from config import config
+from ia.ml.loader import load_model_from_checkpoint
 
 class Board:
     def __init__(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -44,6 +46,8 @@ class Board:
 
         # Initialize the board from the FEN string
         self._create_board(fen)
+
+        self.ia =load_model_from_checkpoint()
 
     def _create_board(self, fen: str) -> None:
         """
@@ -738,3 +742,35 @@ class Board:
             if self._is_valid_en_passant((self.ep[0] + d_ep, self.ep[1]), self.ep):
                 en_passant = chr(97 + flip_pos(self.ep[1], flipped = self.flipped)) + str(flip_pos(self.ep[0], flipped = -self.flipped) + 1)
         return f"{fen} {turn} {castling} {en_passant} {self.half_moves} {self.full_moves}"
+
+    def to_matrix(self):
+        matrix = np.zeros((14, 8, 8))
+        for pos, tile in self.board.items():
+            piece = tile.piece
+
+            if piece :
+                channel = piece_to_num(type(piece))
+                if piece.color == -1 :
+                    channel += 6
+                matrix[channel, pos[0], pos[1]] = 1
+                if piece.color == self.turn :
+                    moves = piece.calc_moves(self, pos)
+                    if moves :
+                        legal_moves = 0
+                        for move in moves :
+                            if self.convert_to_move(pos, move).is_legal():
+                                matrix[13, move[0], move[1]] = 1 
+                                legal_moves += 1
+                            if legal_moves:       
+                                matrix[12, pos[0], pos[1]] = 1                 
+        return matrix
+
+    def convert_uci_to_move(self, uci_move):
+        print(uci_move)
+        columns = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
+        from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
+        to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
+        print(from_pos, to_pos)
+        return self.convert_to_move(from_pos, to_pos)
+
+
