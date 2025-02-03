@@ -10,7 +10,7 @@ from random import choice
 from config import config
 
 class Board:
-    def __init__(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+    def __init__(self,  player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
         """
         Initialize the chess board with a default or custom FEN string.
 
@@ -32,8 +32,8 @@ class Board:
         self.last_irreversible_move = 0
         self.highlighted_squares = {}
         self.game_over = False
-        self.current_player = Player(1)
-        self.waiting_player = Player(-1)
+        self.current_player = player1
+        self.waiting_player = player2
 
         # Castling rights
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
