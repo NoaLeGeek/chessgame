@@ -8,7 +8,6 @@ from board.move import Move
 from board.player import Player
 from random import choice
 from config import config
-from ia.ml.loader import load_model_from_checkpoint
 
 class Board:
     def __init__(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -31,6 +30,7 @@ class Board:
         self.full_moves = 1
         self.flipped = 1
         self.last_irreversible_move = 0
+        self.highlighted_squares = {}
         self.game_over = False
         self.current_player = Player(1)
         self.waiting_player = Player(-1)
@@ -694,6 +694,19 @@ class Board:
         """
         return self.current_player if color == self.turn else self.waiting_player
 
+    def highlight_tile(self, pos: tuple[int, int], highlight_color: int):
+        """
+        Highlight a tile on the board with a specific color.
+
+        Args:
+            pos (tuple[int, int]): The position of the tile to highlight.
+            highlight_color (int): The color to highlight the tile with.
+        """
+        if self.highlighted_squares.get(pos) != highlight_color:
+            self.highlighted_squares[pos] = highlight_color
+        else:
+            self.highlighted_squares.pop(pos, None)
+
     # FEN format
     def __str__(self):
         """Return the FEN string of the board state."""
@@ -729,7 +742,6 @@ class Board:
         matrix = np.zeros((14, 8, 8))
         for pos, tile in self.board.items():
             piece = tile.piece
-
             if piece :
                 channel = piece_to_num(type(piece))
                 if piece.color == -1 :
@@ -737,7 +749,7 @@ class Board:
                 matrix[channel, pos[0], pos[1]] = 1
                 if piece.color == self.turn :
                     moves = piece.calc_moves(self, pos)
-                    if moves :
+                    if moves:
                         legal_moves = 0
                         for move in moves :
                             if self.convert_to_move(pos, move).is_legal():
@@ -754,5 +766,3 @@ class Board:
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
         print(from_pos, to_pos)
         return self.convert_to_move(from_pos, to_pos)
-
-

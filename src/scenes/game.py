@@ -11,7 +11,6 @@ from gui import RectButton
 class Game(Scene):
     def __init__(self):
         self.board = Board()
-        self.highlighted_squares = {}
         super().__init__()
 
     def create_buttons(self):
@@ -20,7 +19,6 @@ class Game(Scene):
             "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), 'white', '', 'Geizer.otf', 'black', self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
         }
         
-
     def render(self, screen:pygame.Surface):
         super().render(screen)
         screen.blit(self.board.image, (config.margin, config.margin))
@@ -49,9 +47,9 @@ class Game(Scene):
     def _draw_highlight(self, screen):
         """Draws the highlighted squares on the board."""
         highlight_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
-        for pos, highlight_color in self.highlighted_squares.items():
-            highlight_surface.fill(get_color(highlight_color))
-            x, y = pos[1] * config.tile_size + config.margin, pos[0] * config.tile_size + config.margin
+        for tile in self.board.highlighted_squares.values():
+            highlight_surface.fill(tile.get_color())
+            x, y = tile.pos[1] * config.tile_size + config.margin, tile.pos[0] * config.tile_size + config.margin
             screen.blit(highlight_surface, (x, y))
 
     def _draw_moves(self, screen):
@@ -96,11 +94,8 @@ class Game(Scene):
         if self.board.in_bounds(pos):
             self.selected = None
             keys = pygame.key.get_pressed()
-            highlight = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
-            if self.highlighted_squares.get(pos) != highlight:
-                self.highlighted_squares[pos] = highlight
-            else:
-                self.highlighted_squares.pop(pos, None)
+            highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
+            self.board.highlight_tile(pos, highlight_color)
 
     def handle_event(self, event:pygame.event.Event):
         super().handle_event(event)

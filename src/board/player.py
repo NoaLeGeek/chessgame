@@ -1,11 +1,11 @@
 class Player:
-    def __init__(self, color: int):
+    def __init__(self, color: int, ia = None):
         self.color = color
         # Pieces' position depending on their type
         self.pieces = {"P": [], "R": [], "N": [], "B": [], "Q": [], "K": []}
         # King's position
         self.king = None
-        self.ia = None
+        self.ia = ia
 
     def add_piece(self, piece):
         self.pieces[piece.notation].append(piece)
