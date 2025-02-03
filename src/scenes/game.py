@@ -3,21 +3,24 @@ from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, get_color, flip_pos, debug_print, load_image
-from constants import WHITE
+from constants import WHITE, Fonts
 from config import config
 from gui import RectButton
+from board.player import Player
 
 
 class Game(Scene):
-    def __init__(self):
-        self.board = Board()
+    def __init__(self, player1: Player, player2: Player):
+        self.player1 = player1
+        self.player2 = player2
+        self.board = Board(player1, player2)
         self.highlighted_squares = {}
         super().__init__()
 
     def create_buttons(self):
         self.buttons = {
-            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'QUIT', 'Geizer.otf', 'black', self.manager.go_back),
-            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), 'white', '', 'Geizer.otf', 'black', self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
+            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'QUIT', Fonts.GEIZER, 'black', self.manager.go_back),
+            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), 'white', '', Fonts.GEIZER, 'black', self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
         }
         
 
@@ -111,7 +114,7 @@ class Game(Scene):
                 self.handle_right_click()
         elif event.type == pygame.KEYDOWN :
             if event.key == pygame.K_r :
-                self.board = Board()
+                self.board = Board(self.player1, self.player2)
             if event.key == pygame.K_f:
                 self.board.flip_board()
                 self.highlighted_squares = {flip_pos(pos): value for pos, value in self.highlighted_squares.items()}
