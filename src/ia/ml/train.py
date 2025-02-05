@@ -10,8 +10,9 @@ from tqdm import tqdm
 from dataset import ChessDataset
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
-from builder import build_model, build_optimizer, build_scheduler
+from builder import build_model, build_optimizer
 from loader import load_checkpoint, load_config, load_encoded_moves
+
 
 def initialize_dataloaders(training_data_path, validation_data_path, encoded_moves, batch_size, num_workers):
     """
@@ -73,14 +74,13 @@ def save_logs(logs, filepath):
             writer.writerow(["Epoch", "Training Loss", "Training Accuracy (%)", "Validation Loss", "Validation Accuracy (%)", "Time (min:sec)", "Learning Rate"])
         writer.writerow(logs)
 
-def save_checkpoint(model, optimizer, scheduler, epoch, loss, filepath):
+def save_checkpoint(model, optimizer, epoch, loss, filepath):
     """
     Save the model checkpoint.
 
     Args:
         model (torch.nn.Module): The model to save.
         optimizer (torch.optim.Optimizer): The optimizer.
-        scheduler (torch.optim.lr_scheduler): The scheduler.
         epoch (int): The current epoch.
         loss (float): The current loss.
         filepath (str): Path to save the checkpoint.
@@ -89,7 +89,6 @@ def save_checkpoint(model, optimizer, scheduler, epoch, loss, filepath):
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
-        'scheduler_state_dict': scheduler.state_dict(),
         'loss': loss,
     }
     torch.save(checkpoint, f"{filepath}/checkpoint_{epoch}.pth")
@@ -137,7 +136,7 @@ def validate_model(model, dataloader, criterion, device):
 
     return avg_loss, avg_accuracy
 
-def train_model(model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, num_epochs, batch_size, checkpoint_path, logs_path, start_epoch):
+def train_model(model, train_dataloader, val_dataloader, criterion, optimizer, device, num_epochs, batch_size, checkpoint_path, logs_path, start_epoch):
     """
     Train the model.
 
@@ -147,7 +146,6 @@ def train_model(model, train_dataloader, val_dataloader, criterion, optimizer, s
         val_dataloader (DataLoader): The DataLoader for validation data.
         criterion (torch.nn.Module): The loss function.
         optimizer (torch.optim.Optimizer): The optimizer.
-        scheduler (torch.optim.lr_scheduler): The scheduler.
         device (torch.device): The device to use.
         num_batches (int): Number of batches.
         num_epochs (int): Number of epochs.
@@ -190,8 +188,6 @@ def train_model(model, train_dataloader, val_dataloader, criterion, optimizer, s
 
                 pbar.set_postfix(loss=avg_loss, accuracy=f"{avg_accuracy:.2f}%")
 
-        scheduler.step()
-
         val_loss, val_accuracy = validate_model(model, val_dataloader, criterion, device)
 
         end_time = time.time()
@@ -204,7 +200,7 @@ def train_model(model, train_dataloader, val_dataloader, criterion, optimizer, s
 
         print(f"Epoch {epoch + 1} completed. Training Loss: {avg_loss:.4f}, Training Accuracy: {avg_accuracy:.2f}%, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%, Time: {minutes}m{seconds}s, LR: {learning_rate}")
 
-        save_checkpoint(model, optimizer, scheduler, epoch + 1, avg_loss, checkpoint_path)
+        save_checkpoint(model, optimizer, epoch + 1, avg_loss, checkpoint_path)
         save_logs(logs[-1], logs_path)
 
 def main():
@@ -227,18 +223,17 @@ def main():
 
     model = build_model(config["architecture"], variables, encoded_moves).to(device)
     optimizer = build_optimizer(config["optimizer"], model.parameters(), variables)
-    scheduler = build_scheduler(config["scheduler"], optimizer, variables)
     criterion = CrossEntropyLoss()
 
     try:
-        model, optimizer, scheduler, start_epoch, last_loss = load_checkpoint(config["checkpoint_path"], model, optimizer, scheduler)
+        model, optimizer, start_epoch, last_loss = load_checkpoint(config["checkpoint_path"], model, optimizer)
         print(f"Checkpoint loaded from epoch {start_epoch} with loss {last_loss}")
     except FileNotFoundError:
         print("No checkpoint found, starting from scratch.")
         start_epoch = 0
 
     train_model(
-        model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device,
+        model, train_dataloader, val_dataloader, criterion, optimizer, device,
         config["epochs"], config["batch_size"],
         config["checkpoint_save_path"], config["logs_save_path"], start_epoch
     )

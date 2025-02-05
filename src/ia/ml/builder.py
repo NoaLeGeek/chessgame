@@ -91,28 +91,3 @@ def build_optimizer(config, model_params, variables):
 
     return builder(optimizer_name, *args, **kwargs)
 
-
-def build_scheduler(config, optimizer, variables):
-    """
-    Build the scheduler based on the specified configuration.
-
-    Args:
-        config (dict): Configuration of the scheduler.
-        optimizer (torch.optim.Optimizer): The optimizer.
-        variables (dict): Dictionary of variables.
-
-    Returns:
-        torch.optim.lr_scheduler._LRScheduler: The constructed scheduler.
-    """
-    builder = Builder(torch.optim.lr_scheduler.__dict__)
-
-    scheduler_name, kwargs = list(config.items())[0]
-
-    if kwargs is None:
-        kwargs = {}
-
-    args = kwargs.pop("args", [])
-    args = [variables.get(arg, arg) for arg in args]
-    kwargs["optimizer"] = optimizer
-
-    return builder(scheduler_name, *args, **kwargs)

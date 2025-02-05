@@ -3,9 +3,9 @@ import json
 import torch
 
 try :
-    from builder import build_model, build_optimizer, build_scheduler
+    from builder import build_model, build_optimizer
 except :
-    from ia.ml.builder import build_model, build_optimizer, build_scheduler
+    from ia.ml.builder import build_model, build_optimizer
     
 
 
@@ -39,7 +39,7 @@ def load_config(filepath):
         return yaml.safe_load(file)
 
 
-def load_checkpoint(filepath, model, optimizer, scheduler):
+def load_checkpoint(filepath, model, optimizer):
     """
     Load model checkpoint.
 
@@ -47,18 +47,20 @@ def load_checkpoint(filepath, model, optimizer, scheduler):
         filepath (str): Path to the checkpoint file.
         model (torch.nn.Module): Model to load the state dict into.
         optimizer (torch.optim.Optimizer): Optimizer to load the state dict into.
-        scheduler (torch.optim.lr_scheduler._LRScheduler): Scheduler to load the state dict into.
 
     Returns:
-        tuple: model, optimizer, scheduler, epoch, loss
+        tuple: model, optimizer, epoch, loss
     """
     checkpoint = torch.load(filepath)
     model.load_state_dict(checkpoint['model_state_dict'])
+    current_lr = optimizer.param_groups[0]['lr']
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+    for param_group in optimizer.param_groups:
+        if param_group['lr'] != current_lr:
+            param_group['lr'] = current_lr
     epoch = checkpoint['epoch']
     loss = checkpoint['loss']
-    return model, optimizer, scheduler, epoch, loss
+    return model, optimizer, epoch, loss
 
 
 def load_model_from_checkpoint():

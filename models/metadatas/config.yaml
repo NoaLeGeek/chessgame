@@ -26,15 +26,9 @@ architecture:
 
 optimizer:
   SGD: 
-    lr: 0.1
+    lr: 0.01
     momentum: 0.9
     weight_decay: 0.0005
-
-scheduler:
-  CosineAnnealingWarmRestarts:  
-    T_0: 15
-    T_mult: 2
-    eta_min: 0.00001
 
 epochs: 100
 batch_size: 8192
@@ -43,7 +37,7 @@ num_workers: 4
 encoded_moves_path: "data/encoded_moves.json"
 training_data_path: "data/dataset/training_data.pgn"
 validation_data_path: "data/dataset/validation_data.pgn"
-checkpoint_path: "models/checkpoints/checkpoint_13.pth"
+checkpoint_path: "models/checkpoints/checkpoint_28.pth"
 
 logs_save_path: "models/metadatas"
 checkpoint_save_path: "models/checkpoints"
