@@ -30,7 +30,6 @@ class Board:
         self.full_moves = 1
         self.flipped = 1
         self.last_irreversible_move = 0
-        self.highlighted_squares = {}
         self.game_over = False
         self.current_player = player1
         self.waiting_player = player2
@@ -702,10 +701,13 @@ class Board:
             pos (tuple[int, int]): The position of the tile to highlight.
             highlight_color (int): The color to highlight the tile with.
         """
-        if self.highlighted_squares.get(pos) != highlight_color:
-            self.highlighted_squares[pos] = highlight_color
-        else:
-            self.highlighted_squares.pop(pos, None)
+        tile = self.get_tile(pos)
+        tile.highlight_color = highlight_color if tile.highlight_color != highlight_color else None
+
+    def clear_highlights(self):
+        """Clear all highlighted tiles on the board."""
+        for tile in self.board.values():
+            tile.highlight_color = None
 
     # FEN format
     def __str__(self):

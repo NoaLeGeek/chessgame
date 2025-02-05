@@ -50,7 +50,7 @@ class Game(Scene):
     def _draw_highlight(self, screen):
         """Draws the highlighted squares on the board."""
         highlight_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
-        for tile in self.board.highlighted_squares.values():
+        for tile in self.board.board.values():
             highlight_surface.fill(tile.get_color())
             x, y = tile.pos[1] * config.tile_size + config.margin, tile.pos[0] * config.tile_size + config.margin
             screen.blit(highlight_surface, (x, y))
@@ -85,9 +85,9 @@ class Game(Scene):
     def handle_left_click(self):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
-        self.board.highlighted_squares.clear()
-        if self.board.in_bounds(pos) and self.board.game_over == False:
-            if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
+        if self.board.in_bounds(pos):
+            self.board.clear_highlights()
+            if self.board.game_over == False and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                 self.board.get_tile(pos).calc_moves(self.board)
             self.board.select(pos)
 
@@ -112,7 +112,6 @@ class Game(Scene):
                 self.board = Board(self.player1, self.player2)
             if event.key == pygame.K_f:
                 self.board.flip_board()
-                self.highlighted_squares = {flip_pos(pos): value for pos, value in self.highlighted_squares.items()}
             if event.key == pygame.K_SPACE :
                 move = self.board.ia.predict(self.board)
                 move.execute()
