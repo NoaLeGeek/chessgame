@@ -18,7 +18,7 @@ class MainMenu(Scene):
             "settings": RectButton(config.width*0.5, config.height*0.65, config.width*0.27, config.height*0.1, int(config.height*0.1//2), 'white', 'SETTINGS', Fonts.GEIZER, 'black', lambda:self.manager.go_to(SettingsMenu())),
             "quit": RectButton(config.width*0.5, config.height*0.85, config.width*0.27, config.height*0.1, int(config.height*0.1//2), 'white', 'QUIT', Fonts.GEIZER, 'black', quit),
             "rules": RectButton(config.width*0.1, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'RULES', Fonts.GEIZER, 'black', lambda:webbrowser.open("https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques")),
-            "credits": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'CREDITS', Fonts.GEIZER, 'black', None)
+            "credits": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'CREDITS', Fonts.GEIZER, 'black', lambda:self.manager.go_to(CreditsMenu()))
         }
     
     def create_labels(self):
@@ -29,8 +29,6 @@ class MainMenu(Scene):
     def render(self, screen):
         self.video_player.play(screen)
         super().render(screen)
-
-
 
 class SetupMenu(Scene):
     def __init__(self):
@@ -49,3 +47,17 @@ class SetupMenu(Scene):
     def handle_event(self, event):
         super().handle_event(event)
 
+class CreditsMenu(Scene):
+    def __init__(self):
+        super().__init__()
+
+    def create_labels(self):
+        self.labels = {
+            "kasparov": Label((config.width*0.5, config.height*0.5), "ISSA HAKIM", Fonts.GEIZER, int(config.height*0.25), "white")
+        }
+
+    def render(self, screen):
+        super().render(screen)
+    
+    def handle_event(self, event):
+        super().handle_event(event)
