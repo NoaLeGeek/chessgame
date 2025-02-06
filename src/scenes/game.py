@@ -25,10 +25,14 @@ class Game(Scene):
     def render(self, screen:pygame.Surface):
         super().render(screen)
         screen.blit(self.board.image, (config.margin, config.margin))
+        # Pieces
         self._draw_pieces(screen)
+        # Highlight
         self._draw_highlight(screen)
+        # Moves
         if self.board.selected is not None:
             self._draw_moves(screen)
+        # Promotion
         if self.board.promotion is not None:
             self._draw_promotion(screen)
 
@@ -87,6 +91,9 @@ class Game(Scene):
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
             self.board.clear_highlights()
+            if self.board.move_logs:
+                last_move = self.board.get_last_move()
+                self.board.highlight_tile(3, last_move.from_pos, last_move.to_pos)
             if self.board.game_over == False and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                 self.board.get_tile(pos).calc_moves(self.board)
             self.board.select(pos)
@@ -98,7 +105,7 @@ class Game(Scene):
             self.selected = None
             keys = pygame.key.get_pressed()
             highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
-            self.board.highlight_tile(pos, highlight_color)
+            self.board.highlight_tile(highlight_color, pos)
 
     def handle_event(self, event:pygame.event.Event):
         super().handle_event(event)

@@ -449,22 +449,20 @@ class Board:
         This function handles all move types including normal moves, en passant, and castling,
         and updates the board, castling rights, and en passant square accordingly.
         """
-        from_pos, to_pos = move.from_pos, move.to_pos
-
-        if self.is_empty(from_pos):
-            raise ValueError(f"There is no piece at {from_pos}")
+        if self.is_empty(move.from_pos):
+            raise ValueError(f"There is no piece at {move.from_pos}")
         
         # Remember the move for undo
         self.move_logs.append(move)
 
         # Update castling rights and kings' positions
         self._update_castling(move)
-        if self.get_tile(from_pos).piece.notation == "K":
-            self.current_player.king = to_pos
+        if move.from_tile.piece.notation == "K":
+            self.current_player.king = move.to_pos
         self.castling_logs.append(self.castling)
 
         # Handle en passant square logic
-        self._update_en_passant(from_pos, to_pos)
+        self._update_en_passant(move.from_pos, move.to_pos)
         self.ep_logs.append(self.ep)
 
         # Update last irreversible move
@@ -472,19 +470,23 @@ class Board:
 
         # Update player's pieces
         if move.capture:
-            self.waiting_player.remove_piece(self.get_piece(to_pos))
+            self.waiting_player.remove_piece(move.to_tile.piece)
 
         # Capture en passant
         if move.en_passant:
-            self.board[(from_pos[0], to_pos[1])].piece = None
+            self.board[(move.from_pos[0], move.to_pos[1])].piece = None
+
+        # Highlight the last move
+        move.from_tile.highlight_color = 3
+        move.to_tile.highlight_color = 3
 
         # Handle castling logic
         if move.castling:
             print("Castling move")
-            self._handle_castling(from_pos, to_pos)
+            self._handle_castling(move.from_pos, move.to_pos)
         # Handle normal move
         else:
-            self._handle_normal_move(from_pos, to_pos)
+            self._handle_normal_move(move.from_pos, move.to_pos)
         
         # Verify if no bugs
         # TODO TEST UNIT
@@ -693,21 +695,38 @@ class Board:
         """
         return self.current_player if color == self.turn else self.waiting_player
 
-    def highlight_tile(self, pos: tuple[int, int], highlight_color: int):
+    def highlight_tile(self, highlight_color: int, *list_pos):
         """
         Highlight a tile on the board with a specific color.
 
         Args:
-            pos (tuple[int, int]): The position of the tile to highlight.
+            list_pos (tuple[int, int] | list[tuple[int, int]]): The position of the tile to highlight.
             highlight_color (int): The color to highlight the tile with.
         """
-        tile = self.get_tile(pos)
-        tile.highlight_color = highlight_color if tile.highlight_color != highlight_color else None
+        for pos in list_pos:
+            tile = self.get_tile(pos)
+            if tile.highlight_color != highlight_color:
+                tile.highlight_color = highlight_color
+            else:
+                tile.highlight_color = None
+                if self.move_logs:
+                    last_move = self.get_last_move()
+                    if pos in [last_move.from_pos, last_move.to_pos]:
+                        tile.highlight_color = 3
 
     def clear_highlights(self):
         """Clear all highlighted tiles on the board."""
         for tile in self.board.values():
             tile.highlight_color = None
+
+    def get_last_move(self):
+        """
+        Get the last move that was played on the board.
+
+        Returns:
+            Move or None: The last move that was played, or None if no move has been played yet.
+        """
+        return self.move_logs[-1] if self.move_logs else None
 
     # FEN format
     def __str__(self):
