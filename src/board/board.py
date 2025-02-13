@@ -8,10 +8,9 @@ from board.move import Move
 from board.player import Player
 from random import choice
 from config import config
-from ia.ml.loader import load_model_from_checkpoint
 
 class Board:
-    def __init__(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+    def __init__(self,  player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
         """
         Initialize the chess board with a default or custom FEN string.
 
@@ -32,8 +31,8 @@ class Board:
         self.flipped = 1
         self.last_irreversible_move = 0
         self.game_over = False
-        self.current_player = Player(1)
-        self.waiting_player = Player(-1)
+        self.current_player = player1
+        self.waiting_player = player2
 
         # Castling rights
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
@@ -451,22 +450,20 @@ class Board:
         This function handles all move types including normal moves, en passant, and castling,
         and updates the board, castling rights, and en passant square accordingly.
         """
-        from_pos, to_pos = move.from_pos, move.to_pos
-
-        if self.is_empty(from_pos):
-            raise ValueError(f"There is no piece at {from_pos}")
+        if self.is_empty(move.from_pos):
+            raise ValueError(f"There is no piece at {move.from_pos}")
         
         # Remember the move for undo
         self.move_logs.append(move)
 
         # Update castling rights and kings' positions
         self._update_castling(move)
-        if self.get_tile(from_pos).piece.notation == "K":
-            self.current_player.king = to_pos
+        if move.from_tile.piece.notation == "K":
+            self.current_player.king = move.to_pos
         self.castling_logs.append(self.castling)
 
         # Handle en passant square logic
-        self._update_en_passant(from_pos, to_pos)
+        self._update_en_passant(move.from_pos, move.to_pos)
         self.ep_logs.append(self.ep)
 
         # Update last irreversible move
@@ -474,19 +471,23 @@ class Board:
 
         # Update player's pieces
         if move.capture and not move.castling:
-            self.waiting_player.remove_piece(self.get_piece(to_pos))
+            self.waiting_player.remove_piece(move.to_tile.piece)
 
         # Capture en passant
         if move.en_passant:
-            self.board[(from_pos[0], to_pos[1])].piece = None
+            self.board[(move.from_pos[0], move.to_pos[1])].piece = None
+
+        # Highlight the last move
+        move.from_tile.highlight_color = 3
+        move.to_tile.highlight_color = 3
 
         # Handle castling logic
         if move.castling:
             print("Castling move")
-            self._handle_castling(from_pos, to_pos)
+            self._handle_castling(move.from_pos, move.to_pos)
         # Handle normal move
         else:
-            self._handle_normal_move(from_pos, to_pos)
+            self._handle_normal_move(move.from_pos, move.to_pos)
         
         # Verify if no bugs
         # TODO TEST UNIT
@@ -695,6 +696,39 @@ class Board:
         """
         return self.current_player if color == self.turn else self.waiting_player
 
+    def highlight_tile(self, highlight_color: int, *list_pos):
+        """
+        Highlight a tile on the board with a specific color.
+
+        Args:
+            list_pos (tuple[int, int] | list[tuple[int, int]]): The position of the tile to highlight.
+            highlight_color (int): The color to highlight the tile with.
+        """
+        for pos in list_pos:
+            tile = self.get_tile(pos)
+            if tile.highlight_color != highlight_color:
+                tile.highlight_color = highlight_color
+            else:
+                tile.highlight_color = None
+                if self.move_logs:
+                    last_move = self.get_last_move()
+                    if pos in [last_move.from_pos, last_move.to_pos]:
+                        tile.highlight_color = 3
+
+    def clear_highlights(self):
+        """Clear all highlighted tiles on the board."""
+        for tile in self.board.values():
+            tile.highlight_color = None
+
+    def get_last_move(self):
+        """
+        Get the last move that was played on the board.
+
+        Returns:
+            Move or None: The last move that was played, or None if no move has been played yet.
+        """
+        return self.move_logs[-1] if self.move_logs else None
+
     # FEN format
     def __str__(self):
         """Return the FEN string of the board state."""
@@ -730,7 +764,6 @@ class Board:
         matrix = np.zeros((14, 8, 8))
         for pos, tile in self.board.items():
             piece = tile.piece
-
             if piece :
                 channel = piece_to_num(type(piece))
                 if piece.color == -1 :
@@ -738,7 +771,7 @@ class Board:
                 matrix[channel, pos[0], pos[1]] = 1
                 if piece.color == self.turn :
                     moves = piece.calc_moves(self, pos)
-                    if moves :
+                    if moves:
                         legal_moves = 0
                         for move in moves :
                             if self.convert_to_move(pos, move).is_legal():
@@ -755,5 +788,3 @@ class Board:
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
         print(from_pos, to_pos)
         return self.convert_to_move(from_pos, to_pos)
-
-

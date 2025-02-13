@@ -1,3 +1,5 @@
+from enum import StrEnum
+
 BROWN = (92, 64, 51)
 WHITE = (255, 255, 255)
 
@@ -17,3 +19,8 @@ available_sound = ["beat", "default", "lolz", "marble", "metal", "nature", "news
 available_board = ["blue", "brown", "green", "ic", "newspaper", "purple", "blue-marble", "blue2", "blue3", "canvas2", "green-plastic", "grey", "horsey", "leather", "maple", "maple2", "ncf-board", "olive", "pink-pyramid", "purple-diag", "wood", "wood2", "wood3", "wood4"]
 available_background = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 available_piece = ['alpha', 'anarcandy', 'blindfold', 'caliente', 'california', 'cardinal', 'cburnett', 'celtic', 'chess7', 'chessnut', 'companion', 'disguised', 'dubrovny', 'fantasy', 'fresca', 'gioco', 'governor', 'horsey', 'icpieces', 'kiwen-suwi', 'kosal', 'leipzig', 'letter', 'libra', 'maestro', 'merida', 'mono', 'mpchess', 'pirouetti', 'pixel', 'reillycraig', 'riohacha', 'shapes', 'spatial', 'staunty', 'tatiana']
+
+
+class Fonts(StrEnum):
+    GEIZER = "Geizer.otf"
+    ONE_SLICE = "One Slice.otf"

@@ -42,3 +42,26 @@ class Tile:
         if self.piece.notation == "K":
             board.get_player(self.piece.color).king = self.pos
         return can_move
+    
+    def get_color(self):
+        r, g, b, a = None, None, None, None
+        match self.highlight_color:
+            # Right click
+            case 0:
+                r, g, b, a = 255, 0, 0, 75
+            # Shift + Right click
+            case 1:
+                r, g, b, a = 0, 255, 0, 75
+            # Ctrl + Right click
+            case 2:
+                r, g, b, a = 255, 165, 0, 75
+            # History move
+            case 3:
+                r, g, b, a = 255, 255, 0, 75
+            # Selected piece
+            case 4:
+                r, g, b, a = 0, 255, 255, 75
+            # Void
+            case None:
+                r, g, b, a = 0, 0, 0, 0
+        return r, g, b, a
