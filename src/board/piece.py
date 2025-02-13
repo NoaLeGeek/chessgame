@@ -173,7 +173,7 @@ class King(Piece):
                 if piece.notation == "R" and piece.is_ally(self):
                     rooks[castling_direction] = i
         # Check if the squares between the king and the found rook(s) are empty
-        print("IN PIECE.PY")
+        debug_print("IN PIECE.PY")
         for d in possible_castling:
             castling_direction = d*board.flipped
             if rooks[castling_direction] is None:

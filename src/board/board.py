@@ -105,9 +105,10 @@ class Board:
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     
-                    piece = piece_type(color, self.piece_images[piece_image_key])
-                    self.get_player(color).add_piece(piece)
-                    tile.piece = piece
+                    if char.upper() in ["K", "P", "R"]:
+                        piece = piece_type(color, self.piece_images[piece_image_key])
+                        self.get_player(color).add_piece(piece)
+                        tile.piece = piece
                     self.board[(r, c)] = tile
 
                     # Track kings' positions
@@ -472,7 +473,7 @@ class Board:
         self._update_last_irreversible_move(move)
 
         # Update player's pieces
-        if move.capture:
+        if move.capture and not move.castling:
             self.waiting_player.remove_piece(self.get_piece(to_pos))
 
         # Capture en passant
