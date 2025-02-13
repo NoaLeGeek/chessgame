@@ -714,6 +714,8 @@ class Board:
                     last_move = self.get_last_move()
                     if pos in [last_move.from_pos, last_move.to_pos]:
                         tile.highlight_color = 3
+                if self.selected is not None and self.selected.piece is not None:
+                    tile.highlight_color = 4
 
     def clear_highlights(self):
         """Clear all highlighted tiles on the board."""
@@ -728,6 +730,16 @@ class Board:
             Move or None: The last move that was played, or None if no move has been played yet.
         """
         return self.move_logs[-1] if self.move_logs else None
+    
+    def get_center(self) -> list[tuple[int, int]]:
+        """
+        Get the center position of the board.
+
+        Returns:
+            list[tuple[int, int]]: The center position(s) of the board.
+        """
+        mid_x, mid_y = (config.columns - 1) // 2, (config.rows - 1) // 2
+        return [(mid_x + i, mid_y + j) for i in range(config.columns % 2 + 1) for j in range(config.rows % 2 + 1)]
 
     # FEN format
     def __str__(self):

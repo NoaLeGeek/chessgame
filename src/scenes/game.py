@@ -91,12 +91,14 @@ class Game(Scene):
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
             self.board.clear_highlights()
-            if self.board.move_logs:
-                last_move = self.board.get_last_move()
-                self.board.highlight_tile(3, last_move.from_pos, last_move.to_pos)
             if self.board.game_over == False and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                 self.board.get_tile(pos).calc_moves(self.board)
             self.board.select(pos)
+            if self.board.move_logs:
+                last_move = self.board.get_last_move()
+                self.board.highlight_tile(3, last_move.from_pos, last_move.to_pos)
+            if self.board.selected is not None and self.board.selected.piece is not None:
+                self.board.highlight_tile(4, self.board.selected.pos)
 
     def handle_right_click(self):
         pos = get_pos(pygame.mouse.get_pos())
