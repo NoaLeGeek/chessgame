@@ -477,10 +477,6 @@ class Board:
         if move.en_passant:
             self.board[(move.from_pos[0], move.to_pos[1])].piece = None
 
-        # Highlight the last move
-        move.from_tile.highlight_color = 3
-        move.to_tile.highlight_color = 3
-
         # Handle castling logic
         if move.castling:
             print("Castling move")
@@ -712,7 +708,8 @@ class Board:
                 tile.highlight_color = None
                 if self.move_logs:
                     last_move = self.get_last_move()
-                    if pos in [last_move.from_pos, last_move.to_pos]:
+                    to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
+                    if pos in [last_move.from_pos, to_pos]:
                         tile.highlight_color = 3
                 if self.selected is not None and self.selected.piece is not None:
                     tile.highlight_color = 4

@@ -3,7 +3,7 @@ from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, flip_pos, debug_print, load_image
-from constants import WHITE, Fonts
+from constants import WHITE, Fonts, castling_king_column
 from config import config
 from gui import RectButton
 from board.player import Player
@@ -96,7 +96,8 @@ class Game(Scene):
             self.board.select(pos)
             if self.board.move_logs:
                 last_move = self.board.get_last_move()
-                self.board.highlight_tile(3, last_move.from_pos, last_move.to_pos)
+                to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.board.flipped], flipped=self.board.flipped))
+                self.board.highlight_tile(3, last_move.from_pos, to_pos)
             if self.board.selected is not None and self.board.selected.piece is not None:
                 self.board.highlight_tile(4, self.board.selected.pos)
 
@@ -104,7 +105,9 @@ class Game(Scene):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
-            self.selected = None
+            if self.board.selected is not None:
+                self.board.selected.highlight_color = None
+                self.board.selected = None
             keys = pygame.key.get_pressed()
             highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
             self.board.highlight_tile(highlight_color, pos)

@@ -44,8 +44,7 @@ class Move:
         self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
         self.board.selected = None
         self._play_sound_move()
-        #self.notation = str(self)
-        # TODO ne pas oublier de remettre ça
+        self.notation = str(self)
         self.fen = str(self.board)
         self.board.check_game()
 
