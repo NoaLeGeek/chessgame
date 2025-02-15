@@ -14,6 +14,7 @@ class RectButton:
         self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
         self.color = color
+        self.border_radius = border_radius
         self.surface = create_rect_surface(color, width, height, border_radius)
         self.filter = create_rect_surface("black", width, height, border_radius, alpha=50)
         self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
@@ -35,11 +36,21 @@ class RectButton:
         self.is_hovered = self.rect.collidepoint(mouse_pos)
 
     def handle_click(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if self.is_clicked():
             self.command()
+    
+    def is_clicked(self):
+        return self.rect.collidepoint(pygame.mouse.get_pos())
 
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
+
+    def update_color(self, color: str):
+        self.color = color 
+        self.surface = create_rect_surface(color, self.width, self.height, self.border_radius)
+    
+
+
 
 class Label:
     def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str, background: pygame.Surface = None, background_pos = None):
