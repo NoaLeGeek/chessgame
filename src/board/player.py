@@ -9,8 +9,6 @@ class Player:
 
     def add_piece(self, piece):
         self.pieces[piece.notation].append(piece)
-        if piece.notation == 'K':
-            self.king = piece.pos
 
     def remove_piece(self, piece):
         self.pieces[piece.notation].remove(piece)
@@ -29,5 +27,5 @@ class Player:
             moves += tile.calc_moves(board)
         return moves
     
-    def is_king_check(self, board, opponent):
-        return self.king in opponent.get_moves(board)
+    def is_king_check(self, board):
+        return self.king in board.get_player(-self.color).get_moves(board)

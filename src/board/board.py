@@ -108,11 +108,15 @@ class Board:
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     
-                    if char.upper() in ["K", "P", "R"]:
+                    if (char.upper() in ["K", "P", "R"] and config.rules["chess960"] == True) or config.rules["chess960"] != True:
                         piece = piece_type(color, self.piece_images[piece_image_key])
                         self.get_player(color).add_piece(piece)
                         tile.piece = piece
                     self.board[(r, c)] = tile
+
+                    # Track the king's position
+                    if char.upper() == "K":
+                        self.get_player(color).king = (r, c)
 
                     c += 1
 
@@ -221,10 +225,14 @@ class Board:
         """
         Determine if the game has ended and update the game state accordingly.
         """
-        if config.rules["king_of_the_hill"] == True and self.current_player.king:
-            pass
+        if config.rules["king_of_the_hill"] == True and self.current_player.king in self.get_center():
+            self.winner = "White" if self.turn == 1 else "Black"
+        elif config.rules["+3_checks"] == True and self.checks[self.turn] >= 3:
+            self.winner = "White" if self.turn == 1 else "Black"
+        elif config.rules["giveaway"] == True and self.current_player.pieces == {}:
+            self.winner = "White" if self.turn == 1 else "Black"
         elif self.is_stalemate():
-            if self.current_player.is_king_check(self, self.waiting_player):
+            if self.current_player.is_king_check(self) or config.rules["giveaway"] == True:
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
                 self.winner = "Stalemate"
@@ -605,7 +613,7 @@ class Board:
         """Handle illegal moves (either not in the possible moves or king is checked)."""
         if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
             self.selected = None
-            if self.current_player.is_king_check(self, self.waiting_player):
+            if self.current_player.is_king_check(self):
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
@@ -629,7 +637,13 @@ class Board:
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
         moves = map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves)
-        return list(filter(lambda move: move.is_legal(), moves))
+        if config.rules["giveaway"] == True:
+            if any(move.capture for move in moves):
+                return list(filter(lambda move: move.capture, moves))
+            else:
+                return list(moves)
+        else:
+            return list(filter(lambda move: move.is_legal(), moves))
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """

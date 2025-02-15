@@ -55,8 +55,11 @@ def generate_piece_images(flipped: int = 1):
     return images
 
 def generate_board_image():
-    filepath = os.path.join('assets', 'board', config.board_asset + '.jpg')
-    return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
+    for ext in ['jpg', 'png']:
+        filepath = os.path.join('assets', 'board', f"{config.board_asset}.{ext}")
+        if os.path.exists(filepath):
+            return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
+    raise FileNotFoundError(f"No board image found for {config.board_asset} with extensions .jpg or .png")
 
 # TODO prendre les sons de lichess
 def generate_sounds():

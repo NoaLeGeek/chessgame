@@ -31,7 +31,7 @@ class Pawn(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
         super().__init__(color, image)
         self.notation = 'P'
-        self.promotion = (Queen, Rook, Bishop, Knight)
+        self.promotion = (Queen, Rook, Bishop, Knight) if config.rules["giveaway"] == False else (King)
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> None:
         self.moves = []

@@ -35,7 +35,7 @@ class Tile:
         board.get_tile(to).piece = self.piece
         self.piece = None
         # Check if the king is in check after the move
-        can_move = not board.current_player.is_king_check(board, board.waiting_player)
+        can_move = not board.current_player.is_king_check(board)
         # Restore the initial state of the board
         self.piece = self_piece
         board.get_tile(to).piece = save_piece
