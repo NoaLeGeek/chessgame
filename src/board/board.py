@@ -34,6 +34,10 @@ class Board:
         self.current_player = player1
         self.waiting_player = player2
 
+        # Anarchy chess
+        if config.rules["+3_checks"] == True:
+            self.checks = {1: 0, -1: 0}
+
         # Castling rights
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
         self.castling_logs = []
@@ -109,10 +113,6 @@ class Board:
                         self.get_player(color).add_piece(piece)
                         tile.piece = piece
                     self.board[(r, c)] = tile
-
-                    # Track kings' positions
-                    if char.upper() == "K":  
-                        self.get_player(color).king = tile.pos
 
                     c += 1
 
@@ -221,7 +221,9 @@ class Board:
         """
         Determine if the game has ended and update the game state accordingly.
         """
-        if self.is_stalemate():
+        if config.rules["king_of_the_hill"] == True and self.current_player.king:
+            pass
+        elif self.is_stalemate():
             if self.current_player.is_king_check(self, self.waiting_player):
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
@@ -470,12 +472,14 @@ class Board:
         self._update_last_irreversible_move(move)
 
         # Update player's pieces
-        if move.capture and not move.castling:
+        if move.capture and not move.castling and not move.en_passant:
             self.waiting_player.remove_piece(move.to_tile.piece)
 
         # Capture en passant
         if move.en_passant:
-            self.board[(move.from_pos[0], move.to_pos[1])].piece = None
+            ep_pos = (move.from_pos[0], move.to_pos[1])
+            self.waiting_player.remove_piece(self.board[ep_pos].piece)
+            self.board[ep_pos].piece = None
 
         # Handle castling logic
         if move.castling:
@@ -504,7 +508,7 @@ class Board:
         new_piece = type_piece(self.selected.piece.color)
         if config.piece_asset != "blindfold":
             new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
-        
+        self.current_player.add_piece(new_piece)
         self.board[self.promotion].piece = new_piece
         self.board[self.selected.pos].piece = None
         self.promotion = None

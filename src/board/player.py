@@ -10,7 +10,7 @@ class Player:
     def add_piece(self, piece):
         self.pieces[piece.notation].append(piece)
         if piece.notation == 'K':
-            self.king = piece
+            self.king = piece.pos
 
     def remove_piece(self, piece):
         self.pieces[piece.notation].remove(piece)
