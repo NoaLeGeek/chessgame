@@ -33,19 +33,16 @@ class Move:
         else:
             self.board.move_piece(self)
         # This is the board state after the move
-        # TODO attention à ça quand draw_highlight
-        # Modify the final column of the king if it's a castling move
-        """ if self.castling:
-            self.to = (row, flip_pos(get_value(d, 2, 6), flipped=d*flipped))) """
         if self.board.turn == -1:
             self.board.full_moves += 1
         self.board.half_moves += 1
         self.board.turn *= -1
-        self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
         self.board.selected = None
+        self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
+        if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self.board):
+            self.board.checks[self.board.waiting_player.color] += 1
         self._play_sound_move()
-        #self.notation = str(self)
-        # TODO ne pas oublier de remettre ça
+        self.notation = str(self)
         self.fen = str(self.board)
         self.board.check_game()
 
@@ -53,7 +50,7 @@ class Move:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
             self.board.play_sound("castle")
-        elif self.board.current_player.is_king_check(self.board, self.board.waiting_player):
+        elif self.board.current_player.is_king_check(self.board):
             self.board.play_sound("move-check")
         elif self.promotion is not None:
             self.board.play_sound("promote")
@@ -71,7 +68,7 @@ class Move:
         if not self.castling:
             return self.from_tile.can_move(self.board, self.to_pos)
         # Castling
-        if self.board.current_player.is_king_check(self.board, self.board.waiting_player):
+        if config.rules["giveaway"] == True or self.board.current_player.is_king_check(self.board):
             return False
         is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
@@ -143,7 +140,7 @@ class Move:
             if self.promotion is not None:
                 string += "=" + piece_to_notation(self.promotion)
         # Add # if it's checkmate or + if it's a check
-        if self.board.current_player.is_king_check(self.board, self.board.waiting_player):
+        if self.board.current_player.is_king_check(self.board):
             if self.board.is_stalemate():
                 string += "#"
             else:

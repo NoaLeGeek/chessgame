@@ -55,8 +55,11 @@ def generate_piece_images(flipped: int = 1):
     return images
 
 def generate_board_image():
-    filepath = os.path.join('assets', 'board', config.board_asset + '.jpg')
-    return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
+    for ext in ['jpg', 'png']:
+        filepath = os.path.join('assets', 'board', f"{config.board_asset}.{ext}")
+        if os.path.exists(filepath):
+            return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
+    raise FileNotFoundError(f"No board image found for {config.board_asset} with extensions .jpg or .png")
 
 # TODO prendre les sons de lichess
 def generate_sounds():
@@ -71,29 +74,6 @@ def generate_sounds():
         for name in custom_sounds
     })
     return sounds
-
-def get_color(highlight_color):
-    r, g, b, a = None, None, None, None
-    match highlight_color:
-        # Right click
-        case 0:
-            r, g, b, a = 255, 0, 0, 75
-        # Shift + Right click
-        case 1:
-            r, g, b, a = 0, 255, 0, 75
-        # Ctrl + Right click
-        case 2:
-            r, g, b, a = 255, 165, 0, 75
-        # History move
-        case 3:
-            r, g, b, a = 255, 255, 0, 75
-        # Selected piece
-        case 4:
-            r, g, b, a = 0, 255, 255, 75
-        # Void
-        case None:
-            r, g, b, a = 0, 0, 0, 0
-    return r, g, b, a
 
 def debug_print(*args):
     if config.debug:

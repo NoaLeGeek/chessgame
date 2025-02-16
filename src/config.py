@@ -22,7 +22,7 @@ class Config:
             "mutation_chess": False,
             "king_of_the_hill": False,
             "+3_checks": False,
-            "giveaway": False,
+            "giveaway": True,
             "chess960": False,
             "random_position": False,
             "random_promotion": False,

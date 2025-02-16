@@ -17,7 +17,7 @@ def main():
     while run:
         manager.render(screen)
         manager.update(clock.get_time()/1000)
-        pygame.display.update()  
+        pygame.display.update()
         clock.tick(config.fps)
         for event in pygame.event.get():
             manager.handle_event(event)

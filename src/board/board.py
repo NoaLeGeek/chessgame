@@ -8,7 +8,6 @@ from board.move import Move
 from board.player import Player
 from random import choice
 from config import config
-from ia.ml.loader import load_model_from_checkpoint
 
 class Board:
     def __init__(self,  player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -34,6 +33,10 @@ class Board:
         self.game_over = False
         self.current_player = player1
         self.waiting_player = player2
+
+        # Anarchy chess
+        if config.rules["+3_checks"] == True:
+            self.checks = {1: 0, -1: 0}
 
         # Castling rights
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
@@ -105,14 +108,15 @@ class Board:
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     
-                    piece = piece_type(color, self.piece_images[piece_image_key])
-                    self.get_player(color).add_piece(piece)
-                    tile.piece = piece
+                    if (char.upper() in ["K", "P", "R"] and config.rules["chess960"] == True) or config.rules["chess960"] != True:
+                        piece = piece_type(color, self.piece_images[piece_image_key])
+                        self.get_player(color).add_piece(piece)
+                        tile.piece = piece
                     self.board[(r, c)] = tile
 
-                    # Track kings' positions
-                    if char.upper() == "K":  
-                        self.get_player(color).king = tile.pos
+                    # Track the king's position
+                    if char.upper() == "K":
+                        self.get_player(color).king = (r, c)
 
                     c += 1
 
@@ -221,8 +225,14 @@ class Board:
         """
         Determine if the game has ended and update the game state accordingly.
         """
-        if self.is_stalemate():
-            if self.current_player.is_king_check(self, self.waiting_player):
+        if config.rules["king_of_the_hill"] == True and self.current_player.king in self.get_center():
+            self.winner = "White" if self.turn == 1 else "Black"
+        elif config.rules["+3_checks"] == True and self.checks[self.turn] >= 3:
+            self.winner = "White" if self.turn == 1 else "Black"
+        elif config.rules["giveaway"] == True and self.current_player.pieces == {}:
+            self.winner = "White" if self.turn == 1 else "Black"
+        elif self.is_stalemate():
+            if self.current_player.is_king_check(self) or config.rules["giveaway"] == True:
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
                 self.winner = "Stalemate"
@@ -273,17 +283,17 @@ class Board:
             bool: True if neither player can checkmate, otherwise False.
         """
         piece_count = self.count_pieces()
+        # Only kings remain
         if piece_count == 2:
-            return True  # Only kings remain
+            return True  
         if piece_count == 3:
             return any(
-                self.dict_color_pieces(color).get("B", 0) == 1 or
-                self.dict_color_pieces(color).get("K", 0) == 1
+                len(self.get_player(color).pieces.get("B")) == 1 or
+                len(self.get_player(color).pieces.get("K")) == 1
                 for color in [-1, 1]
             )
         if piece_count == 4:
-            bishops = [self.dict_color_pieces(color).get("B", 0) for color in [-1, 1]]
-            if all(b == 1 for b in bishops):
+            if all(len(self.get_player(color).pieces.get("B")) == 1 for color in [-1, 1]):
                 square_colors = [self.find_tile("B", color).get_square_color() for color in [-1, 1]]
                 if square_colors[0] == square_colors[1]:
                     return True
@@ -310,22 +320,6 @@ class Board:
             Tile or None: The tile with the matching piece, or None if no such tile exists.
         """
         return next((tile for tile in self.board.values() if tile.piece and tile.piece.notation == notation and tile.piece.color == color), None)
-    
-    def dict_color_pieces(self, color):
-        """
-        Count the pieces by their type and color on the board.
-        
-        Args:
-            color (int): The color of the pieces to count (1 for white, -1 for black).
-        
-        Returns:
-            dict: A dictionary where keys are piece notations, and values are the count of each piece type for the given color.
-        """
-        counts = {}
-        for tile in self.board.values():
-            if tile.piece and tile.piece.color == color:
-                counts[tile.piece.notation] = counts.get(tile.piece.notation, 0) + 1
-        return counts
     
     def convert_to_move(self, from_, to, promotion=None):
         """
@@ -466,42 +460,42 @@ class Board:
         This function handles all move types including normal moves, en passant, and castling,
         and updates the board, castling rights, and en passant square accordingly.
         """
-        from_pos, to_pos = move.from_pos, move.to_pos
-
-        if self.is_empty(from_pos):
-            raise ValueError(f"There is no piece at {from_pos}")
+        if self.is_empty(move.from_pos):
+            raise ValueError(f"There is no piece at {move.from_pos}")
         
         # Remember the move for undo
         self.move_logs.append(move)
 
         # Update castling rights and kings' positions
         self._update_castling(move)
-        if self.get_tile(from_pos).piece.notation == "K":
-            self.current_player.king = to_pos
+        if move.from_tile.piece.notation == "K":
+            self.current_player.king = move.to_pos
         self.castling_logs.append(self.castling)
 
         # Handle en passant square logic
-        self._update_en_passant(from_pos, to_pos)
+        self._update_en_passant(move.from_pos, move.to_pos)
         self.ep_logs.append(self.ep)
 
         # Update last irreversible move
         self._update_last_irreversible_move(move)
 
         # Update player's pieces
-        if move.capture:
-            self.waiting_player.remove_piece(self.get_piece(to_pos))
+        if move.capture and not move.castling and not move.en_passant:
+            self.waiting_player.remove_piece(move.to_tile.piece)
 
         # Capture en passant
         if move.en_passant:
-            self.board[(from_pos[0], to_pos[1])].piece = None
+            ep_pos = (move.from_pos[0], move.to_pos[1])
+            self.waiting_player.remove_piece(self.board[ep_pos].piece)
+            self.board[ep_pos].piece = None
 
         # Handle castling logic
         if move.castling:
             print("Castling move")
-            self._handle_castling(from_pos, to_pos)
+            self._handle_castling(move.from_pos, move.to_pos)
         # Handle normal move
         else:
-            self._handle_normal_move(from_pos, to_pos)
+            self._handle_normal_move(move.from_pos, move.to_pos)
         
         # Verify if no bugs
         # TODO TEST UNIT
@@ -522,7 +516,7 @@ class Board:
         new_piece = type_piece(self.selected.piece.color)
         if config.piece_asset != "blindfold":
             new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
-        
+        self.current_player.add_piece(new_piece)
         self.board[self.promotion].piece = new_piece
         self.board[self.selected.pos].piece = None
         self.promotion = None
@@ -619,7 +613,7 @@ class Board:
         """Handle illegal moves (either not in the possible moves or king is checked)."""
         if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
             self.selected = None
-            if self.current_player.is_king_check(self, self.waiting_player):
+            if self.current_player.is_king_check(self):
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
@@ -642,8 +636,14 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves)
-        return list(filter(lambda move: move.is_legal(), moves))
+        moves = list(map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves))
+        if config.rules["giveaway"] == True:
+            if any(self.convert_to_move(tile.pos, move).capture for move in self.current_player.get_moves(self)):
+                return list(filter(lambda move: move.capture, moves))
+            else:
+                return list(filter(lambda move: not move.castling, moves))
+        else:
+            return list(filter(lambda move: move.is_legal(), moves))
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """
@@ -710,6 +710,52 @@ class Board:
         """
         return self.current_player if color == self.turn else self.waiting_player
 
+    def highlight_tile(self, highlight_color: int, *list_pos):
+        """
+        Highlight a tile on the board with a specific color.
+
+        Args:
+            list_pos (tuple[int, int] | list[tuple[int, int]]): The position of the tile to highlight.
+            highlight_color (int): The color to highlight the tile with.
+        """
+        for pos in list_pos:
+            tile = self.get_tile(pos)
+            if tile.highlight_color != highlight_color:
+                tile.highlight_color = highlight_color
+            else:
+                tile.highlight_color = None
+                if self.move_logs:
+                    last_move = self.get_last_move()
+                    to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
+                    if pos in [last_move.from_pos, to_pos]:
+                        tile.highlight_color = 3
+                if self.selected is not None and self.selected.piece is not None:
+                    tile.highlight_color = 4
+
+    def clear_highlights(self):
+        """Clear all highlighted tiles on the board."""
+        for tile in self.board.values():
+            tile.highlight_color = None
+
+    def get_last_move(self):
+        """
+        Get the last move that was played on the board.
+
+        Returns:
+            Move or None: The last move that was played, or None if no move has been played yet.
+        """
+        return self.move_logs[-1] if self.move_logs else None
+    
+    def get_center(self) -> list[tuple[int, int]]:
+        """
+        Get the center position of the board.
+
+        Returns:
+            list[tuple[int, int]]: The center position(s) of the board.
+        """
+        mid_x, mid_y = (config.columns - 1) // 2, (config.rows - 1) // 2
+        return [(mid_x + i, mid_y + j) for i in range(config.columns % 2 + 1) for j in range(config.rows % 2 + 1)]
+
     # FEN format
     def __str__(self):
         """Return the FEN string of the board state."""
@@ -745,7 +791,6 @@ class Board:
         matrix = np.zeros((14, 8, 8))
         for pos, tile in self.board.items():
             piece = tile.piece
-
             if piece :
                 channel = piece_to_num(type(piece))
                 if piece.color == -1 :
@@ -753,7 +798,7 @@ class Board:
                 matrix[channel, pos[0], pos[1]] = 1
                 if piece.color == self.turn :
                     moves = piece.calc_moves(self, pos)
-                    if moves :
+                    if moves:
                         legal_moves = 0
                         for move in moves :
                             if self.convert_to_move(pos, move).is_legal():
@@ -770,5 +815,3 @@ class Board:
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
         print(from_pos, to_pos)
         return self.convert_to_move(from_pos, to_pos)
-
-

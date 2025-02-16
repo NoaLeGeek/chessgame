@@ -31,7 +31,7 @@ class Pawn(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
         super().__init__(color, image)
         self.notation = 'P'
-        self.promotion = (Queen, Rook, Bishop, Knight)
+        self.promotion = (Queen, Rook, Bishop, Knight) if config.rules["giveaway"] == False else (King)
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> None:
         self.moves = []
@@ -173,7 +173,7 @@ class King(Piece):
                 if piece.notation == "R" and piece.is_ally(self):
                     rooks[castling_direction] = i
         # Check if the squares between the king and the found rook(s) are empty
-        print("IN PIECE.PY")
+        debug_print("IN PIECE.PY")
         for d in possible_castling:
             castling_direction = d*board.flipped
             if rooks[castling_direction] is None:
@@ -181,8 +181,8 @@ class King(Piece):
             rook_column = rooks[castling_direction] * castling_direction
             dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=board.flipped) * castling_direction
             dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=board.flipped) * castling_direction
-            start = castling_direction * min(from_pos[1] * castling_direction, dest_king_column)
-            end = castling_direction * max(rook_column, dest_rook_column)
+            start = castling_direction * min(from_pos[1] * castling_direction, dest_rook_column)
+            end = castling_direction * max(rook_column, dest_king_column)
             columns = list(range(start, end + castling_direction, castling_direction))
             debug_print("CASTLING", ("OO" if castling_direction == 1 else "OOO"))
             debug_print("ROOK", rook_column)
