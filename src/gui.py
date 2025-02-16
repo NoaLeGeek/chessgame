@@ -1,22 +1,24 @@
 import pygame
 import cv2
 
-def create_rect_surface(color: str, width: int, height: int, border_radius: int, alpha: int = 255) -> pygame.Surface:
+from constants import Colors
+
+def create_rect_surface(color: Colors, width: int, height: int, border_radius: int, alpha: int = 255) -> pygame.Surface:
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        pygame.draw.rect(surface, color, (0, 0, width, height), border_radius=border_radius)
+        pygame.draw.rect(surface, color.value, (0, 0, width, height), border_radius=border_radius)
         if alpha is not None:
             surface.set_alpha(alpha)
         return surface
 
 class RectButton:
-    def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: str, text: str, font_name: str, text_color: str, command, image: pygame.Surface = None):
+    def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: Colors, text: str, font_name: str, text_color: Colors, command, image: pygame.Surface = None):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
         self.color = color
         self.border_radius = border_radius
         self.surface = create_rect_surface(color, width, height, border_radius)
-        self.filter = create_rect_surface("black", width, height, border_radius, alpha=50)
+        self.filter = create_rect_surface(Colors.BLACK, width, height, border_radius, alpha=50)
         self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
         self.command = command
         self.is_hovered = False
@@ -53,7 +55,7 @@ class RectButton:
 
 
 class Label:
-    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: str, background: pygame.Surface = None, background_pos = None):
+    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: Colors, background: pygame.Surface = None, background_pos = None):
         self.text = text
         self.center = center
         self.font_path = f"assets/font/{font_name}"
@@ -66,7 +68,7 @@ class Label:
             self.background_pos = (background_pos[0]-background.get_width()//2, background_pos[1]-background.get_height()//2)
 
     def draw(self, screen: pygame.Surface):
-        if self.background :
+        if self.background:
             screen.blit(self.background, self.background_pos)
         screen.blit(self.surface, self.rect)
 
@@ -76,7 +78,7 @@ class Label:
         self.rect = self.surface.get_rect(center=self.center)
 
     def _create_surface(self) -> pygame.Surface:
-        return self.font.render(self.text, True, self.color)
+        return self.font.render(self.text, True, self.color.value)
 
 class VideoPlayer:
     def __init__(self, video_path, width, height):

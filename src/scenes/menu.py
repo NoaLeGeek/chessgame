@@ -4,7 +4,7 @@ from scenes.game import Game
 from scenes.settings import SettingsMenu
 from gui import RectButton, Label, VideoPlayer, create_rect_surface
 from config import config
-from constants import Fonts
+from constants import Fonts, Colors
 from board.player import Player
 
 class MainMenu(Scene):
@@ -14,16 +14,16 @@ class MainMenu(Scene):
         
     def create_buttons(self):
         self.buttons = {
-            "play": RectButton(config.width*0.5, config.height*0.45, config.width*0.27, config.height*0.1, int(config.height*0.1//2), 'white', 'PLAY', Fonts.GEIZER, 'black', lambda:self.manager.go_to(SetupMenu())),
-            "settings": RectButton(config.width*0.5, config.height*0.65, config.width*0.27, config.height*0.1, int(config.height*0.1//2), 'white', 'SETTINGS', Fonts.GEIZER, 'black', lambda:self.manager.go_to(SettingsMenu())),
-            "quit": RectButton(config.width*0.5, config.height*0.85, config.width*0.27, config.height*0.1, int(config.height*0.1//2), 'white', 'QUIT', Fonts.GEIZER, 'black', quit),
-            "rules": RectButton(config.width*0.1, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'RULES', Fonts.GEIZER, 'black', lambda:webbrowser.open("https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques")),
-            "credits": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'CREDITS', Fonts.GEIZER, 'black', lambda:self.manager.go_to(CreditsMenu()))
+            "play": RectButton(config.width*0.5, config.height*0.45, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'PLAY', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(SetupMenu())),
+            "settings": RectButton(config.width*0.5, config.height*0.65, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'SETTINGS', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(SettingsMenu())),
+            "quit": RectButton(config.width*0.5, config.height*0.85, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'QUIT', Fonts.GEIZER, Colors.BLACK, quit),
+            "rules": RectButton(config.width*0.1, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'RULES', Fonts.GEIZER, Colors.BLACK, lambda:webbrowser.open("https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques")),
+            "credits": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'CREDITS', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(CreditsMenu()))
         }
     
     def create_labels(self):
         self.labels = {
-            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), 'black', create_rect_surface("white", config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055)), (config.width*0.5, config.height*0.17))
+            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.BLACK, create_rect_surface(Colors.WHITE, config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055)), (config.width*0.5, config.height*0.17))
         }
 
     def render(self, screen):
@@ -38,7 +38,7 @@ class SetupMenu(Scene):
     
     def create_buttons(self):
         self.buttons = {
-            "play": RectButton(config.width*0.5, config.height*0.45, config.width*0.27, config.height*0.1, int(config.height*0.1//2), 'white', 'PLAY', Fonts.GEIZER, 'black', lambda:self.manager.go_to(Game(self.player1, self.player2))),
+            "play": RectButton(config.width*0.5, config.height*0.45, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'PLAY', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(Game(self.player1, self.player2))),
         }
 
     def render(self, screen):
@@ -53,7 +53,7 @@ class CreditsMenu(Scene):
 
     def create_labels(self):
         self.labels = {
-            "kasparov": Label((config.width*0.5, config.height*0.5), "ISSA HAKIM", Fonts.GEIZER, int(config.height*0.25), "white")
+            "kasparov": Label((config.width*0.5, config.height*0.5), "ISSA HAKIM", Fonts.GEIZER, int(config.height*0.25), Colors.WHITE)
         }
 
     def render(self, screen):

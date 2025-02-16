@@ -504,7 +504,7 @@ class Board:
     def testing(self):
         for pos, tile in self.board.items():
             if pos != tile.pos:
-                raise ValueError(f"Tile position mismatch: In board position : {pos} != Tile position {tile.pos}")
+                raise ValueError(f"Tile position mismatch: In board position: {pos} != Tile position {tile.pos}")
 
     def promote_piece(self, type_piece):
         """
@@ -791,16 +791,16 @@ class Board:
         matrix = np.zeros((14, 8, 8))
         for pos, tile in self.board.items():
             piece = tile.piece
-            if piece :
+            if piece:
                 channel = piece_to_num(type(piece))
-                if piece.color == -1 :
+                if piece.color == -1:
                     channel += 6
                 matrix[channel, pos[0], pos[1]] = 1
-                if piece.color == self.turn :
+                if piece.color == self.turn:
                     moves = piece.calc_moves(self, pos)
                     if moves:
                         legal_moves = 0
-                        for move in moves :
+                        for move in moves:
                             if self.convert_to_move(pos, move).is_legal():
                                 matrix[13, move[0], move[1]] = 1 
                                 legal_moves += 1

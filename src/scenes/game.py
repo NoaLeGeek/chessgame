@@ -3,7 +3,7 @@ from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, flip_pos, debug_print, load_image
-from constants import WHITE, Fonts, castling_king_column
+from constants import Fonts, castling_king_column, Colors
 from config import config
 from gui import RectButton
 from board.player import Player
@@ -18,8 +18,8 @@ class Game(Scene):
 
     def create_buttons(self):
         self.buttons = {
-            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), 'white', 'QUIT', Fonts.GEIZER, 'black', self.manager.go_back),
-            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), 'white', '', Fonts.GEIZER, 'black', self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
+            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'QUIT', Fonts.GEIZER, Colors.BLACK, self.manager.go_back),
+            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), Colors.WHITE, '', Fonts.GEIZER, Colors.BLACK, self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
         }
         
     def render(self, screen:pygame.Surface):
@@ -80,7 +80,7 @@ class Game(Scene):
         # pos needs to be offset by 1 if the board is flipped
         rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
         rect.normalize()
-        pygame.draw.rect(screen, WHITE, rect)
+        pygame.draw.rect(screen, Colors.WHITE, rect)
         # Drawing the promotion's pieces
         for i, type_piece in enumerate(piece.promotion):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
@@ -114,16 +114,16 @@ class Game(Scene):
 
     def handle_event(self, event:pygame.event.Event):
         super().handle_event(event)
-        if event.type == pygame.MOUSEBUTTONDOWN :
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if left_click():
                 self.handle_left_click()
             elif right_click():
                 self.handle_right_click()
-        elif event.type == pygame.KEYDOWN :
-            if event.key == pygame.K_r :
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
                 self.board = Board(self.player1, self.player2)
             if event.key == pygame.K_f:
                 self.board.flip_board()
-            if event.key == pygame.K_SPACE :
+            if event.key == pygame.K_SPACE:
                 move = self.board.ia.predict(self.board)
                 move.execute()

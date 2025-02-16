@@ -1,7 +1,4 @@
-from enum import StrEnum
-
-BROWN = (92, 64, 51)
-WHITE = (255, 255, 255)
+from enum import StrEnum, Enum
 
 # Different values of pieces
 piece_values = {'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 100}
@@ -24,3 +21,13 @@ available_piece = ['alpha', 'anarcandy', 'blindfold', 'caliente', 'california', 
 class Fonts(StrEnum):
     GEIZER = "Geizer.otf"
     ONE_SLICE = "One Slice.otf"
+
+class Colors(Enum):
+    BROWN = (92, 64, 51)
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    GREEN = (0, 255, 0)
+    RED = (255, 0, 0)
+    YELLOW = (255, 255, 0)
+    CYAN = (0, 255, 255)
+    ORANGE = (255, 165, 0)

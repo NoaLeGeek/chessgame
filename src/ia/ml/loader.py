@@ -2,9 +2,9 @@ import yaml
 import json
 import torch
 
-try :
+try:
     from builder import build_model, build_optimizer, build_scheduler
-except :
+except:
     from ia.ml.builder import build_model, build_optimizer, build_scheduler
     
 

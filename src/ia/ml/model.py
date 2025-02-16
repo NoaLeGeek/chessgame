@@ -51,7 +51,7 @@ class ChessModel(nn.Module):
         for move_index in sorted_indices:
             uci_move = self.decoded_moves.get(move_index)
             move = board.convert_uci_to_move(uci_move)
-            if move :
+            if move:
                 if move.is_legal():
                     return move
                 

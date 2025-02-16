@@ -1,7 +1,7 @@
 import torch
 import copy
 
-try :
+try:
     from model import ChessModel
 except:
     from ia.ml.model import ChessModel
