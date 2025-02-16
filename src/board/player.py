@@ -1,3 +1,5 @@
+from config import config
+
 class Player:
     def __init__(self, color: int, ia = None):
         self.color = color
@@ -28,4 +30,6 @@ class Player:
         return moves
     
     def is_king_check(self, board):
+        if config.rules["giveaway"]:
+            return False
         return self.king in board.get_player(-self.color).get_moves(board)

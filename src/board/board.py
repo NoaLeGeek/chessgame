@@ -636,12 +636,12 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves)
+        moves = list(map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves))
         if config.rules["giveaway"] == True:
-            if any(move.capture for move in moves):
+            if any(self.convert_to_move(tile.pos, move).capture for move in self.current_player.get_moves(self)):
                 return list(filter(lambda move: move.capture, moves))
             else:
-                return list(moves)
+                return list(filter(lambda move: not move.castling, moves))
         else:
             return list(filter(lambda move: move.is_legal(), moves))
 
