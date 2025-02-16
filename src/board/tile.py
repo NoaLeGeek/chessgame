@@ -48,20 +48,17 @@ class Tile:
         match self.highlight_color:
             # Right click
             case 0:
-                r, g, b, a = *Colors.RED, 75
+                r, g, b, a = *Colors.RED.value, 75
             # Shift + Right click
             case 1:
-                r, g, b, a = *Colors.GREEN, 75
+                r, g, b, a = *Colors.GREEN.value, 75
             # Ctrl + Right click
             case 2:
-                r, g, b, a = *Colors.ORANGE, 75
+                r, g, b, a = *Colors.ORANGE.value, 75
             # History move
             case 3:
-                r, g, b, a = *Colors.YELLOW, 75
+                r, g, b, a = *Colors.YELLOW.value, 75
             # Selected piece
             case 4:
-                r, g, b, a = *Colors.CYAN, 75
-            # Default
-            case _:
-                r, g, b, a = *Colors.BLACK, 255
+                r, g, b, a = *Colors.CYAN.value, 75
         return r, g, b, a

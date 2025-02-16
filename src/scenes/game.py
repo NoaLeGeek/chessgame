@@ -25,10 +25,10 @@ class Game(Scene):
     def render(self, screen:pygame.Surface):
         super().render(screen)
         screen.blit(self.board.image, (config.margin, config.margin))
-        # Pieces
-        self._draw_pieces(screen)
         # Highlight
         self._draw_highlight(screen)
+        # Pieces
+        self._draw_pieces(screen)
         # Moves
         if self.board.selected is not None:
             self._draw_moves(screen)
@@ -55,9 +55,10 @@ class Game(Scene):
         """Draws the highlighted squares on the board."""
         highlight_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
         for tile in self.board.board.values():
-            highlight_surface.fill(tile.get_color())
-            x, y = tile.pos[1] * config.tile_size + config.margin, tile.pos[0] * config.tile_size + config.margin
-            screen.blit(highlight_surface, (x, y))
+            if tile.highlight_color is not None:
+                highlight_surface.fill(tile.get_color())
+                x, y = tile.pos[1] * config.tile_size + config.margin, tile.pos[0] * config.tile_size + config.margin
+                screen.blit(highlight_surface, (x, y))
 
     def _draw_moves(self, screen):
         if self.board.promotion is not None:
