@@ -104,7 +104,9 @@ class Board:
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
 
-                    piece_image_key = f"{'w' if color == 1 else 'b'}{char.upper()}"
+                    piece_image_key = f"{('w' if color == 1 else 'b' if config.piece_asset != "mono" else "")}{char.upper()}"
+                    print("ASSET", config.piece_asset)
+                    print("PIECE IMAGE KEY", piece_image_key)
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     

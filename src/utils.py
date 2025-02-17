@@ -51,7 +51,6 @@ def generate_piece_images(flipped: int = 1):
         if config.flipped_assets and ((flipped == 1 and notation.startswith("b")) or (flipped == -1 and notation.startswith("w"))):
             image = pygame.transform.flip(image, False, True)
         images[notation] = image
-        # pygame.transform.rotate(image, 180)
     return images
 
 def generate_board_image():
