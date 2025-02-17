@@ -47,12 +47,9 @@ class RectButton:
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
 
-    def update_color(self, color: str):
+    def update_color(self, color: Colors):
         self.color = color 
         self.surface = create_rect_surface(color, self.width, self.height, self.border_radius)
-    
-
-
 
 class Label:
     def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: Colors, background: pygame.Surface = None, background_pos = None):

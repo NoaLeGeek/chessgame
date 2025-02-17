@@ -136,5 +136,3 @@ class BoardAssetsMenu(Scene):
         self.buttons[config.board_asset].update_color(Colors.WHITE)
         config.board_asset = asset
         self.buttons[asset].update_color(Colors.GREEN)
-
-    
