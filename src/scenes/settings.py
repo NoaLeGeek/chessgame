@@ -99,7 +99,7 @@ class PieceAssetsMenu(Scene):
             i = i%6
             if notation[0] == 'w':
                 screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.5))
-            else :
+            else:
                 screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.5+config.tile_size))
 
 
