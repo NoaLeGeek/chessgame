@@ -102,7 +102,6 @@ class PieceAssetsMenu(Scene):
             else:
                 screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.5+config.tile_size))
 
-
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -111,14 +110,14 @@ class PieceAssetsMenu(Scene):
                         self.change_asset(asset)
             elif event.button == 4 and list(self.buttons.values())[0].rect.top < 0 :
                 for button in self.buttons.values():
-                    button.y += 10
-                    button.rect.y += 10
-                    button.label.rect.y += 10
+                    button.y += 25
+                    button.rect.y += 25
+                    button.label.rect.y += 25
             elif event.button == 5 and list(self.buttons.values())[len(self.buttons)-1].rect.bottom > config.height:
                 for button in self.buttons.values():
-                    button.y -= 10
-                    button.rect.y -= 10
-                    button.label.rect.y -= 10    
+                    button.y -= 25
+                    button.rect.y -= 25
+                    button.label.rect.y -= 25 
 
     def change_asset(self, asset):
         self.buttons[config.piece_asset].update_color(Colors.WHITE)
@@ -146,14 +145,14 @@ class BoardAssetsMenu(Scene):
                         self.change_asset(asset)
             elif event.button == 4 and list(self.buttons.values())[0].rect.top < 0 :
                 for button in self.buttons.values():
-                    button.y += 10
-                    button.rect.y += 10
-                    button.label.rect.y += 10
+                    button.y += 25
+                    button.rect.y += 25
+                    button.label.rect.y += 25
             elif event.button == 5 and list(self.buttons.values())[len(self.buttons)-1].rect.bottom > config.height:
                 for button in self.buttons.values():
-                    button.y -= 10
-                    button.rect.y -= 10
-                    button.label.rect.y -= 10    
+                    button.y -= 25
+                    button.rect.y -= 25
+                    button.label.rect.y -= 25   
 
     def change_asset(self, asset):
         self.buttons[config.board_asset].update_color(Colors.WHITE)
