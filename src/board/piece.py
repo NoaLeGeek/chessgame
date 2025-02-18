@@ -178,12 +178,12 @@ class King(Piece):
             castling_direction = d*board.flipped
             if rooks[castling_direction] is None:
                 continue
-            rook_column = rooks[castling_direction] * castling_direction
-            dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=board.flipped) * castling_direction
-            dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=board.flipped) * castling_direction
-            start = castling_direction * min(from_pos[1] * castling_direction, dest_rook_column)
-            end = castling_direction * max(rook_column, dest_king_column)
-            columns = list(range(start, end + castling_direction, castling_direction))
+            rook_column = rooks[castling_direction] * d
+            dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=board.flipped) * d
+            dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=board.flipped) * d
+            start = d * min(from_pos[1] * d, dest_rook_column)
+            end = d * max(rook_column, dest_king_column)
+            columns = list(range(start, end + d, d))
             debug_print("CASTLING", ("OO" if castling_direction == 1 else "OOO"))
             debug_print("ROOK", rook_column)
             debug_print("DEST_ROOK", dest_rook_column)

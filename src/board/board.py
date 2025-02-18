@@ -108,10 +108,9 @@ class Board:
                     if piece_image_key not in self.piece_images:
                         raise ValueError(f"Missing piece image for: {piece_image_key}")
                     
-                    if (char.upper() in ["K", "P", "R"] and config.rules["chess960"] == True) or config.rules["chess960"] != True:
-                        piece = piece_type(color, self.piece_images[piece_image_key])
-                        self.get_player(color).add_piece(piece)
-                        tile.piece = piece
+                    piece = piece_type(color, self.piece_images[piece_image_key])
+                    self.get_player(color).add_piece(piece)
+                    tile.piece = piece
                     self.board[(r, c)] = tile
 
                     # Track the king's position
@@ -218,7 +217,6 @@ class Board:
         for row in [0, 7]:
             rows[row] = "".join(last_row).lower() if row == 0 else "".join(last_row)
         fen_parts[0] = "/".join(rows)
-
         return " ".join(fen_parts)
     
     def check_game(self):
@@ -663,6 +661,11 @@ class Board:
         This function also updates the pieces, kings' positions, en passant square, and last move.
         """
         self._flip_board_tiles()
+        self.flipped *= -1
+        # Remove the highlight of the selected piece
+        self.selected.highlight_color = None
+        self.selected = None
+        self.promotion = None
         # Flipping the kings' positions
         for color in [1, -1]:
             player = self.get_player(color)
@@ -687,9 +690,6 @@ class Board:
             tile.flip()
             flipped_board[flip_pos(pos)] = tile
         self.board = flipped_board
-        self.flipped *= -1
-        self.selected = None
-        self.promotion = None
 
     def update_images(self):
         """
