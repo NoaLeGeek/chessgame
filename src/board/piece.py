@@ -173,7 +173,6 @@ class King(Piece):
                 if piece.notation == "R" and piece.is_ally(self):
                     rooks[castling_direction] = i
         # Check if the squares between the king and the found rook(s) are empty
-        debug_print("IN PIECE.PY")
         for d in possible_castling:
             castling_direction = d*board.flipped
             if rooks[castling_direction] is None:
@@ -184,13 +183,6 @@ class King(Piece):
             start = d * min(from_pos[1] * d, dest_rook_column)
             end = d * max(rook_column, dest_king_column)
             columns = list(range(start, end + d, d))
-            debug_print("CASTLING", ("OO" if castling_direction == 1 else "OOO"))
-            debug_print("ROOK", rook_column)
-            debug_print("DEST_ROOK", dest_rook_column)
-            debug_print("DEST_KING", dest_king_column)
-            debug_print("START", start)
-            debug_print("END", end)
-            debug_print("COLUMNS", columns)
             if all(board.is_empty((from_pos[0], i)) or i in [rooks[castling_direction], from_pos[1]] for i in columns):
                 castling_column = rooks[castling_direction] if config.rules["chess960"] == True else flip_pos(castling_king_column[castling_direction], flipped=board.flipped)
                 self.moves.append((from_pos[0], castling_column))

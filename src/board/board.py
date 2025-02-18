@@ -358,7 +358,7 @@ class Board:
         try:
             return self.get_tile(pos).piece
         except AttributeError:
-            print("COULDNT GET PIECE", pos)
+            raise ValueError(f"Invalid position: {pos}")
     
     def is_empty(self, pos):
         """
@@ -489,7 +489,7 @@ class Board:
 
         # Handle castling logic
         if move.castling:
-            print("Castling move")
+            debug_print("Castling move")
             self._handle_castling(move.from_pos, move.to_pos)
         # Handle normal move
         else:
@@ -809,9 +809,7 @@ class Board:
         return matrix
 
     def convert_uci_to_move(self, uci_move):
-        print(uci_move)
         columns = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
         from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
-        print(from_pos, to_pos)
         return self.convert_to_move(from_pos, to_pos)
