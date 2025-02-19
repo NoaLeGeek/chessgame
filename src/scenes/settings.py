@@ -1,67 +1,59 @@
 import pygame
-import os
 from scenes.scene import Scene
 from config import config
 from gui import Label, RectButton, create_rect_surface
-from constants import Colors, Fonts
-from utils import generate_piece_images, generate_board_image, load_image
+from constants import Colors, Fonts, available_board, available_piece, available_sound
+from utils import generate_piece_images, generate_board_image, load_image, generate_sounds
 
 
 class SettingsMenu(Scene):
     def __init__(self):
         super().__init__()
         self.volume_bar = VolumeBar()
-        self.sub_menu = None
         self.piece_assets_menu = PieceAssetsMenu()
         self.board_assets_menu = BoardAssetsMenu()
+        self.sound_assets_menu = SoundAssetsMenu()
+        self.assets_menu = None
         self.filter = create_rect_surface(Colors.BLACK, config.width, config.height, 0, 150)
-        self.gary = load_image('assets/images/gary.png', (config.width*0.6, config.height))
+        self.garry = load_image('assets/images/gary.png', (config.width*0.6, config.height))
 
     def create_buttons(self):
         self.buttons = {
-            "piece": RectButton(config.width*0.2, config.height*0.2, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'piece assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_sub_menu('piece')),
-            "board": RectButton(config.width*0.2, config.height*0.35, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'board assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_sub_menu('board')),
-            "sound": RectButton(config.width*0.2, config.height*0.5, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'sound assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_sub_menu('board'))
+            "piece": RectButton(config.width*0.2, config.height*0.2, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'piece assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_assets_menu(self.piece_assets_menu)),
+            "board": RectButton(config.width*0.2, config.height*0.35, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'board assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_assets_menu(self.board_assets_menu)),
+            "sound": RectButton(config.width*0.2, config.height*0.5, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'sound assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_assets_menu(self.sound_assets_menu))
         }
 
-    def change_sub_menu(self, menu):
-        self.sub_menu = menu
+    def change_assets_menu(self, menu):
+        self.assets_menu = menu
     
     def render(self, screen):
         screen.fill(Colors.BLACK.value)
         super().render(screen)
-        screen.blit(self.gary, (config.width*0.4, 0))
+        screen.blit(self.garry, (config.width*0.4, 0))
         self.volume_bar.draw(screen)
-        if self.sub_menu == 'piece':
+        if self.assets_menu:
             screen.blit(self.filter)
-            self.piece_assets_menu.render(screen)
-        elif self.sub_menu == 'board':
-            screen.blit(self.filter)
-            self.board_assets_menu.render(screen)
+            self.assets_menu.render(screen)
+
 
     def update(self):
-        if not self.sub_menu:
+        if not self.assets_menu:
             super().update()
             self.volume_bar.update()
-        elif self.sub_menu == 'piece':
-            self.piece_assets_menu.update()
-        elif self.sub_menu == 'board':
-            self.board_assets_menu.update()
+        else:
+            self.assets_menu.update()
 
     def handle_event(self, event):
         mouse_pos = pygame.mouse.get_pos()
-        if not self.sub_menu:
+        if not self.assets_menu:
             super().handle_event(event)
-        elif self.sub_menu == 'piece':
-            self.piece_assets_menu.handle_event(event)
+        else:
+            self.assets_menu.handle_event(event)
             if event.type == pygame.MOUSEBUTTONDOWN:           
-                if mouse_pos[0] < list(self.piece_assets_menu.buttons.values())[0].rect.left or mouse_pos[0] > list(self.piece_assets_menu.buttons.values())[0].rect.right:
-                    self.change_sub_menu(None)
-        elif self.sub_menu == 'board':
-            self.board_assets_menu.handle_event(event)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if mouse_pos[0] < list(self.board_assets_menu.buttons.values())[0].rect.left or mouse_pos[0] > list(self.board_assets_menu.buttons.values())[0].rect.right:
-                    self.change_sub_menu(None)
+                if mouse_pos[0] < list(self.assets_menu.buttons.values())[0].rect.left or mouse_pos[0] > list(self.assets_menu.buttons.values())[0].rect.right:
+                    self.change_assets_menu(None)
+
         
 class VolumeBar:
     def __init__(self):
@@ -88,19 +80,26 @@ class PieceAssetsMenu(Scene):
     def __init__(self):
         super().__init__()
         self.piece_images = generate_piece_images()
+        self.buttons[config.piece_asset].update_color(Colors.GREEN)
 
     def create_buttons(self):
-        self.buttons = {asset: RectButton(config.width*0.25, config.height*0.05+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(os.listdir('assets/piece'))}
+        self.buttons = {asset: RectButton(config.width*0.25, config.height*0.05+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(available_piece)}
 
     def render(self, screen):
         super().render(screen)
-        for i, piece in enumerate(self.piece_images.items()):
-            notation, image = piece[0], piece[1]
-            i = i%6
-            if notation[0] == 'w':
-                screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.5))
-            else:
-                screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.5+config.tile_size))
+        if config.piece_asset == 'mono':
+            for i, image in enumerate(self.piece_images.values()):
+                screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.3+config.tile_size//2))
+        elif config.piece_asset == 'blindfold':
+            return
+        else:
+            for i, piece in enumerate(self.piece_images.items()):
+                notation, image = piece[0], piece[1]
+                i = i%6
+                if notation[0] == 'w':
+                    screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.3))
+                else:
+                    screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.3+config.tile_size))
 
 
     def handle_event(self, event):
@@ -124,15 +123,20 @@ class PieceAssetsMenu(Scene):
         self.buttons[config.piece_asset].update_color(Colors.WHITE)
         config.piece_asset = asset
         self.buttons[asset].update_color(Colors.GREEN)
-        self.piece_images = generate_piece_images()
+        if asset != 'blindfold':
+            self.piece_images = generate_piece_images()
 
 class BoardAssetsMenu(Scene):
     def __init__(self):
         super().__init__()
         self.board_image = generate_board_image()
+        self.buttons[config.board_asset].update_color(Colors.GREEN) 
 
     def create_buttons(self):
-        self.buttons = {os.path.splitext(asset)[0]: RectButton(config.width*0.2, config.height*0.05+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, os.path.splitext(asset)[0], Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(os.listdir('assets/board'))}
+        self.buttons = {asset: RectButton(config.width*0.2, config.height*0.05+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(available_board)}
+
+    def create_labels(self):
+        self.labels = {'selected_asset': Label((int(config.width*0.8), int(config.height*0.6)), config.board_asset, Fonts.GEIZER, int(config.height*0.1), Colors.BLACK, create_rect_surface(Colors.WHITE, int(config.width*0.2), int(config.height*0.15), int(config.height*0.075)), (int(config.width*0.8), int(config.height*0.6)))}
 
     def render(self, screen):
         super().render(screen)
@@ -160,3 +164,28 @@ class BoardAssetsMenu(Scene):
         config.board_asset = asset
         self.buttons[asset].update_color(Colors.GREEN)
         self.board_image = generate_board_image()
+
+class SoundAssetsMenu(Scene):
+    def __init__(self):
+        super().__init__()
+        self.sounds = generate_sounds()
+        self.buttons[config.sound_asset].update_color(Colors.GREEN)
+
+    def create_buttons(self):
+        self.buttons = {asset: RectButton(config.width*0.2, config.height*0.1+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(available_sound)}
+
+    def render(self, screen):
+        super().render(screen)
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                for asset, button in self.buttons.items():
+                    if button.is_clicked():
+                        self.change_asset(asset)
+
+    def change_asset(self, asset):
+        self.buttons[config.sound_asset].update_color(Colors.WHITE)
+        config.sound_asset = asset
+        self.buttons[asset].update_color(Colors.GREEN)
+        self.sounds = generate_sounds()
