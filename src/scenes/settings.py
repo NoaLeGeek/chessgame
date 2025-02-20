@@ -87,11 +87,12 @@ class PieceAssetsMenu(Scene):
 
     def render(self, screen):
         super().render(screen)
-        if config.piece_asset == 'mono':
+        if config.piece_asset == 'blindfold':
+            return
+        elif config.piece_asset == 'mono':
+            # TODO lilian là tu dois faire un truc pour les pièces monochromes (c'est github qui te le dit)
             for i, image in enumerate(self.piece_images.values()):
                 screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.3+config.tile_size//2))
-        elif config.piece_asset == 'blindfold':
-            return
         else:
             for i, piece in enumerate(self.piece_images.items()):
                 notation, image = piece[0], piece[1]
