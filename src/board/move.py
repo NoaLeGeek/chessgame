@@ -75,10 +75,10 @@ class Move:
         # -1 for O-O-O, 1 for O-O
         castling_direction = d*self.board.flipped
         rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))
-        dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=self.board.flipped) * castling_direction
-        dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=self.board.flipped) * castling_direction
-        start = castling_direction * min(self.from_pos[1] * castling_direction, dest_rook_column)
-        end = castling_direction * max(rook_pos[1] * castling_direction, dest_king_column)
+        dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=self.board.flipped) * d
+        dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=self.board.flipped) * d
+        start = d * min(self.from_pos[1] * d, dest_rook_column)
+        end = d * max(rook_pos[1] * d, dest_king_column)
         for next_column in range(start + castling_direction, end + castling_direction, castling_direction):
             condition = self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
             is_legal = is_legal and condition
