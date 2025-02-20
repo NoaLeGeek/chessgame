@@ -46,6 +46,21 @@ class Move:
         self.fen = str(self.board)
         self.board.check_game()
 
+    def undo(self) -> None:
+        """Undoes the move on the board and updates the game state."""
+        self.board.turn *= -1
+        self.board.selected = None
+        self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
+        if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self.board):
+            self.board.checks[self.board.waiting_player.color] -= 1
+        if self.promotion is not None:
+            self.board.undo_promote_piece()
+        else:
+            self.board.undo_move_piece(self)
+        self.board.half_moves -= 1
+        if self.board.turn == -1:
+            self.board.full_moves -= 1
+
     def _play_sound_move(self) -> None:
         """Plays the appropriate sound based on the move type."""
         if self.castling:

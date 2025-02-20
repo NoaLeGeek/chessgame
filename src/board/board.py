@@ -500,6 +500,37 @@ class Board:
         # TODO TEST UNIT
         self.testing()
 
+    def undo_piece(self, move: Move):
+        """
+        Undo a piece move on the board and restore the previous state.
+
+        Args:
+            move (Move): The move to undo.
+        
+        This function reverses the effects of a move, restoring the board state, castling rights,
+        en passant square, and player's pieces to their previous state.
+        """
+        # Restore the board state
+        self.board[move.from_pos].piece = move.from_tile.piece
+        self.board[move.to_pos].piece = move.to_tile.piece
+
+        # Restore castling rights and kings' positions
+        self.castling = self.castling_logs.pop()
+        if move.from_tile.piece.notation == "K":
+            self.current_player.king = move.from_pos
+
+        # Restore en passant square logic
+        self.ep = self.ep_logs.pop()
+
+        # Restore player's pieces
+        if move.capture and not move.castling and not move.en_passant:
+            self.waiting_player.add_piece(move.to_tile.piece)
+
+        # Restore en passant capture
+        if move.en_passant:
+            ep_pos = (move.from_pos[0], move.to_pos[1])
+            self.board[ep_pos].piece = move.to_tile.piece
+
     def testing(self):
         for pos, tile in self.board.items():
             if pos != tile.pos:
