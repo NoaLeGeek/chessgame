@@ -226,8 +226,8 @@ class Board:
         """
         if config.rules["king_of_the_hill"] == True and self.current_player.king in self.get_center():
             self.winner = "White" if self.turn == 1 else "Black"
-        elif config.rules["+3_checks"] == True and self.checks[self.turn] >= 3:
-            self.winner = "White" if self.turn == 1 else "Black"
+        elif config.rules["+3_checks"] == True and self.checks[-self.turn] >= 3:
+            self.winner = "White" if -self.turn == 1 else "Black"
         elif config.rules["giveaway"] == True and self.current_player.pieces == {}:
             self.winner = "White" if self.turn == 1 else "Black"
         elif self.is_stalemate():
@@ -235,17 +235,14 @@ class Board:
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
                 self.winner = "Stalemate"
-            self.game_over = True
         elif self.half_moves >= 100:
             self.winner = "Draw by the 50-move rule"
-            self.game_over = True
         elif self.is_insufficient_material():
             self.winner = "Draw by insufficient material"
-            self.game_over = True
         elif self.is_threefold_repetition():
             self.winner = "Draw by threefold repetition"
+        if self.winner is not None:
             self.game_over = True
-        if self.game_over:
             self.play_sound("game-end")
             print(self.winner)
 
@@ -496,6 +493,10 @@ class Board:
         else:
             self._handle_normal_move(move.from_pos, move.to_pos)
         
+        # Anarchy chess
+        if config.rules["+3_checks"] == True and self.current_player.is_king_check(self):
+            self.checks[self.waiting_player.color] += 1
+
         # Verify if no bugs
         # TODO TEST UNIT
         self.testing()
@@ -695,8 +696,9 @@ class Board:
         self._flip_board_tiles()
         self.flipped *= -1
         # Remove the highlight of the selected piece
-        self.selected.highlight_color = None
-        self.selected = None
+        if self.selected is not None:
+            self.selected.highlight_color = None
+            self.selected = None
         self.promotion = None
         # Flipping the kings' positions
         for color in [1, -1]:
