@@ -146,3 +146,39 @@ class Move:
             else:
                 string += "+"
         return string
+    
+class MoveNode:
+    def __init__(self, move, parent, ep, castling):
+        self.move = move
+        self.parent = parent
+        self.children = []
+        self.ep = ep
+        self.castling = castling
+
+class MoveTree:
+    def __init__(self, board):
+        self.root = MoveNode(None, None, board.ep, board.castling)
+        self.current = self.root
+
+    def go_forward(self):
+        if self.current.children:
+            self.current = self.current.children[0]
+
+    def go_backward(self):
+        if self.current.parent:
+            self.current = self.current.parent
+
+    def go_previous(self):
+        if self.current.parent:
+            siblings = self.current.parent.children
+            index = siblings.index(self.current)
+            self.current = siblings[index - 1] if index > 0 else siblings[-1]
+
+    def go_next(self):
+        if self.current.parent:
+            siblings = self.current.parent.children
+            index = siblings.index(self.current)
+            self.current = siblings[index + 1] if index < len(siblings) - 1 else siblings[0]
+
+    def go_start(self):
+        self.current = self.root

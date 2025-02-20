@@ -4,7 +4,7 @@ from board.tile import Tile
 from constants import castling_king_column, en_passant_direction
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
 from board.piece import notation_to_piece, piece_to_notation, piece_to_num
-from board.move import Move
+from board.move import Move, MoveTree
 from board.player import Player
 from random import choice
 from config import config
@@ -49,6 +49,7 @@ class Board:
 
         # Initialize the board from the FEN string
         self._create_board(fen)
+        self.move_tree = MoveTree(self)
 
     def _create_board(self, fen: str) -> None:
         """
