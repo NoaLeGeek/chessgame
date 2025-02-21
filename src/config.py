@@ -20,7 +20,7 @@ class Config:
         self.rules = {
             "puissance_4_pawns": False,
             "mutation_chess": False,
-            "king_of_the_hill": False,
+            "king_of_the_hill": True,
             "+3_checks": False,
             "giveaway": False,
             "chess960": False,

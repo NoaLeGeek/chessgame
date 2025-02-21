@@ -44,21 +44,21 @@ class Tile:
         return can_move
     
     def get_color(self):
-        r, g, b, a = None, None, None, None
+        color, a = None, None
         match self.highlight_color:
             # Right click
             case 0:
-                r, g, b, a = *Colors.RED.value, 75
+                color, a = Colors.RED.value, 75
             # Shift + Right click
             case 1:
-                r, g, b, a = *Colors.GREEN.value, 75
+                color, a = Colors.GREEN.value, 75
             # Ctrl + Right click
             case 2:
-                r, g, b, a = *Colors.ORANGE.value, 75
+                color, a = Colors.ORANGE.value, 75
             # History move
             case 3:
-                r, g, b, a = *Colors.YELLOW.value, 75
+                color, a = Colors.YELLOW.value, 75
             # Selected piece
             case 4:
-                r, g, b, a = *Colors.CYAN.value, 75
-        return r, g, b, a
+                color, a = Colors.CYAN.value, 75
+        return *color, a

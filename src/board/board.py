@@ -224,12 +224,13 @@ class Board:
         """
         Determine if the game has ended and update the game state accordingly.
         """
-        if config.rules["king_of_the_hill"] == True and self.current_player.king in self.get_center():
-            self.winner = "White" if self.turn == 1 else "Black"
+        print("CENTER", self.get_center())
+        if config.rules["king_of_the_hill"] == True and self.waiting_player.king in self.get_center():
+            self.winner = "Black" if self.turn == 1 else "White"
         elif config.rules["+3_checks"] == True and self.checks[-self.turn] >= 3:
-            self.winner = "White" if -self.turn == 1 else "Black"
-        elif config.rules["giveaway"] == True and self.current_player.pieces == {}:
-            self.winner = "White" if self.turn == 1 else "Black"
+            self.winner = "Black" if self.turn == 1 else "White"
+        elif config.rules["giveaway"] == True and self.waiting_player.pieces == {}:
+            self.winner = "Black" if self.turn == 1 else "White"
         elif self.is_stalemate():
             if self.current_player.is_king_check(self) or config.rules["giveaway"] == True:
                 self.winner = "Black" if self.turn == 1 else "White"
@@ -788,7 +789,7 @@ class Board:
             list[tuple[int, int]]: The center position(s) of the board.
         """
         mid_x, mid_y = (config.columns - 1) // 2, (config.rows - 1) // 2
-        return [(mid_x + i, mid_y + j) for i in range(config.columns % 2 + 1) for j in range(config.rows % 2 + 1)]
+        return [(mid_x + i, mid_y + j) for i in range(2 - config.columns % 2) for j in range(2 - config.rows % 2)]
 
     # FEN format
     def __str__(self):
