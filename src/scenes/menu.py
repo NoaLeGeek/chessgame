@@ -14,16 +14,17 @@ class MainMenu(Scene):
         
     def create_buttons(self):
         self.buttons = {
-            "play": RectButton(config.width*0.5, config.height*0.45, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'PLAY', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(SetupMenu())),
-            "settings": RectButton(config.width*0.5, config.height*0.65, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'SETTINGS', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(SettingsMenu())),
-            "quit": RectButton(config.width*0.5, config.height*0.85, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'QUIT', Fonts.GEIZER, Colors.BLACK, quit),
-            "rules": RectButton(config.width*0.1, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'RULES', Fonts.GEIZER, Colors.BLACK, lambda:webbrowser.open("https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques")),
-            "credits": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'CREDITS', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(CreditsMenu()))
+            "play": RectButton(config.width*0.5, config.height*0.45, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'PLAY', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(SetupMenu()), border_color=Colors.BLACK),
+            "settings": RectButton(config.width*0.5, config.height*0.65, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'SETTINGS', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(SettingsMenu()), border_color=Colors.BLACK),
+            "quit": RectButton(config.width*0.5, config.height*0.85, config.width*0.27, config.height*0.1, int(config.height*0.1//2), Colors.WHITE, 'QUIT', Fonts.GEIZER, Colors.BLACK, quit, border_color=Colors.BLACK),
+            "rules": RectButton(config.width*0.1, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'RULES', Fonts.GEIZER, Colors.BLACK, lambda:webbrowser.open("https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques"), border_color=Colors.BLACK),
+            "credits": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'CREDITS', Fonts.GEIZER, Colors.BLACK, lambda:self.manager.go_to(CreditsMenu()), border_color=Colors.BLACK)
         }
     
     def create_labels(self):
+        title_background =  create_rect_surface(Colors.WHITE, config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055), border_width = int(config.height*0.01), border_color = Colors.BLACK)
         self.labels = {
-            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.BLACK, create_rect_surface(Colors.WHITE, config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055)), (config.width*0.5, config.height*0.17))
+            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.BLACK, title_background, (config.width*0.5, config.height*0.17))
         }
 
     def render(self, screen):
