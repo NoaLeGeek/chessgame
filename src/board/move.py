@@ -46,6 +46,21 @@ class Move:
         self.fen = str(self.board)
         self.board.check_game()
 
+    def undo(self) -> None:
+        """Undoes the move on the board and updates the game state."""
+        self.board.turn *= -1
+        self.board.selected = None
+        self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
+        if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self.board):
+            self.board.checks[self.board.waiting_player.color] -= 1
+        if self.promotion is not None:
+            self.board.undo_promote_piece()
+        else:
+            self.board.undo_move_piece(self)
+        self.board.half_moves -= 1
+        if self.board.turn == -1:
+            self.board.full_moves -= 1
+
     def _play_sound_move(self) -> None:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
@@ -75,10 +90,10 @@ class Move:
         # -1 for O-O-O, 1 for O-O
         castling_direction = d*self.board.flipped
         rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))
-        dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=self.board.flipped) * castling_direction
-        dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=self.board.flipped) * castling_direction
-        start = castling_direction * min(self.from_pos[1] * castling_direction, dest_rook_column)
-        end = castling_direction * max(rook_pos[1] * castling_direction, dest_king_column)
+        dest_rook_column = flip_pos(castling_king_column[castling_direction] - castling_direction, flipped=self.board.flipped) * d
+        dest_king_column = flip_pos(castling_king_column[castling_direction], flipped=self.board.flipped) * d
+        start = d * min(self.from_pos[1] * d, dest_rook_column)
+        end = d * max(rook_pos[1] * d, dest_king_column)
         for next_column in range(start + castling_direction, end + castling_direction, castling_direction):
             condition = self.from_tile.can_move(self.board, (self.from_pos[0], next_column))
             is_legal = is_legal and condition
@@ -146,3 +161,39 @@ class Move:
             else:
                 string += "+"
         return string
+    
+class MoveNode:
+    def __init__(self, move, parent, ep, castling):
+        self.move = move
+        self.parent = parent
+        self.children = []
+        self.ep = ep
+        self.castling = castling
+
+class MoveTree:
+    def __init__(self, board):
+        self.root = MoveNode(None, None, board.ep, board.castling)
+        self.current = self.root
+
+    def go_forward(self):
+        if self.current.children:
+            self.current = self.current.children[0]
+
+    def go_backward(self):
+        if self.current.parent:
+            self.current = self.current.parent
+
+    def go_previous(self):
+        if self.current.parent:
+            siblings = self.current.parent.children
+            index = siblings.index(self.current)
+            self.current = siblings[index - 1] if index > 0 else siblings[-1]
+
+    def go_next(self):
+        if self.current.parent:
+            siblings = self.current.parent.children
+            index = siblings.index(self.current)
+            self.current = siblings[index + 1] if index < len(siblings) - 1 else siblings[0]
+
+    def go_start(self):
+        self.current = self.root
