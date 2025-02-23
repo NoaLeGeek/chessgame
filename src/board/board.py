@@ -10,7 +10,7 @@ from random import choice
 from config import config
 
 class Board:
-    def __init__(self,  player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+    def __init__(self, player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
         """
         Initialize the chess board with a default or custom FEN string.
 
@@ -224,7 +224,6 @@ class Board:
         """
         Determine if the game has ended and update the game state accordingly.
         """
-        print("CENTER", self.get_center())
         if config.rules["king_of_the_hill"] == True and self.waiting_player.king in self.get_center():
             self.winner = "Black" if self.turn == 1 else "White"
         elif config.rules["+3_checks"] == True and self.checks[-self.turn] >= 3:
@@ -502,27 +501,24 @@ class Board:
         # TODO TEST UNIT
         self.testing()
 
-    def undo_piece(self, move: Move):
+    def undo_move_piece(self):
         """
-        Undo a piece move on the board and restore the previous state.
-
-        Args:
-            move (Move): The move to undo.
+        Undo the last move on the board and restore the previous state.
         
-        This function reverses the effects of a move, restoring the board state, castling rights,
+        This function reverses the effects of the last move, restoring the board state, castling rights,
         en passant square, and player's pieces to their previous state.
         """
+        move = self.move_tree.current.move
+
         # Restore the board state
         self.board[move.from_pos].piece = move.from_tile.piece
         self.board[move.to_pos].piece = move.to_tile.piece
 
-        # Restore castling rights and kings' positions
-        self.castling = self.castling_logs.pop()
+        self.move_tree.go_backward()
+
+        # Restore king position
         if move.from_tile.piece.notation == "K":
             self.current_player.king = move.from_pos
-
-        # Restore en passant square logic
-        self.ep = self.ep_logs.pop()
 
         # Restore player's pieces
         if move.capture and not move.castling and not move.en_passant:
@@ -562,7 +558,7 @@ class Board:
         rook = self.get_tile(rook_pos).piece
 
         # Destinations columns
-        dest_king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
+        dest_king_column = flip_pos(castling_king_column[d], flipped=self.flipped)
         dest_rook_column = dest_king_column - d
         
         # Castling move

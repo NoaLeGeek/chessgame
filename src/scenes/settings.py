@@ -50,7 +50,7 @@ class SettingsMenu(Scene):
             super().handle_event(event)
         else:
             self.assets_menu.handle_event(event)
-            if event.type == pygame.MOUSEBUTTONDOWN:           
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 if mouse_pos[0] < list(self.assets_menu.buttons.values())[0].rect.left or mouse_pos[0] > list(self.assets_menu.buttons.values())[0].rect.right:
                     self.change_assets_menu(None)
 

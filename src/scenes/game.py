@@ -13,7 +13,7 @@ class Game(Scene):
     def __init__(self, player1: Player, player2: Player):
         self.player1 = player1
         self.player2 = player2
-        self.board = Board(player1, player2)
+        self.board = Board(player1, player2, "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1")
         super().__init__()
 
     def create_buttons(self):
@@ -129,3 +129,5 @@ class Game(Scene):
             if event.key == pygame.K_SPACE:
                 move = self.board.ia.predict(self.board)
                 move.execute()
+            if event.key == pygame.K_LEFT:
+                self.board.undo_move_piece()

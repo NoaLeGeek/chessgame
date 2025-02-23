@@ -25,14 +25,22 @@ class Move:
 
     def execute(self) -> None:
         """Executes the move on the board and updates the game state."""
-        # Reset half_moves if it's a capture or a pawn move
-        if self.capture or self.from_tile.piece.notation == "P":
+        self.move()
+        # Reset half_moves if it's a capture, castling or a pawn move
+        if self.capture or self.castling or (not self.board.is_empty(self.to_tile) and self.to_tile.piece.notation == "P"):
             self.board.half_moves = 0
+        # This is the board state after the move
+        self.notation = str(self)
+        self.fen = str(self.board)
+        self.board.check_game()
+
+    def move(self):
+        """Moves the piece on the board and updates the game state."""
+        # Update the board state
         if self.promotion is not None:
             self.board.promote_piece(self.promotion)
         else:
             self.board.move_piece(self)
-        # This is the board state after the move
         if self.board.turn == -1:
             self.board.full_moves += 1
         self.board.half_moves += 1
@@ -42,9 +50,6 @@ class Move:
         if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self.board):
             self.board.checks[self.board.waiting_player.color] += 1
         self._play_sound_move()
-        self.notation = str(self)
-        self.fen = str(self.board)
-        self.board.check_game()
 
     def undo(self) -> None:
         """Undoes the move on the board and updates the game state."""
@@ -163,16 +168,18 @@ class Move:
         return string
     
 class MoveNode:
-    def __init__(self, move, parent, ep, castling):
+    def __init__(self, move, parent, board):
         self.move = move
         self.parent = parent
         self.children = []
-        self.ep = ep
-        self.castling = castling
+        self.ep = board.ep
+        self.castling = board.castling
+        self.half_moves = board.half_moves
+        self.full_moves = board.full_moves
 
 class MoveTree:
     def __init__(self, board):
-        self.root = MoveNode(None, None, board.ep, board.castling)
+        self.root = MoveNode(None, None, board)
         self.current = self.root
 
     def go_forward(self):
