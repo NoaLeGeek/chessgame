@@ -554,12 +554,13 @@ class Board:
         d = sign(to_pos[1] - from_pos[1])
         # Save the pieces
         king = self.get_tile(from_pos).piece
-        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d*self.flipped == 1 else 0))
+        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d == 1 else 0))
         rook = self.get_tile(rook_pos).piece
 
         # Destinations columns
-        dest_king_column = flip_pos(castling_king_column[d], flipped=self.flipped)
+        dest_king_column = flip_pos(castling_king_column[d*self.flipped], flipped=self.flipped)
         dest_rook_column = dest_king_column - d
+        print("KING dest", dest_king_column, "\nROOK dest", dest_rook_column)
         
         # Castling move
         self.board[from_pos].piece = None
