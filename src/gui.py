@@ -46,7 +46,7 @@ class Label:
 
 class RectButton:
     def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: Colors,
-                 text: str, font_name: str, text_color: Colors, command,
+                 text: str, font_name: str, font_size: int, text_color: Colors, command,
                  image: pygame.Surface = None, border_color=None):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
@@ -59,7 +59,7 @@ class RectButton:
         self.image = image
         
         self.filter = create_rect_surface(Colors.BLACK, width, height, border_radius, alpha=50)
-        self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
+        self.label = Label(self.rect.center, text, font_name, font_size, text_color)
         
         if image:
             self.image_pos = (self.rect.centerx - image.get_width() // 2,
@@ -93,6 +93,7 @@ class RectButton:
 
     def update_color(self, color: Colors):
         self.color = color.value
+
 
 
 class VideoPlayer:

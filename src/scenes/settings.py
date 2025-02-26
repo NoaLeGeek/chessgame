@@ -19,11 +19,53 @@ class SettingsMenu(Scene):
         self.garry = load_image('assets/images/gary.png', (config.width*0.6, config.height))
 
     def create_buttons(self):
+        button_width = config.width * 0.3
+        button_height = config.height * 0.1
+        button_x = config.width * 0.2
+        font_size = int(button_height * 0.5)
+
         self.buttons = {
-            "piece": RectButton(config.width*0.2, config.height*0.2, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'piece assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_assets_menu(self.piece_assets_menu)),
-            "board": RectButton(config.width*0.2, config.height*0.35, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'board assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_assets_menu(self.board_assets_menu)),
-            "sound": RectButton(config.width*0.2, config.height*0.5, config.width*0.3, config.height*0.1, 0, Colors.WHITE, 'sound assets', Fonts.GEIZER, Colors.BLACK, lambda:self.change_assets_menu(self.sound_assets_menu))
+            "piece": RectButton(
+                x=button_x,
+                y=config.height * 0.2,
+                width=button_width,
+                height=button_height,
+                border_radius=0,
+                color=Colors.WHITE,
+                text='piece assets',
+                font_size=font_size,
+                font_name=Fonts.GEIZER,
+                text_color=Colors.BLACK,
+                command=lambda: self.change_assets_menu(self.piece_assets_menu)
+            ),
+            "board": RectButton(
+                x=button_x,
+                y=config.height * 0.35,
+                width=button_width,
+                height=button_height,
+                border_radius=0,
+                color=Colors.WHITE,
+                text='board assets',
+                font_size=font_size,
+                font_name=Fonts.GEIZER,
+                text_color=Colors.BLACK,
+                command=lambda: self.change_assets_menu(self.board_assets_menu)
+            ),
+            "sound": RectButton(
+                x=button_x,
+                y=config.height * 0.5,
+                width=button_width,
+                height=button_height,
+                border_radius=0,
+                color=Colors.WHITE,
+                text='sound assets',
+                font_size=font_size,
+                font_name=Fonts.GEIZER,
+                text_color=Colors.BLACK,
+                command=lambda: self.change_assets_menu(self.sound_assets_menu)
+            )
         }
+
 
     def change_assets_menu(self, menu):
         self.assets_menu = menu
@@ -65,7 +107,26 @@ class PieceAssetsMenu(Scene):
         self.board_clip_rect = pygame.Rect(0, 0, config.tile_size*6, config.tile_size*2)
 
     def create_buttons(self):
-        self.buttons = {asset: RectButton(config.width*0.25, config.height*0.05+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(available_piece)}
+        button_width = config.width * 0.3
+        button_height = config.height * 0.1
+        font_size = int(button_height * 0.5)
+
+        self.buttons = {
+            asset: RectButton(
+                x=config.width*0.25,
+                y=config.height*0.05+(button_height*i), 
+                width=button_width, 
+                height=button_height, 
+                border_radius=0, 
+                color=Colors.WHITE, 
+                text=asset, 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size, 
+                text_color=Colors.BLACK, 
+                command=lambda:None
+            ) 
+            for i, asset in enumerate(available_piece)
+        }
 
     def create_labels(self):
         self.labels = {'selected_asset': Label((int(config.width*0.72), int(config.height*0.65)), config.piece_asset, Fonts.GEIZER, int(config.height*0.1), Colors.BLACK, create_rect_surface(Colors.WHITE, int(config.width*0.3), int(config.height*0.1), int(config.height*0.075)), (int(config.width*0.72), int(config.height*0.65)))}
@@ -122,7 +183,26 @@ class BoardAssetsMenu(Scene):
         self.buttons[config.board_asset].update_color(Colors.GREEN) 
 
     def create_buttons(self):
-        self.buttons = {asset: RectButton(config.width*0.2, config.height*0.05+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(available_board)}
+        button_width = config.width * 0.3
+        button_height = config.height * 0.1
+        font_size = int(button_height * 0.5)
+
+        self.buttons = {
+            asset: RectButton(
+                x=config.width*0.2, 
+                y=config.height*0.05+(button_height*i), 
+                width=button_width, 
+                height=button_height, 
+                border_radius=0, 
+                color=Colors.WHITE, 
+                text=asset, 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size,
+                text_color=Colors.BLACK, 
+                command=lambda:None
+            ) 
+            for i, asset in enumerate(available_board)
+        }
 
     def create_labels(self):
         self.labels = {'selected_asset': Label((int(config.width*0.69), int(config.height*0.9)), config.board_asset, Fonts.GEIZER, int(config.height*0.1), Colors.BLACK, create_rect_surface(Colors.WHITE, int(config.width*0.32), int(config.height*0.1), int(config.height*0.075)), (int(config.width*0.69), int(config.height*0.9)))}
@@ -165,7 +245,26 @@ class SoundAssetsMenu(Scene):
         self.buttons[config.sound_asset].update_color(Colors.GREEN)
 
     def create_buttons(self):
-        self.buttons = {asset: RectButton(config.width*0.2, config.height*0.1+(config.height*0.1*i), config.width*0.3, config.height*0.1, 0, Colors.WHITE, asset, Fonts.GEIZER, Colors.BLACK, lambda:None) for i, asset in enumerate(available_sound)}
+        button_width = config.width * 0.3
+        button_height = config.height * 0.1
+        font_size = int(button_height * 0.5)
+
+        self.buttons = {
+            asset: RectButton(
+                x=config.width*0.2, 
+                y=config.height*0.1+(button_height*i), 
+                width=button_width, 
+                height=button_height, 
+                border_radius=0, 
+                color=Colors.WHITE, 
+                text=asset, 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size, 
+                text_color=Colors.BLACK,
+                command=lambda:None
+            ) 
+            for i, asset in enumerate(available_sound)
+        }
 
     def render(self, screen):
         super().render(screen)
