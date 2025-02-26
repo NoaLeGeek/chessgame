@@ -27,7 +27,7 @@ class Move:
         """Executes the move on the board and updates the game state."""
         self.move()
         # Reset half_moves if it's a capture, castling or a pawn move
-        if self.capture or self.castling or (not self.board.is_empty(self.to_tile) and self.to_tile.piece.notation == "P"):
+        if self.capture or self.castling or (not self.board.is_empty(self.to_pos) and self.to_tile.piece.notation == "P"):
             self.board.half_moves = 0
         # This is the board state after the move
         self.notation = str(self)

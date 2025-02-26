@@ -560,7 +560,6 @@ class Board:
         # Destinations columns
         dest_king_column = flip_pos(castling_king_column[d*self.flipped], flipped=self.flipped)
         dest_rook_column = dest_king_column - d
-        print("KING dest", dest_king_column, "\nROOK dest", dest_rook_column)
         
         # Castling move
         self.board[from_pos].piece = None
