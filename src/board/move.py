@@ -171,8 +171,6 @@ class Move:
         self.board.board[self.from_pos].piece = self.from_tile.piece
         self.board.board[self.to_pos].piece = self.to_tile.piece
 
-        self.board.move_tree.go_backward()
-
         # Restore king position
         if self.from_tile.piece.notation == "K":
             self.board.current_player.king = self.from_pos
@@ -312,6 +310,7 @@ class MoveTree:
             self.current = self.current.children[0]
 
     def go_backward(self):
+        self.current.move.undo()
         if self.current.parent:
             self.current = self.current.parent
 

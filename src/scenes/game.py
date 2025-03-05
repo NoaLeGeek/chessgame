@@ -130,4 +130,6 @@ class Game(Scene):
                 move = self.board.ia.predict(self.board)
                 move.execute()
             if event.key == pygame.K_LEFT:
-                self.board.move_tree.current.move.undo()
+                self.board.move_tree.go_backward()
+            if event.key == pygame.K_RIGHT:
+                self.board.move_tree.go_forward()
