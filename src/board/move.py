@@ -326,5 +326,8 @@ class MoveTree:
             index = siblings.index(self.current)
             self.current = siblings[index + 1] if index < len(siblings) - 1 else siblings[0]
 
-    def go_start(self):
+    def go_root(self):
         self.current = self.root
+
+    def go_leaf(self):
+        pass

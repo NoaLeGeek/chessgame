@@ -87,7 +87,7 @@ class Game(Scene):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
             screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
-    def handle_left_click(self):
+    def handle_left_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
@@ -103,33 +103,43 @@ class Game(Scene):
             if self.board.selected is not None and self.board.selected.piece is not None:
                 self.board.highlight_tile(4, self.board.selected.pos)
 
-    def handle_right_click(self):
+    def handle_right_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
             if self.board.selected is not None:
                 self.board.selected.highlight_color = None
                 self.board.selected = None
-            keys = pygame.key.get_pressed()
             highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
             self.board.highlight_tile(highlight_color, pos)
 
     def handle_event(self, event:pygame.event.Event):
         super().handle_event(event)
+        keys = pygame.key.get_pressed()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if left_click():
-                self.handle_left_click()
+                self.handle_left_click(keys)
             elif right_click():
-                self.handle_right_click()
+                self.handle_right_click(keys)
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
+            if keys[pygame.K_r]:
                 self.board = Board(self.player1, self.player2)
-            if event.key == pygame.K_f:
+            if keys[pygame.K_f]:
                 self.board.flip_board()
-            if event.key == pygame.K_SPACE:
+            if keys[pygame.K_SPACE]:
                 move = self.board.ia.predict(self.board)
                 move.execute()
-            if event.key == pygame.K_LEFT:
-                self.board.move_tree.go_backward()
-            if event.key == pygame.K_RIGHT:
-                self.board.move_tree.go_forward()
+            if keys[pygame.K_LEFT]:
+                if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                    self.board.move_tree.go_root()
+                else:
+                    self.board.move_tree.go_backward()
+            if keys[pygame.K_RIGHT]:
+                if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                    self.board.move_tree.go_leaf()
+                else:
+                    self.board.move_tree.go_forward()
+            if keys[pygame.K_UP]:
+                self.board.move_tree.go_next()
+            if keys[pygame.K_DOWN]:
+                self.board.move_tree.go_previous()
