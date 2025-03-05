@@ -1,4 +1,4 @@
-from utils import flip_pos, sign, get_value
+from utils import flip_pos, sign, get_value, debug_print
 from config import config
 from constants import castling_king_column
 from board.piece import piece_to_notation
@@ -40,6 +40,9 @@ class Move:
         if self.promotion is not None:
             self.board.promote_piece(self.promotion)
         else:
+            self.board._update_castling(self)
+            self.board._update_en_passant(self.from_pos, self.to_pos)
+            self.board._update_last_irreversible_move(self)
             self.board.move_piece(self)
         if self.board.turn == -1:
             self.board.full_moves += 1
@@ -50,6 +53,87 @@ class Move:
         if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self.board):
             self.board.checks[self.board.waiting_player.color] += 1
         self._play_sound_move()
+
+    def move_piece(self):
+        """
+        Move a piece on the board and handle special moves like en passant and castling.
+
+        Args:
+            move (Move): The move to perform.
+        
+        This function handles all move types including normal moves, en passant, and castling,
+        and updates the board, castling rights, and en passant square accordingly.
+        """
+        if self.board.is_empty(self.from_pos):
+            raise ValueError(f"There is no piece at {self.from_pos}")
+        
+        # Remember the move for undo
+        self.board.move_tree.add(self, MoveNode(self, self.board))
+
+        # Update kings' positions
+        if self.from_tile.piece.notation == "K":
+            self.board.current_player.king = self.to_pos
+
+        # Update player's pieces
+        if self.capture and not self.castling and not self.en_passant:
+            self.board.waiting_player.remove_piece(self.to_tile.piece)
+
+        # Capture en passant
+        if self.en_passant:
+            ep_pos = (self.from_pos[0], self.to_pos[1])
+            self.board.waiting_player.remove_piece(self.board[ep_pos].piece)
+            self.board.board[ep_pos].piece = None
+
+        # Handle castling logic
+        if self.castling:
+            debug_print("Castling move")
+            self._handle_castling(self.from_pos, self.to_pos)
+        # Handle normal move
+        else:
+            self._handle_normal_move(self.from_pos, self.to_pos)
+        
+        # Anarchy chess
+        if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self):
+            self.checks[self.board.waiting_player.color] += 1
+
+    def _handle_castling(self, from_pos, to_pos):
+        """Handle the logic for castling move."""
+        d = sign(to_pos[1] - from_pos[1])
+        # Save the pieces
+        king = self.board.get_tile(from_pos).piece
+        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d == 1 else 0))
+        rook = self.board.get_tile(rook_pos).piece
+
+        # Destinations columns
+        dest_king_column = flip_pos(castling_king_column[d*self.board.flipped], flipped=self.board.flipped)
+        dest_rook_column = dest_king_column - d
+        
+        # Castling move
+        self.board.board[from_pos].piece = None
+        self.board.board[rook_pos].piece = None
+        self.board.board[(from_pos[0], dest_king_column)].piece = king
+        self.board.board[(from_pos[0], dest_rook_column)].piece = rook
+        
+    def _handle_normal_move(self, from_pos, to_pos):
+        """Handle a normal move of a piece."""
+        save_tile = self.board.get_tile(from_pos)
+        self.board.board[to_pos].piece = save_tile.piece
+        self.board.board[from_pos].piece = None
+
+    def promote_piece(self, type_piece):
+        """
+        Promote a pawn to a new piece type.
+
+        Args:
+            type_piece: The type of piece to promote to (e.g., Queen, Rook).
+        """
+        new_piece = type_piece(self.selected.piece.color)
+        if config.piece_asset != "blindfold":
+            new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
+        self.current_player.add_piece(new_piece)
+        self.board[self.promotion].piece = new_piece
+        self.board[self.selected.pos].piece = None
+        self.promotion = None
 
     def undo(self) -> None:
         """Undoes the move on the board and updates the game state."""
@@ -65,6 +149,42 @@ class Move:
         self.board.half_moves -= 1
         if self.board.turn == -1:
             self.board.full_moves -= 1
+
+    def undo_promote_piece(self):
+        """
+        Undo the last promotion on the board and restore the pawn to its previous state.
+        
+        This function reverses the effects of the last promotion, restoring the pawn to its previous state.
+        """
+        self.board.board[self.from_pos].piece = self.from_tile.piece
+        self.board.board[self.to_pos].piece = None
+        self.board.waiting_player.remove_piece(self.to_tile.piece)
+
+    def undo_move_piece(self):
+        """
+        Undo the last move on the board and restore the previous state.
+        
+        This function reverses the effects of the last move, restoring the board state, castling rights,
+        en passant square, and player's pieces to their previous state.
+        """
+        # Restore the board state
+        self.board.board[self.from_pos].piece = self.from_tile.piece
+        self.board.board[self.to_pos].piece = self.to_tile.piece
+
+        self.board.move_tree.go_backward()
+
+        # Restore king position
+        if self.from_tile.piece.notation == "K":
+            self.board.current_player.king = self.from_pos
+
+        # Restore player's pieces
+        if self.capture and not self.castling and not self.en_passant:
+            self.board.waiting_player.add_piece(self.to_tile.piece)
+
+        # Restore en passant capture
+        if self.en_passant:
+            ep_pos = (self.from_pos[0], self.to_pos[1])
+            self.board.board[ep_pos].piece = self.to_tile.piece
 
     def _play_sound_move(self) -> None:
         """Plays the appropriate sound based on the move type."""
@@ -168,19 +288,24 @@ class Move:
         return string
     
 class MoveNode:
-    def __init__(self, move, parent, board):
+    def __init__(self, move, board):
         self.move = move
-        self.parent = parent
         self.children = []
         self.ep = board.ep
         self.castling = board.castling
         self.half_moves = board.half_moves
         self.full_moves = board.full_moves
+        self.last_irreversible_move = board.last_irreversible_move
 
 class MoveTree:
     def __init__(self, board):
-        self.root = MoveNode(None, None, board)
+        self.root = MoveNode(None, board)
         self.current = self.root
+
+    def add(self, move_node: MoveNode):
+        move_node.parent = self.current
+        self.current.children.append(move_node)
+        self.go_forward()
 
     def go_forward(self):
         if self.current.children:

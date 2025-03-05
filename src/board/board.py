@@ -23,9 +23,7 @@ class Board:
         self.turn = 1
         self.winner = None
         self.ep = None
-        self.ep_logs = []
         self.promotion = None
-        self.move_logs = []
         self.half_moves = 0
         self.full_moves = 1
         self.flipped = 1
@@ -33,14 +31,11 @@ class Board:
         self.game_over = False
         self.current_player = player1
         self.waiting_player = player2
+        self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
 
         # Anarchy chess
         if config.rules["+3_checks"] == True:
             self.checks = {1: 0, -1: 0}
-
-        # Castling rights
-        self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
-        self.castling_logs = []
 
         # Load resources
         self.image = generate_board_image()
@@ -445,133 +440,6 @@ class Board:
             ep = ((from_pos[0] + to_pos[0]) // 2, from_pos[1])
             if self._is_valid_en_passant((to_pos[0], to_pos[1]), ep):
                 self.ep = ep
-    
-    def move_piece(self, move: Move):
-        """
-        Move a piece on the board and handle special moves like en passant and castling.
-
-        Args:
-            move (Move): The move to perform.
-        
-        This function handles all move types including normal moves, en passant, and castling,
-        and updates the board, castling rights, and en passant square accordingly.
-        """
-        if self.is_empty(move.from_pos):
-            raise ValueError(f"There is no piece at {move.from_pos}")
-        
-        # Remember the move for undo
-        self.move_logs.append(move)
-
-        # Update castling rights and kings' positions
-        self._update_castling(move)
-        if move.from_tile.piece.notation == "K":
-            self.current_player.king = move.to_pos
-        self.castling_logs.append(self.castling)
-
-        # Handle en passant square logic
-        self._update_en_passant(move.from_pos, move.to_pos)
-        self.ep_logs.append(self.ep)
-
-        # Update last irreversible move
-        self._update_last_irreversible_move(move)
-
-        # Update player's pieces
-        if move.capture and not move.castling and not move.en_passant:
-            self.waiting_player.remove_piece(move.to_tile.piece)
-
-        # Capture en passant
-        if move.en_passant:
-            ep_pos = (move.from_pos[0], move.to_pos[1])
-            self.waiting_player.remove_piece(self.board[ep_pos].piece)
-            self.board[ep_pos].piece = None
-
-        # Handle castling logic
-        if move.castling:
-            debug_print("Castling move")
-            self._handle_castling(move.from_pos, move.to_pos)
-        # Handle normal move
-        else:
-            self._handle_normal_move(move.from_pos, move.to_pos)
-        
-        # Anarchy chess
-        if config.rules["+3_checks"] == True and self.current_player.is_king_check(self):
-            self.checks[self.waiting_player.color] += 1
-
-        # Verify if no bugs
-        # TODO TEST UNIT
-        self.testing()
-
-    def undo_move_piece(self):
-        """
-        Undo the last move on the board and restore the previous state.
-        
-        This function reverses the effects of the last move, restoring the board state, castling rights,
-        en passant square, and player's pieces to their previous state.
-        """
-        move = self.move_tree.current.move
-
-        # Restore the board state
-        self.board[move.from_pos].piece = move.from_tile.piece
-        self.board[move.to_pos].piece = move.to_tile.piece
-
-        self.move_tree.go_backward()
-
-        # Restore king position
-        if move.from_tile.piece.notation == "K":
-            self.current_player.king = move.from_pos
-
-        # Restore player's pieces
-        if move.capture and not move.castling and not move.en_passant:
-            self.waiting_player.add_piece(move.to_tile.piece)
-
-        # Restore en passant capture
-        if move.en_passant:
-            ep_pos = (move.from_pos[0], move.to_pos[1])
-            self.board[ep_pos].piece = move.to_tile.piece
-
-    def testing(self):
-        for pos, tile in self.board.items():
-            if pos != tile.pos:
-                raise ValueError(f"Tile position mismatch: In board position: {pos} != Tile position {tile.pos}")
-
-    def promote_piece(self, type_piece):
-        """
-        Promote a pawn to a new piece type.
-
-        Args:
-            type_piece: The type of piece to promote to (e.g., Queen, Rook).
-        """
-        new_piece = type_piece(self.selected.piece.color)
-        if config.piece_asset != "blindfold":
-            new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
-        self.current_player.add_piece(new_piece)
-        self.board[self.promotion].piece = new_piece
-        self.board[self.selected.pos].piece = None
-        self.promotion = None
-
-    def _handle_castling(self, from_pos, to_pos):
-        """Handle the logic for castling move."""
-        d = sign(to_pos[1] - from_pos[1])
-        # Save the pieces
-        king = self.get_tile(from_pos).piece
-        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d == 1 else 0))
-        rook = self.get_tile(rook_pos).piece
-
-        # Destinations columns
-        dest_king_column = flip_pos(castling_king_column[d*self.flipped], flipped=self.flipped)
-        dest_rook_column = dest_king_column - d
-        
-        # Castling move
-        self.board[from_pos].piece = None
-        self.board[rook_pos].piece = None
-        self.board[(from_pos[0], dest_king_column)].piece = king
-        self.board[(from_pos[0], dest_rook_column)].piece = rook
-        
-    def _handle_normal_move(self, from_pos, to_pos):
-        """Handle a normal move of a piece."""
-        save_tile = self.get_tile(from_pos)
-        self.board[to_pos].piece = save_tile.piece
-        self.board[from_pos].piece = None
         
     def select(self, pos: tuple[int, int]):
         """

@@ -1,19 +1,19 @@
 from enigma.machine import EnigmaMachine
 
-# Set up the Enigma machine
+def enigma(machine, secret_message, key, rotor_start):
+    machine.set_display(rotor_start)
+    msg_key = machine.process_text(key)
+    machine.set_display(msg_key)
+    decrypted_message = machine.process_text(secret_message)
+    return decrypted_message
+
+message = "Garry Kasparov est un joueur dechecs sovietique puis russe Il est le treizieme champion du monde dechecs de lhistoire Cependant il aurait avoue que VSCode est meilleur que VSCodium"
 machine = EnigmaMachine.from_key_sheet(
-   rotors='IV I V',
-   reflector='B',
-   ring_settings='20 5 10',
-   plugboard_settings='SX KU QP VN JG TC LA WM OB ZF')
-# Set the initial position of the Enigma rotors
-machine.set_display('FNZ')
-# Encrypt the text 'BFR' and store it as msg_key
-msg_key = machine.process_text('BFR')
-print(msg_key)
-plaintext = "RASPERRYPI"
-ciphertext = machine.process_text(plaintext)
-print(ciphertext)
+    rotors='I II V',
+    reflector='B',
+    ring_settings='11 10 02',
+    plugboard_settings='ZJ BP VK UG LN QX SA MT ED YH')
+print(enigma(machine, message, "VSC", "SAV"))
 
 class Minimax():
     def __init__(self, depth: int):
