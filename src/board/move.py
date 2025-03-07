@@ -331,4 +331,5 @@ class MoveTree:
             self.go_backward()
 
     def go_leaf(self):
-        pass
+        while self.current.children:
+            self.go_forward()
