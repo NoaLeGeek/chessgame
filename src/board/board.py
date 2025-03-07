@@ -248,7 +248,7 @@ class Board:
         Returns:
             bool: True if the position has been repeated three times, otherwise False.
         """
-        positions = [move.fen.split(" ")[:4] for move in self.move_logs[self.last_irreversible_move:]]
+        positions = [move.fen.split(" ")[:4] for move in self.move_tree.get_root_to_leaf()[self.last_irreversible_move:]]
         return any(positions.count(pos) >= 3 for pos in positions)
 
     def is_stalemate(self):
@@ -416,9 +416,9 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.capture or move.from_tile.piece.notation == "P" or move.castling or self.castling_logs[-1] != self.castling:
+        if move.capture or move.from_tile.piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
-            self.last_irreversible_move = len(self.move_logs)
+            self.last_irreversible_move = len(self.move_tree.get_root_to_leaf())
 
     def _is_valid_en_passant(self, pos: tuple[int, int], ep: tuple[int, int]):
         d_ep = en_passant_direction[ep[0]]
@@ -433,8 +433,9 @@ class Board:
                 return True
         return False
 
-    def _update_en_passant(self, from_pos, to_pos):
+    def _update_en_passant(self, move):
         """Update the en passant square logic after a pawn move."""
+        from_pos, to_pos = move.from_pos, move.to_pos
         self.ep = None
         if not self.is_empty(from_pos) and self.get_tile(from_pos).piece.notation == "P" and abs(from_pos[0] - to_pos[0]) == 2:
             ep = ((from_pos[0] + to_pos[0]) // 2, from_pos[1])
@@ -572,9 +573,8 @@ class Board:
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
-        # Flipping the last move
-        if self.move_logs:
-            self.move_logs[-1].from_pos, self.move_logs[-1].to_pos = flip_pos(self.move_logs[-1].from_pos), flip_pos(self.move_logs[-1].to_pos)
+        # Flipping the move tree
+        self.move_tree.flip_tree()
         # Regenerating the piece images depending on the flipped state
         if config.flipped_assets:
             self.piece_images = generate_piece_images(self.flipped)
@@ -623,8 +623,8 @@ class Board:
                 tile.highlight_color = highlight_color
             else:
                 tile.highlight_color = None
-                if self.move_logs:
-                    last_move = self.get_last_move()
+                last_move = self.get_last_move()
+                if last_move is not None:
                     to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
                     if pos in [last_move.from_pos, to_pos]:
                         tile.highlight_color = 3
@@ -643,7 +643,7 @@ class Board:
         Returns:
             Move or None: The last move that was played, or None if no move has been played yet.
         """
-        return self.move_logs[-1] if self.move_logs else None
+        return self.move_tree.current.move
     
     def get_center(self) -> list[tuple[int, int]]:
         """

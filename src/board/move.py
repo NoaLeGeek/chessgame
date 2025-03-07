@@ -22,6 +22,13 @@ class Move:
         if promotion is not None and (self.to_pos[0] not in [0, config.rows - 1] or self.from_tile.piece.notation != "P"):
             raise ValueError("Promotion is only possible for pawns at the last row")
         return promotion
+    
+    def flip_move(self) -> None:
+        """Flips the move's positions."""
+        self.from_pos = flip_pos(self.from_pos)
+        self.to_pos = flip_pos(self.to_pos)
+        self.from_tile = self.board.get_tile(self.from_pos)
+        self.to_tile = self.board.get_tile(self.to_pos)
 
     def execute(self) -> None:
         """Executes the move on the board and updates the game state."""
@@ -41,9 +48,9 @@ class Move:
             self.board.promote_piece(self.promotion)
         else:
             self.board._update_castling(self)
-            self.board._update_en_passant(self.from_pos, self.to_pos)
+            self.board._update_en_passant(self)
             self.board._update_last_irreversible_move(self)
-            self.board.move_piece(self)
+            self.move_piece()
         if self.board.turn == -1:
             self.board.full_moves += 1
         self.board.half_moves += 1
@@ -68,7 +75,7 @@ class Move:
             raise ValueError(f"There is no piece at {self.from_pos}")
         
         # Remember the move for undo
-        self.board.move_tree.add(self, MoveNode(self, self.board.move_tree.current.move, self.board))
+        self.board.move_tree.add(MoveNode(self, self.board.move_tree.current.move, self.board))
 
         # Update kings' positions
         if self.from_tile.piece.notation == "K":
@@ -81,7 +88,7 @@ class Move:
         # Capture en passant
         if self.en_passant:
             ep_pos = (self.from_pos[0], self.to_pos[1])
-            self.board.waiting_player.remove_piece(self.board[ep_pos].piece)
+            self.board.waiting_player.remove_piece(self.board.board[ep_pos].piece)
             self.board.board[ep_pos].piece = None
 
         # Handle castling logic
@@ -131,8 +138,8 @@ class Move:
         if config.piece_asset != "blindfold":
             new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
         self.current_player.add_piece(new_piece)
-        self.board[self.promotion].piece = new_piece
-        self.board[self.selected.pos].piece = None
+        self.board.board[self.promotion].piece = new_piece
+        self.board.board[self.selected.pos].piece = None
         self.promotion = None
 
     def undo(self) -> None:
@@ -143,9 +150,9 @@ class Move:
         if config.rules["+3_checks"] == True and self.board.current_player.is_king_check(self.board):
             self.board.checks[self.board.waiting_player.color] -= 1
         if self.promotion is not None:
-            self.board.undo_promote_piece()
+            self.undo_promote_piece()
         else:
-            self.board.undo_move_piece(self)
+            self.undo_move_piece()
         self.board.half_moves -= 1
         if self.board.turn == -1:
             self.board.full_moves -= 1
@@ -334,3 +341,17 @@ class MoveTree:
     def go_leaf(self):
         while self.current.children:
             self.go_forward()
+
+    def get_root_to_leaf(self):
+        moves = []
+        current = self.current
+        while current.parent:
+            moves.append(current.move)
+            current = current.parent
+        return moves[::-1]
+    
+    def flip_tree(self):
+        current = self.current
+        while current.parent:
+            current.move.flip_move()
+            current = current.parent

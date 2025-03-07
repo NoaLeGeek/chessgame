@@ -96,8 +96,8 @@ class Game(Scene):
                 if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                     self.board.get_tile(pos).calc_moves(self.board)
                 self.board.select(pos)
-            if self.board.move_logs:
-                last_move = self.board.get_last_move()
+            last_move = self.board.get_last_move()
+            if last_move is not None:
                 to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.board.flipped], flipped=self.board.flipped))
                 self.board.highlight_tile(3, last_move.from_pos, to_pos)
             if self.board.selected is not None and self.board.selected.piece is not None:
