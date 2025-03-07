@@ -68,7 +68,7 @@ class Move:
             raise ValueError(f"There is no piece at {self.from_pos}")
         
         # Remember the move for undo
-        self.board.move_tree.add(self, MoveNode(self, self.board))
+        self.board.move_tree.add(self, MoveNode(self, self.board.move_tree.current.move, self.board))
 
         # Update kings' positions
         if self.from_tile.piece.notation == "K":
@@ -286,8 +286,9 @@ class Move:
         return string
     
 class MoveNode:
-    def __init__(self, move, board):
+    def __init__(self, move, parent, board):
         self.move = move
+        self.parent = parent
         self.children = []
         self.ep = board.ep
         self.castling = board.castling
@@ -297,7 +298,7 @@ class MoveNode:
 
 class MoveTree:
     def __init__(self, board):
-        self.root = MoveNode(None, board)
+        self.root = MoveNode(None, None, board)
         self.current = self.root
 
     def add(self, move_node: MoveNode):
@@ -310,8 +311,8 @@ class MoveTree:
             self.current = self.current.children[0]
 
     def go_backward(self):
-        self.current.move.undo()
         if self.current.parent:
+            self.current.move.undo()
             self.current = self.current.parent
 
     def go_previous(self):
