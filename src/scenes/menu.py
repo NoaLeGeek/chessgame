@@ -6,6 +6,7 @@ from gui import RectButton, Label, VideoPlayer, create_rect_surface
 from config import config
 from constants import Fonts, Colors
 from board.player import Player
+from scenes.setup import SetupMenu
 
 class MainMenu(Scene):
     def __init__(self):
@@ -98,57 +99,10 @@ class MainMenu(Scene):
             "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.BLACK, title_background, (config.width*0.5, config.height*0.17))
         }
         
-
     def render(self, screen):
         self.video_player.play(screen)
         super().render(screen)
 
-
-class SetupMenu(Scene):
-    def __init__(self):
-        super().__init__()
-        self.player1 = Player(1)
-        self.player2 = Player(-1)
-    
-    def create_buttons(self):
-        button_width = config.width * 0.27
-        button_height = config.height * 0.1
-        font_size = int(button_height * 0.5)
-
-        self.buttons = {
-            "play": RectButton(
-                x=config.width*0.5, 
-                y=config.height*0.4, 
-                width=button_width, 
-                height=button_height, 
-                border_radius=int(button_height//2), 
-                color=Colors.WHITE, 
-                text='PLAY',
-                font_name=Fonts.GEIZER, 
-                font_size=font_size, 
-                text_color=Colors.BLACK, 
-                command=lambda:self.manager.go_to(Game(self.player1, self.player2))
-            ),
-            "bot": RectButton(
-                x=config.width*0.5, 
-                y=config.height*0.6, 
-                width=button_width, 
-                height=button_height, 
-                border_radius=int(button_height//2), 
-                color=Colors.WHITE, 
-                text='PLAY AGAINT A BOT', 
-                font_name=Fonts.GEIZER, 
-                font_size=font_size, 
-                text_color=Colors.BLACK, 
-                command=lambda:self.manager.go_to(Game(self.player1, self.player2))
-            )
-        }
-
-    def render(self, screen):
-        super().render(screen)
-    
-    def handle_event(self, event):
-        super().handle_event(event)
 
 class CreditsMenu(Scene):
     def __init__(self):
