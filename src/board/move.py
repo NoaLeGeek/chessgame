@@ -169,8 +169,6 @@ class Move:
         This function reverses the effects of the last move, restoring the board state, castling rights,
         en passant square, and player's pieces to their previous state.
         """
-        print("from_pos", self.from_pos, "from_piece", self.from_piece)
-        print("to_pos", self.to_pos, "to_piece", self.to_piece)
         # Restore the board state
         self.board.get_tile(self.from_pos).piece = self.from_piece
         self.board.get_tile(self.to_pos).piece = self.to_piece
@@ -308,11 +306,11 @@ class MoveTree:
     def add(self, move_node: MoveNode):
         move_node.parent = self.current
         self.current.children.append(move_node)
-        self.go_forward()
+        self.go_forward(-1)
 
-    def go_forward(self):
+    def go_forward(self, index=0):
         if self.current.children:
-            self.current = self.current.children[0]
+            self.current = self.current.children[index]
             self.current.move.move()
 
     def go_backward(self):
@@ -323,14 +321,16 @@ class MoveTree:
     def go_previous(self):
         if self.current.parent:
             siblings = self.current.parent.children
-            index = siblings.index(self.current)
-            self.current = siblings[index - 1] if index > 0 else siblings[-1]
+            index = (siblings.index(self.current) - 1) % len(siblings)
+            self.go_backward()
+            self.go_forward(index)
 
     def go_next(self):
         if self.current.parent:
             siblings = self.current.parent.children
-            index = siblings.index(self.current)
-            self.current = siblings[index + 1] if index < len(siblings) - 1 else siblings[0]
+            index = (siblings.index(self.current) + 1) % len(siblings)
+            self.go_backward()
+            self.go_forward(index)
 
     def go_root(self):
         while self.current.parent:
