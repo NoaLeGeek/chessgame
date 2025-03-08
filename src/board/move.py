@@ -85,8 +85,8 @@ class Move:
         # Capture en passant
         if self.en_passant:
             ep_pos = (self.from_pos[0], self.to_pos[1])
-            self.board.waiting_player.remove_piece(self.board.board[ep_pos].piece)
-            self.board.board[ep_pos].piece = None
+            self.board.waiting_player.remove_piece(self.board.get_tile(ep_pos).piece)
+            self.board.get_tile(ep_pos).piece = None
 
         # Handle castling logic
         if self.castling:
@@ -114,17 +114,16 @@ class Move:
         dest_rook_column = dest_king_column - d
         
         # Castling move
-        self.board.board[from_pos].piece = None
-        self.board.board[rook_pos].piece = None
-        self.board.board[(from_pos[0], dest_king_column)].piece = king
-        self.board.board[(from_pos[0], dest_rook_column)].piece = rook
+        self.board.get_tile(from_pos).piece = None
+        self.board.get_tile(rook_pos).piece = None
+        self.board.get_tile((from_pos[0], dest_king_column)).piece = king
+        self.board.get_tile((from_pos[0], dest_rook_column)).piece = rook
         
     def _handle_normal_move(self):
         """Handle a normal move of a piece."""
         from_pos, to_pos = self.from_pos, self.to_pos
-        save_tile = self.board.get_tile(from_pos)
-        self.board.board[to_pos].piece = save_tile.piece
-        self.board.board[from_pos].piece = None
+        self.board.get_tile(to_pos).piece = self.from_piece
+        self.board.get_tile(from_pos).piece = None
 
     def promote_piece(self, type_piece):
         """
@@ -137,8 +136,8 @@ class Move:
         if config.piece_asset != "blindfold":
             new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
         self.current_player.add_piece(new_piece)
-        self.board.board[self.promotion].piece = new_piece
-        self.board.board[self.selected.pos].piece = None
+        self.board.get_tile(self.promotion).piece = new_piece
+        self.board.get_tile(self.selected.pos).piece = None
         self.promotion = None
 
     def undo(self) -> None:
@@ -159,9 +158,9 @@ class Move:
         
         This function reverses the effects of the last promotion, restoring the pawn to its previous state.
         """
-        self.board.board[self.from_pos].piece = self.from_piece
-        self.board.board[self.to_pos].piece = None
-        self.board.waiting_player.remove_piece(self.to_piece)
+        self.board.get_tile(self.from_pos).piece = self.from_piece
+        self.board.waiting_player.remove_piece(self.board.get_tile(self.to_pos).piece)
+        self.board.get_tile(self.to_pos).piece = None
 
     def undo_move_piece(self):
         """
@@ -173,8 +172,8 @@ class Move:
         print("from_pos", self.from_pos, "from_piece", self.from_piece)
         print("to_pos", self.to_pos, "to_piece", self.to_piece)
         # Restore the board state
-        self.board.board[self.from_pos].piece = self.from_piece
-        self.board.board[self.to_pos].piece = self.to_piece
+        self.board.get_tile(self.from_pos).piece = self.from_piece
+        self.board.get_tile(self.to_pos).piece = self.to_piece
 
         # Restore king position
         if self.from_piece.notation == "K":
@@ -187,7 +186,7 @@ class Move:
         # Restore en passant capture
         if self.en_passant:
             ep_pos = (self.from_pos[0], self.to_pos[1])
-            self.board.board[ep_pos].piece = self.to_piece
+            self.board.get_tile(ep_pos).piece = self.to_piece
 
     def _play_sound_move(self) -> None:
         """Plays the appropriate sound based on the move type."""
