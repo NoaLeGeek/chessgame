@@ -363,7 +363,7 @@ class Board:
         Returns:
             bool: True if the position is empty, False otherwise.
         """
-        return self.get_tile(pos).piece is None
+        return self.get_piece(pos) is None
     
     def get_empty_tiles(self):
         """
@@ -398,13 +398,13 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.from_tile.piece
+        piece = move.from_piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.from_tile.pos[1] > self.current_player.king[1] else -1
+            side = 1 if move.from_pos[1] > self.current_player.king[1] else -1
             self.castling[piece.color][side] = False
 
     def _update_last_irreversible_move(self, move: Move):
@@ -416,7 +416,7 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.capture or move.from_tile.piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
+        if move.capture or move.from_piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_tree.get_root_to_leaf())
 
@@ -437,7 +437,7 @@ class Board:
         """Update the en passant square logic after a pawn move."""
         from_pos, to_pos = move.from_pos, move.to_pos
         self.ep = None
-        if not self.is_empty(from_pos) and self.get_tile(from_pos).piece.notation == "P" and abs(from_pos[0] - to_pos[0]) == 2:
+        if not self.is_empty(from_pos) and self.get_piece(from_pos).notation == "P" and abs(from_pos[0] - to_pos[0]) == 2:
             ep = ((from_pos[0] + to_pos[0]) // 2, from_pos[1])
             if self._is_valid_en_passant((to_pos[0], to_pos[1]), ep):
                 self.ep = ep
