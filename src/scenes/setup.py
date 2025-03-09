@@ -24,11 +24,11 @@ class SetupMenu(Scene):
                 width=button_width, 
                 height=button_height, 
                 border_radius=int(button_height//2), 
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='PLAYER VS PLAYER',
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 command=lambda:self.manager.go_to(Game(self.player1, self.player2))
             ),
             "player vs ia": RectButton(
@@ -37,11 +37,11 @@ class SetupMenu(Scene):
                 width=button_width, 
                 height=button_height, 
                 border_radius=int(button_height//2), 
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='PLAYER VS IA', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 command=lambda:self.manager.go_to(PlayerVsIaMenu(self.player1, self.player2))
             ),
             "ia vs ia": RectButton(
@@ -50,11 +50,11 @@ class SetupMenu(Scene):
                 width=button_width, 
                 height=button_height, 
                 border_radius=int(button_height//2), 
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='IA VS IA', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 command=lambda:self.manager.go_to(Game(self.player1, self.player2))
             )
         }
@@ -66,11 +66,11 @@ class SetupMenu(Scene):
                 width=button_width,
                 height=button_height,
                 border_radius=0,
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text=rule, 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 command=lambda:None
             ) for i, rule in enumerate(['chess960', 'giveaway', '3+ checks', 'king of the hill'])
         }
@@ -95,11 +95,11 @@ class PlayerVsIaMenu(Scene):
                 width=config.tile_size,
                 height=config.tile_size,
                 border_radius=1,
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='', 
                 font_name=Fonts.GEIZER, 
                 font_size=0, 
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 image = load_image('assets/piece/alpha/wK.svg', (config.tile_size, config.tile_size)),
                 command=lambda:None
             ),
@@ -109,11 +109,11 @@ class PlayerVsIaMenu(Scene):
                 width=config.tile_size,
                 height=config.tile_size,
                 border_radius=1,
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='', 
                 font_name=Fonts.GEIZER, 
                 font_size=0, 
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 image = load_image('assets/piece/alpha/bK.svg', (config.tile_size, config.tile_size)),
                 command=lambda:None
             )

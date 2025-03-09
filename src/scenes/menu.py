@@ -110,7 +110,7 @@ class CreditsMenu(Scene):
 
     def create_labels(self):
         self.labels = {
-            "kasparov": Label((config.width*0.5, config.height*0.5), "ISSA HAKIM", Fonts.GEIZER, int(config.height*0.25), Colors.WHITE)
+            "kasparov": Label((config.width*0.5, config.height*0.5), "ISSA HAKIM", Fonts.GEIZER, int(config.height*0.25), Colors.WHITE.value)
         }
 
     def render(self, screen):
