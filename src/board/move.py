@@ -145,6 +145,7 @@ class Move:
 
     def undo(self) -> None:
         """Undoes the move on the board and updates the game state."""
+        self._play_sound_move()
         self.board.turn *= -1
         self.board.selected = None
         self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player

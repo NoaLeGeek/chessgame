@@ -146,5 +146,7 @@ class Game(Scene):
                 self._update_highlight()
             if keys[pygame.K_UP]:
                 self.board.move_tree.go_next()
+                self._update_highlight()
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous()
+                self._update_highlight()
