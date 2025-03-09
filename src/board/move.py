@@ -135,13 +135,13 @@ class Move:
         new_piece = type_piece(self.from_piece.color)
         if config.piece_asset != "blindfold":
             piece_image_key = f"{(('w' if new_piece.color == 1 else 'b') if config.piece_asset != "mono" else "")}{new_piece.notation}"
-            if piece_image_key not in self.piece_images:
+            if piece_image_key not in self.board.piece_images:
                 raise ValueError(f"Missing piece image for: {piece_image_key}")
-            new_piece.image = self.piece_images[piece_image_key]
-        self.current_player.add_piece(new_piece)
-        self.board.get_tile(self.promotion).piece = new_piece
+            new_piece.image = self.board.piece_images[piece_image_key]
+        self.board.current_player.add_piece(new_piece)
+        self.board.get_tile(self.board.promotion).piece = new_piece
         self.board.get_tile(self.from_pos).piece = None
-        self.promotion = None
+        self.board.promotion = None
 
     def undo(self) -> None:
         """Undoes the move on the board and updates the game state."""
