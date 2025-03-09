@@ -18,8 +18,8 @@ class Game(Scene):
 
     def create_buttons(self):
         self.buttons = {
-            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE, 'QUIT', Fonts.GEIZER, Colors.BLACK, self.manager.go_back),
-            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), Colors.WHITE, '', Fonts.GEIZER, Colors.BLACK, self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
+            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE.value, 'QUIT', Fonts.GEIZER, Colors.BLACK.value, self.manager.go_back),
+            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), Colors.WHITE.value, '', Fonts.GEIZER, Colors.BLACK.value, self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
         }
         
     def render(self, screen:pygame.Surface):
@@ -81,7 +81,7 @@ class Game(Scene):
         # pos needs to be offset by 1 if the board is flipped
         rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
         rect.normalize()
-        pygame.draw.rect(screen, Colors.WHITE, rect)
+        pygame.draw.rect(screen, Colors.WHITE.value, rect)
         # Drawing the promotion's pieces
         for i, type_piece in enumerate(piece.promotion):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
