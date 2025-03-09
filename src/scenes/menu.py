@@ -25,12 +25,12 @@ class MainMenu(Scene):
                 width=button_width,
                 height=button_height,
                 border_radius=int(button_height // 2),
-                color=Colors.WHITE,
+                color=Colors.WHITE.value,
                 text='PLAY',
                 font_name=Fonts.GEIZER,
                 font_size=font_size,
-                text_color=Colors.BLACK,
-                border_color=Colors.BLACK,
+                text_color=Colors.BLACK.value,
+                border_color=Colors.BLACK.value,
                 command=lambda: self.manager.go_to(SetupMenu())
             ),
             "settings": RectButton(
@@ -39,13 +39,13 @@ class MainMenu(Scene):
                 width=button_width,
                 height=button_height,
                 border_radius=int(button_height // 2),
-                color=Colors.WHITE,
+                color=Colors.WHITE.value,
                 text='SETTINGS',
                 font_name=Fonts.GEIZER,
                 font_size=font_size,
-                text_color=Colors.BLACK,
+                text_color=Colors.BLACK.value,
                 command=lambda: self.manager.go_to(SettingsMenu()),
-                border_color=Colors.BLACK
+                border_color=Colors.BLACK.value
             ),
             "quit": RectButton(
                 x=config.width * 0.5,
@@ -53,13 +53,13 @@ class MainMenu(Scene):
                 width=button_width,
                 height=button_height,
                 border_radius=int(button_height // 2),
-                color=Colors.WHITE,
+                color=Colors.WHITE.value,
                 text='QUIT',
                 font_name=Fonts.GEIZER,
                 font_size=font_size,
-                text_color=Colors.BLACK,
+                text_color=Colors.BLACK.value,
                 command=quit,
-                border_color=Colors.BLACK
+                border_color=Colors.BLACK.value
             ),
             "rules": RectButton(
                 x=config.width * 0.1,
@@ -67,15 +67,15 @@ class MainMenu(Scene):
                 width=config.width * 0.15,
                 height=config.height * 0.06,
                 border_radius=int(config.height * 0.06 // 2),
-                color=Colors.WHITE,
+                color=Colors.WHITE.value,
                 text='RULES',
                 font_name=Fonts.GEIZER,
                 font_size=font_size,
-                text_color=Colors.BLACK,
+                text_color=Colors.BLACK.value,
                 command=lambda: webbrowser.open(
                     "https://lechiquiers.com/blogs/news/comment-jouer-aux-echecs-pour-les-debutants-installation-coups-et-regles-de-base-expliques"
                 ),
-                border_color=Colors.BLACK
+                border_color=Colors.BLACK.value
             ),
             "credits": RectButton(
                 x=config.width * 0.9,
@@ -83,20 +83,20 @@ class MainMenu(Scene):
                 width=config.width * 0.15,
                 height=config.height * 0.06,
                 border_radius=int(config.height * 0.06 // 2),
-                color=Colors.WHITE,
+                color=Colors.WHITE.value,
                 text='CREDITS',
                 font_name=Fonts.GEIZER,
                 font_size=font_size,
-                text_color=Colors.BLACK,
+                text_color=Colors.BLACK.value,
                 command=lambda: self.manager.go_to(CreditsMenu()),
-                border_color=Colors.BLACK
+                border_color=Colors.BLACK.value
             )
         }
 
     def create_labels(self):
-        title_background =  create_rect_surface(Colors.WHITE, config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055), border_width = int(config.height*0.01), border_color = Colors.BLACK)
+        title_background =  create_rect_surface(Colors.WHITE.value, config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055), border_width = int(config.height*0.01), border_color = Colors.BLACK.value)
         self.labels = {
-            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.BLACK, title_background, (config.width*0.5, config.height*0.17))
+            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.BLACK.value, title_background, (config.width*0.5, config.height*0.17))
         }
         
     def render(self, screen):

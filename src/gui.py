@@ -3,20 +3,20 @@ import pygame
 from constants import Colors
 
 
-def create_rect_surface(color: Colors, width: int, height: int, border_radius: int,
+def create_rect_surface(color: tuple[int, int, int], width: int, height: int, border_radius: int,
                         alpha: int = 255, border_width=0, border_color=None) -> pygame.Surface:
     surface = pygame.Surface((width, height), pygame.SRCALPHA)
-    pygame.draw.rect(surface, color.value, (0, 0, width, height), border_radius=border_radius)
+    pygame.draw.rect(surface, color, (0, 0, width, height), border_radius=border_radius)
     
     if border_color:
-        pygame.draw.rect(surface, border_color.value, (0, 0, width, height), border_width, border_radius=border_radius)
+        pygame.draw.rect(surface, border_color, (0, 0, width, height), border_width, border_radius=border_radius)
     
     surface.set_alpha(alpha)
     return surface
 
 
 class Label:
-    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: Colors,
+    def __init__(self, center: tuple[int, int], text: str, font_name: str, font_size: int, color: tuple[int, int, int],
                  background: pygame.Surface = None, background_pos=None):
         self.text = text
         self.center = center
@@ -41,25 +41,25 @@ class Label:
         self.rect = self.surface.get_rect(center=self.center)
 
     def _create_surface(self) -> pygame.Surface:
-        return self.font.render(self.text, True, self.color.value)
+        return self.font.render(self.text, True, self.color)
 
 
 class RectButton:
-    def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: Colors,
-                 text: str, font_name: str, font_size: int, text_color: Colors, command,
+    def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: tuple[int, int, int],
+                 text: str, font_name: str, text_color: tuple[int, int, int], command,
                  image: pygame.Surface = None, border_color=None):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
-        self.color = color.value
+        self.color = color
         self.border_radius = border_radius
-        self.border_color = border_color.value if border_color else None
+        self.border_color = border_color
         self.command = command
         self.is_hovered = False
         self.image = image
         
-        self.filter = create_rect_surface(Colors.BLACK, width, height, border_radius, alpha=50)
-        self.label = Label(self.rect.center, text, font_name, font_size, text_color)
+        self.filter = create_rect_surface(Colors.BLACK.value, width, height, border_radius, alpha=50)
+        self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
         
         if image:
             self.image_pos = (self.rect.centerx - image.get_width() // 2,
@@ -69,10 +69,10 @@ class RectButton:
         pygame.draw.rect(screen, self.color, self.rect, 0, self.border_radius)
         self.label.draw(screen)
         
-        if self.border_color:
+        if self.border_color is not None:
             pygame.draw.rect(screen, self.border_color, self.rect, int(self.height // 11), self.border_radius)
         
-        if self.image:
+        if self.image is not None:
             screen.blit(self.image, self.image_pos)
         
         if not self.is_hovered:
@@ -91,8 +91,8 @@ class RectButton:
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
 
-    def update_color(self, color: Colors):
-        self.color = color.value
+    def update_color(self, color: tuple[int, int, int]):
+        self.color = color
 
 
 

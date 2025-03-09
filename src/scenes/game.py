@@ -13,7 +13,7 @@ class Game(Scene):
     def __init__(self, player1: Player, player2: Player):
         self.player1 = player1
         self.player2 = player2
-        self.board = Board(player1, player2)
+        self.board = Board(player1, player2, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         super().__init__()
 
     def create_buttons(self):
@@ -26,11 +26,11 @@ class Game(Scene):
                 width=config.width*0.15, 
                 height=config.height*0.06, 
                 border_radius=int(config.height*0.06//2),
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='QUIT', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 command=self.manager.go_back
             ),
             "flip": RectButton(
@@ -39,11 +39,11 @@ class Game(Scene):
                 width=config.width*0.07, 
                 height=config.width*0.07, 
                 border_radius=int(config.width*0.015), 
-                color=Colors.WHITE, 
+                color=Colors.WHITE.value, 
                 text='', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
-                text_color=Colors.BLACK, 
+                text_color=Colors.BLACK.value, 
                 command=self.board.flip_board, 
                 image=load_image("assets/images/arrows.png",(config.width*0.07, config.width*0.07))
             )
@@ -108,50 +108,70 @@ class Game(Scene):
         # pos needs to be offset by 1 if the board is flipped
         rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
         rect.normalize()
-        pygame.draw.rect(screen, Colors.WHITE, rect)
+        pygame.draw.rect(screen, Colors.WHITE.value, rect)
         # Drawing the promotion's pieces
         for i, type_piece in enumerate(piece.promotion):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
             screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
-    def handle_left_click(self):
+    def _update_highlight(self):
+        self.board.clear_highlights()
+        current_move = self.board.get_current_move()
+        if current_move is not None:
+            to_pos = current_move.to_pos if not current_move.castling else (current_move.to_pos[0], flip_pos(castling_king_column[(1 if current_move.to_pos[1] > current_move.from_pos[1] else -1)*self.board.flipped], flipped=self.board.flipped))
+            self.board.highlight_tile(3, current_move.from_pos, to_pos)
+        if self.board.selected is not None and self.board.selected.piece is not None:
+            self.board.highlight_tile(4, self.board.selected.pos)
+
+    def handle_left_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
-            self.board.clear_highlights()
-            if self.board.game_over == False and not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
-                self.board.get_tile(pos).calc_moves(self.board)
-            self.board.select(pos)
-            if self.board.move_logs:
-                last_move = self.board.get_last_move()
-                to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.board.flipped], flipped=self.board.flipped))
-                self.board.highlight_tile(3, last_move.from_pos, to_pos)
-            if self.board.selected is not None and self.board.selected.piece is not None:
-                self.board.highlight_tile(4, self.board.selected.pos)
+            if self.board.game_over == False:
+                if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
+                    self.board.get_tile(pos).calc_moves(self.board)
+                self.board.select(pos)
+            self._update_highlight()
 
-    def handle_right_click(self):
+    def handle_right_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
             if self.board.selected is not None:
                 self.board.selected.highlight_color = None
                 self.board.selected = None
-            keys = pygame.key.get_pressed()
             highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
             self.board.highlight_tile(highlight_color, pos)
 
     def handle_event(self, event:pygame.event.Event):
         super().handle_event(event)
+        keys = pygame.key.get_pressed()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if left_click():
-                self.handle_left_click()
+                self.handle_left_click(keys)
             elif right_click():
-                self.handle_right_click()
+                self.handle_right_click(keys)
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
+            if keys[pygame.K_r]:
                 self.board = Board(self.player1, self.player2)
-            if event.key == pygame.K_f:
+            if keys[pygame.K_f]:
                 self.board.flip_board()
-            if event.key == pygame.K_SPACE:
+            if keys[pygame.K_SPACE]:
                 move = self.board.ia.predict(self.board)
                 move.execute()
+            if keys[pygame.K_LEFT]:
+                if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                    self.board.move_tree.go_root()
+                else:
+                    self.board.move_tree.go_backward()
+                self._update_highlight()
+            if keys[pygame.K_RIGHT]:
+                if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+                    self.board.move_tree.go_leaf()
+                else:
+                    self.board.move_tree.go_forward()
+                self._update_highlight()
+            if keys[pygame.K_UP]:
+                self.board.move_tree.go_next()
+            if keys[pygame.K_DOWN]:
+                self.board.move_tree.go_previous()
