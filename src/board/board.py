@@ -623,10 +623,10 @@ class Board:
                 tile.highlight_color = highlight_color
             else:
                 tile.highlight_color = None
-                last_move = self.get_last_move()
-                if last_move is not None:
-                    to_pos = last_move.to_pos if not last_move.castling else (last_move.to_pos[0], flip_pos(castling_king_column[(1 if last_move.to_pos[1] > last_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
-                    if pos in [last_move.from_pos, to_pos]:
+                current_move = self.get_current_move()
+                if current_move is not None:
+                    to_pos = current_move.to_pos if not current_move.castling else (current_move.to_pos[0], flip_pos(castling_king_column[(1 if current_move.to_pos[1] > current_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
+                    if pos in [current_move.from_pos, to_pos]:
                         tile.highlight_color = 3
                 if self.selected is not None and self.selected.piece is not None:
                     tile.highlight_color = 4
@@ -636,7 +636,7 @@ class Board:
         for tile in self.board.values():
             tile.highlight_color = None
 
-    def get_last_move(self):
+    def get_current_move(self):
         """
         Get the last move that was played on the board.
 
