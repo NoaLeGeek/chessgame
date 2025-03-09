@@ -99,12 +99,12 @@ class Board:
                     piece_type = notation_to_piece(char)
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
-
-                    piece_image_key = f"{(('w' if color == 1 else 'b') if config.piece_asset != "mono" else "")}{char.upper()}"
-                    if piece_image_key not in self.piece_images:
-                        raise ValueError(f"Missing piece image for: {piece_image_key}")
-                    
-                    piece = piece_type(color, self.piece_images[piece_image_key])
+                    piece = piece_type(color)
+                    if config.piece_asset != "blindfold":
+                        piece_image_key = f"{(('w' if color == 1 else 'b') if config.piece_asset != "mono" else "")}{char.upper()}"
+                        if piece_image_key not in self.piece_images:
+                            raise ValueError(f"Missing piece image for: {piece_image_key}")
+                        piece.image = self.piece_images[piece_image_key]
                     self.get_player(color).add_piece(piece)
                     tile.piece = piece
                     self.board[(r, c)] = tile

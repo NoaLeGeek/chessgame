@@ -132,12 +132,15 @@ class Move:
         Args:
             type_piece: The type of piece to promote to (e.g., Queen, Rook).
         """
-        new_piece = type_piece(self.selected.piece.color)
+        new_piece = type_piece(self.from_piece.color)
         if config.piece_asset != "blindfold":
-            new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
+            piece_image_key = f"{(('w' if new_piece.color == 1 else 'b') if config.piece_asset != "mono" else "")}{new_piece.notation}"
+            if piece_image_key not in self.piece_images:
+                raise ValueError(f"Missing piece image for: {piece_image_key}")
+            new_piece.image = self.piece_images[piece_image_key]
         self.current_player.add_piece(new_piece)
         self.board.get_tile(self.promotion).piece = new_piece
-        self.board.get_tile(self.selected.pos).piece = None
+        self.board.get_tile(self.from_pos).piece = None
         self.promotion = None
 
     def undo(self) -> None:
