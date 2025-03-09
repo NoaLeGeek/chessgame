@@ -139,7 +139,7 @@ class Move:
                 raise ValueError(f"Missing piece image for: {piece_image_key}")
             new_piece.image = self.board.piece_images[piece_image_key]
         self.board.current_player.add_piece(new_piece)
-        self.board.get_tile(self.board.promotion).piece = new_piece
+        self.board.get_tile(self.to_pos).piece = new_piece
         self.board.get_tile(self.from_pos).piece = None
         self.board.promotion = None
 
@@ -163,8 +163,8 @@ class Move:
         This function reverses the effects of the last promotion, restoring the pawn to its previous state.
         """
         self.board.get_tile(self.from_pos).piece = self.from_piece
-        self.board.waiting_player.remove_piece(self.board.get_tile(self.to_pos).piece)
-        self.board.get_tile(self.to_pos).piece = None
+        self.board.current_player.remove_piece(self.board.get_tile(self.to_pos).piece)
+        self.board.get_tile(self.to_pos).piece = self.to_piece
 
     def undo_move_piece(self):
         """
