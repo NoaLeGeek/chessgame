@@ -20,8 +20,7 @@ class Label:
                  background: pygame.Surface = None, background_pos=None):
         self.text = text
         self.center = center
-        self.font_path = f"assets/font/{font_name}"
-        self.font = pygame.font.Font(self.font_path, font_size)
+        self.font = pygame.font.Font(f"assets/font/{font_name}", font_size)
         self.color = color
         self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=center)
