@@ -177,6 +177,15 @@ class Move:
         self.board.get_tile(self.from_pos).piece = self.from_piece
         self.board.get_tile(self.to_pos).piece = self.to_piece
 
+        # Handle castling
+        if self.castling:
+            d = sign(self.to_pos[1] - self.from_pos[1])
+            rook_pos = (self.from_pos[0], self.from_pos[1] + d)
+            rook = self.board.get_piece(rook_pos)
+            dest_rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))
+            self.board.get_tile(rook_pos).piece = None
+            self.board.get_tile(dest_rook_pos).piece = rook
+
         # Restore king position
         if self.from_piece.notation == "K":
             self.board.current_player.king = self.from_pos
@@ -353,7 +362,11 @@ class MoveTree:
         return moves[::-1]
     
     def flip_tree(self):
-        current = self.current
-        while current.parent:
-            current.move.flip_move()
-            current = current.parent
+        # go to root and visit all nodes
+        current = self.root
+        queue = [current]
+        while queue:
+            node = queue.pop()
+            if node.move:
+                node.move.flip_move()
+            queue.extend(node.children)
