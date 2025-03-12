@@ -87,15 +87,6 @@ class Game(Scene):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
             screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
-    def _update_highlight(self):
-        self.board.clear_highlights()
-        current_move = self.board.get_current_move()
-        if current_move is not None:
-            to_pos = current_move.to_pos if not current_move.castling else (current_move.to_pos[0], flip_pos(castling_king_column[(1 if current_move.to_pos[1] > current_move.from_pos[1] else -1)*self.board.flipped], flipped=self.board.flipped))
-            self.board.highlight_tile(3, current_move.from_pos, to_pos)
-        if self.board.selected is not None and self.board.selected.piece is not None:
-            self.board.highlight_tile(4, self.board.selected.pos)
-
     def handle_left_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
@@ -104,7 +95,6 @@ class Game(Scene):
                 if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
                     self.board.get_tile(pos).calc_moves(self.board)
                 self.board.select(pos)
-            self._update_highlight()
 
     def handle_right_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
@@ -137,18 +127,14 @@ class Game(Scene):
                     self.board.move_tree.go_root()
                 else:
                     self.board.move_tree.go_backward()
-                self._update_highlight()
             if keys[pygame.K_RIGHT]:
                 if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
                     self.board.move_tree.go_leaf()
                 else:
                     self.board.move_tree.go_forward()
-                self._update_highlight()
             if keys[pygame.K_UP]:
                 self.board.move_tree.go_next()
-                self._update_highlight()
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous()
-                self._update_highlight()
             if keys[pygame.K_k]:
                 print(list(map(lambda move: move.notation, self.board.move_tree.get_root_to_leaf())))

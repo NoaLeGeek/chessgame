@@ -266,6 +266,12 @@ class Move:
             self.board.ep is not None and
             self.to_pos == self.board.ep
             )
+
+    def _update_highlight(self):
+        to_pos = self.to_pos if not self.castling else (self.to_pos[0], flip_pos(castling_king_column[(1 if self.to_pos[1] > self.from_pos[1] else -1)*self.board.flipped], flipped=self.board.flipped))
+        self.board.highlight_tile(3, self.from_pos, to_pos)
+        if self.board.selected is not None and self.board.selected.piece is not None:
+            self.board.highlight_tile(4, self.board.selected.pos)
         
     def __str__(self) -> str:
         """
@@ -320,21 +326,31 @@ class MoveTree:
         move_node.parent = self.current
         self.current.children.append(move_node)
         self.go_forward(-1)
+    
+    #TODO mono 12 files skin enlever les conditions
 
     def go_forward(self, index=0):
         if self.current.children:
             self.current = self.current.children[index]
             self.current.move.move()
+            self.current.move.board.clear_highlights()
+            if self.current.move is not None:
+                self.current.move._update_highlight()
 
     def go_backward(self):
         if self.current.parent:
             self.current.move.undo()
             self.current = self.current.parent
+            self.current.move.board.clear_highlights()
+            if self.current.move is not None:
+                self.current.move._update_highlight()
 
     def go_previous(self):
         if self.current.parent:
             siblings = self.current.parent.children
             index = (siblings.index(self.current) - 1) % len(siblings)
+            siblings.append(siblings.pop(index))
+            self.current.parent.children = siblings
             self.go_backward()
             self.go_forward(index)
 
@@ -342,6 +358,8 @@ class MoveTree:
         if self.current.parent:
             siblings = self.current.parent.children
             index = (siblings.index(self.current) + 1) % len(siblings)
+            siblings.append(siblings.pop(index))
+            self.current.parent.children = siblings
             self.go_backward()
             self.go_forward(index)
 

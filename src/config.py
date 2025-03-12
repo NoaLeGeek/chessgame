@@ -125,7 +125,7 @@ class Config:
         #self.width = self.height
         self.width, self.height = width, height
         self.margin = self.height//(self.columns*2 + 2)
-        self.tile_size = self.height//(self.columns+1)
+        self.tile_size = self.height//(self.columns + 1)
         
 
     def update_rule(self, rule, value = None):
