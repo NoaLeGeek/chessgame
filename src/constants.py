@@ -16,7 +16,7 @@ available_sound = ["beat", "default", "lolz", "marble", "metal", "nature", "news
 available_board = ["blue", "brown", "green", "ic", "newspaper", "purple", "blue-marble", "blue2", "blue3", "canvas2", "green-plastic", "grey", "horsey", "leather", "maple", "maple2", "ncf-board", "olive", "pink-pyramid", "purple-diag", "wood", "wood2", "wood3", "wood4"]
 available_background = ["standard", "game_room", "classic", "light", "wood", "glass", "tournament", "staunton", "newspaper", "tigers", "nature", "sky", "cosmos", "ocean", "metal", "gothic", "marble", "neon", "graffiti", "bubblegum", "lolz", "8_bit", "bases", "blues", "dash", "icy_sea", "walnut"]
 available_piece = ['alpha', 'anarcandy', 'blindfold', 'caliente', 'california', 'cardinal', 'cburnett', 'celtic', 'chess7', 'chessnut', 'companion', 'disguised', 'dubrovny', 'fantasy', 'fresca', 'gioco', 'governor', 'horsey', 'icpieces', 'kiwen-suwi', 'kosal', 'leipzig', 'letter', 'libra', 'maestro', 'merida', 'mono', 'mpchess', 'pirouetti', 'pixel', 'reillycraig', 'riohacha', 'shapes', 'spatial', 'staunty', 'tatiana']
-
+available_rule = ['chess960', 'giveaway', '+3_checks', 'king_of_the_hill']
 
 class Fonts(StrEnum):
     GEIZER = "Geizer.otf"
@@ -31,3 +31,6 @@ class Colors(Enum):
     YELLOW = (255, 255, 0)
     CYAN = (0, 255, 255)
     ORANGE = (255, 165, 0)
+    LIGHT_GRAY = (220, 220, 220)
+    DARK_GRAY = (40, 40, 40)
+    GRAY = (100, 100, 100)
