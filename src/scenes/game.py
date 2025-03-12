@@ -231,11 +231,3 @@ class Game(Scene):
                 self.board.move_tree.go_previous()
             if keys[pygame.K_t]:
                 print([move.notation for move in self.board.history])
-    
-    def undo(self):
-        self.board.move_tree.go_backward()
-        self._update_highlight()
-    
-    def redo(self):
-        self.board.move_tree.go_forward()
-        self._update_highlight()
