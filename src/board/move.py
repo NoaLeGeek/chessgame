@@ -326,8 +326,6 @@ class MoveTree:
         move_node.parent = self.current
         self.current.children.append(move_node)
         self.go_forward(-1)
-    
-    #TODO mono 12 files skin enlever les conditions
 
     def go_forward(self, index=0):
         if self.current.children:
