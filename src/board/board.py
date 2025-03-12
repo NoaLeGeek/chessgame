@@ -47,8 +47,6 @@ class Board:
         # Initialize the board from the FEN string
         self._create_board(fen)
 
-        self.ia = load_model_from_checkpoint()
-
     def _create_board(self, fen: str) -> None:
         """
         Create the chess board from a FEN string.
@@ -762,7 +760,8 @@ class Board:
                                 matrix[13, move[0], move[1]] = 1 
                                 legal_moves += 1
                             if legal_moves:       
-                                matrix[12, pos[0], pos[1]] = 1                 
+                                matrix[12, pos[0], pos[1]] = 1    
+        print(matrix[12], matrix[13])             
         return matrix
 
     def convert_uci_to_move(self, uci_move):

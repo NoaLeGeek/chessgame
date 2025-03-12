@@ -1,12 +1,12 @@
-import torch
 import copy
+
+import torch
 
 try :
     from model import ChessModel
-except:
-    from ia.ml.model import ChessModel
-
-
+except :
+    from ia.ml.model import ChessModel 
+    
 class Builder:
     def __init__(self, component_dict):
         """

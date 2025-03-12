@@ -1,0 +1,45 @@
+model:
+  - Conv2d:
+      args: [14, 32, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [32]
+  - ReLU: {}
+  - Conv2d:
+      args: [32, 64, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [64]
+  - ReLU: {}
+  - Conv2d:
+      args: [64, 128, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [128]
+  - ReLU: {}
+  - Conv2d:
+      args: [128, 256, 3]
+      padding: 1
+  - BatchNorm2d:
+      args: [256]
+  - ReLU: {}
+  - Flatten: {}
+  - Linear:
+      args: [16384, 512]  
+  - ReLU: {}
+  - Linear:
+      args: [512, 'num_classes']
+
+data:
+  train_path: ''
+  val_path: ''
+
+training:
+  num_epochs: 100
+  batch_size: 256
+  num_workers: 4
+  checkpoint: 0
+
+  optimizer:
+    AdamW: 
+      lr: 0.0001

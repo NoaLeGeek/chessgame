@@ -1,5 +1,8 @@
-import yaml
+import os
+
 import json
+
+import yaml
 import torch
 
 try :
@@ -7,7 +10,6 @@ try :
 except :
     from ia.ml.builder import build_model, build_optimizer
     
-
 
 def load_encoded_moves(filepath):
     """
@@ -19,8 +21,7 @@ def load_encoded_moves(filepath):
     Returns:
         dict: Dictionary of encoded moves.
     """
-    print(f"Loading encoded moves from {filepath}...")
-    with open(filepath, "r") as file:
+    with open(filepath, "r", encoding='utf-8') as file:
         return json.load(file)
 
 
@@ -34,8 +35,7 @@ def load_config(filepath):
     Returns:
         dict: Configuration data.
     """
-    print(f"Loading configuration from {filepath}...")
-    with open(filepath, "r") as file:
+    with open(filepath, "r", encoding='utf-8') as file:
         return yaml.safe_load(file)
 
 
@@ -59,34 +59,20 @@ def load_checkpoint(filepath, model, optimizer):
         if param_group['lr'] != current_lr:
             param_group['lr'] = current_lr
     epoch = checkpoint['epoch']
-    loss = checkpoint['loss']
-    return model, optimizer, epoch, loss
+    return model, optimizer, epoch
 
 
-def load_model_from_checkpoint():
+def load_model_from_checkpoint(model_path, num_checkpoint):
     """
     Load model from checkpoint.
 
     Returns:
         ChessModel: Loaded model.
     """
-    config = load_config("models/metadatas/config.yaml")
-    encoded_moves = load_encoded_moves(config["encoded_moves_path"])
-    model = build_model(config["architecture"], {"num_classes": len(encoded_moves)}, encoded_moves)
-    checkpoint = torch.load(config["checkpoint_path"])
+    config = load_config(os.path.join(model_path, ('config.yaml')))
+    encoded_moves = load_encoded_moves('data/encoded_moves.json')
+    model = build_model(config["model"], {"num_classes": len(encoded_moves)}, encoded_moves)
+    checkpoint = torch.load(os.path.join(model_path, 'checkpoints', f'checkpoint_{num_checkpoint}.pth'))
     model.load_state_dict(checkpoint["model_state_dict"])
     return model
 
-
-def load_model():
-    """
-    Load model from state dictionary.
-
-    Returns:
-        ChessModel: Loaded model.
-    """
-    config = load_config("models/metadatas/config.yaml")
-    encoded_moves = load_encoded_moves(config["encoded_moves_path"])
-    model = build_model(config["architecture"], {"num_classes": len(encoded_moves)}, encoded_moves) 
-    model.load_state_dict(torch.load("models/ChessModel.pth"))
-    return model

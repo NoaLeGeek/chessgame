@@ -1,11 +1,11 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
-file_path = "models/metadatas/training_logs.csv"
+
+file_path = "models/v1/training_logs.csv"
 df = pd.read_csv(file_path)
 
-df["Time (sec)"] = df["Time (min:sec)"].apply(lambda x: int(x.split("m")[0]) * 60 + int(x.split("m")[1][:-1]))
 
 plt.figure(figsize=(18, 5))
 
@@ -31,7 +31,7 @@ plt.subplot(1, 3, 3)
 plt.plot(df["Epoch"], df["Learning Rate"], label="Learning Rate", marker="o", linestyle="-", color="purple")
 plt.xlabel("Epochs")
 plt.ylabel("Learning Rate")
-plt.title("Évolution du Learning Rate")
+plt.title("Learning Rate Evolution")
 plt.yscale("log") 
 plt.legend()
 plt.grid(True)

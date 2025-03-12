@@ -1,9 +1,9 @@
 import json
+
 import torch
 import numpy as np
 import torch_directml
 import torch.nn as nn
-
 
 class ChessModel(nn.Module):
     def __init__(self, layers, encoded_moves):
@@ -34,12 +34,11 @@ class ChessModel(nn.Module):
         return x
 
     def predict(self, board):
-        device = torch_directml.device()
-        self.to(device)
+        self.to('cpu')
 
         X = board.to_matrix()
 
-        X = torch.tensor(X, dtype=torch.float32).unsqueeze(0).to(device)
+        X = torch.tensor(X, dtype=torch.float32).unsqueeze(0).to('cpu')
 
         with torch.no_grad():
             logits = self(X)

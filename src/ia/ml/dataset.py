@@ -1,10 +1,11 @@
 import os
+import json
+from multiprocessing import Pool, cpu_count
+
 import torch
 import numpy as np
-
 from tqdm import tqdm
 from chess import pgn, Board
-from multiprocessing import Pool, cpu_count
 from torch.utils.data import IterableDataset
 
 
@@ -16,15 +17,15 @@ class ChessDataset(IterableDataset):
         file_path (str): The path to the PGN file.
         encoded_moves (dict): A dictionary to store encoded chess moves.
         batch_size (int): The number of samples per batch.
+        num_samples: The number of samples in the dataset.
     """
-    def __init__(self, file_path, encoded_moves, batch_size=64):
+    def __init__(self, file_path, encoded_moves={}, batch_size=64):
         self.file_path = file_path
         self.encoded_moves = encoded_moves
         self.batch_size = batch_size
         self.num_games, self.num_samples = self.process_dataset()
-        self.num_batches = self.num_samples//batch_size
-        print(f"Number of games: {self.num_games}")
-        print(f"Number of samples: {self.num_samples}")
+        print(F'Number of games : {self.num_games}')
+        print(f'Number of samples : {self.num_samples}')
 
     def process_segment(self, start_offset, end_offset):
         """
@@ -37,11 +38,10 @@ class ChessDataset(IterableDataset):
         Returns:
             num_samples (int): The number of samples processed.
             num_games (int): The number of games processed.
-            moves (list): A list of unique moves in UCI format.
         """
         num_samples = 0
         num_games = 0
-        moves = []
+
         with open(self.file_path, "r", encoding="UTF-8", errors="ignore") as f:
             f.seek(start_offset)
 
@@ -59,10 +59,8 @@ class ChessDataset(IterableDataset):
                 num_games += 1
                 for move in game.mainline_moves():
                     num_samples += 1
-                    if move.uci() not in moves:
-                        moves.append(move.uci())
 
-        return num_samples, num_games, moves
+        return num_samples, num_games
 
     def process_dataset(self):
         """
@@ -72,26 +70,23 @@ class ChessDataset(IterableDataset):
             total_games (int): The total number of games processed.
             total_samples (int): The total number of samples processed.
         """
+        total_games, total_samples = 0, 0
         file_size = os.path.getsize(self.file_path)
         num_workers = cpu_count()
         chunk_size = file_size // num_workers
 
-        offsets = [
-            (i * chunk_size, (i + 1) * chunk_size if i < num_workers - 1 else file_size)
+        offsets = sorted([
+            (i * chunk_size, min((i + 1) * chunk_size, file_size))
             for i in range(num_workers)
-        ]
+        ])
 
         with Pool(num_workers) as pool:
             results = pool.starmap(self.process_segment, offsets)
-
-        total_samples, total_games = 0, 0
-        for num_samples, num_games, moves in results:
+        
+        for num_samples, num_games in results:
             total_samples += num_samples
             total_games += num_games
-            for move in moves:
-                if move not in self.encoded_moves:
-                    self.encoded_moves[move] = len(self.encoded_moves)
-
+        
         return total_games, total_samples
 
     @staticmethod
@@ -123,7 +118,8 @@ class ChessDataset(IterableDataset):
             matrix[13, to_row, to_col] = 1
         return matrix
 
-    def process_X(self, X):
+    @staticmethod
+    def process_X(X):
         """
         Processes the input data.
 
