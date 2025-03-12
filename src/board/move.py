@@ -43,9 +43,9 @@ class Move:
         # Remember the move for undo
         self.board.move_tree.add(MoveNode(self, self.board.move_tree.current.move, self.board))
         # This is the board state after the move
-        self.notation = str(self)
         self.fen = str(self.board)
         self.board.history = self.board.move_tree.get_root_to_leaf()
+        self.notation = str(self)
         self.board.check_game()
 
     def move(self):
@@ -136,16 +136,17 @@ class Move:
         new_piece = type_piece(self.from_piece.color)
         if config.piece_asset != "blindfold":
             piece_image_key = f"{(('w' if new_piece.color == 1 else 'b') if config.piece_asset != "mono" else "")}{new_piece.notation}"
-            if piece_image_key not in self.piece_images:
+            if piece_image_key not in self.board.piece_images:
                 raise ValueError(f"Missing piece image for: {piece_image_key}")
-            new_piece.image = self.piece_images[piece_image_key]
-        self.current_player.add_piece(new_piece)
-        self.board.get_tile(self.promotion).piece = new_piece
+            new_piece.image = self.board.piece_images[piece_image_key]
+        self.board.current_player.add_piece(new_piece)
+        self.board.get_tile(self.to_pos).piece = new_piece
         self.board.get_tile(self.from_pos).piece = None
-        self.promotion = None
+        self.board.promotion = None
 
     def undo(self) -> None:
         """Undoes the move on the board and updates the game state."""
+        self._play_sound_move()
         self.board.turn *= -1
         self.board.selected = None
         self.board.current_player, self.board.waiting_player = self.board.waiting_player, self.board.current_player
@@ -164,8 +165,8 @@ class Move:
         This function reverses the effects of the last promotion, restoring the pawn to its previous state.
         """
         self.board.get_tile(self.from_pos).piece = self.from_piece
-        self.board.waiting_player.remove_piece(self.board.get_tile(self.to_pos).piece)
-        self.board.get_tile(self.to_pos).piece = None
+        self.board.current_player.remove_piece(self.board.get_tile(self.to_pos).piece)
+        self.board.get_tile(self.to_pos).piece = self.to_piece
 
     def undo_move_piece(self):
         """
@@ -177,6 +178,15 @@ class Move:
         # Restore the board state
         self.board.get_tile(self.from_pos).piece = self.from_piece
         self.board.get_tile(self.to_pos).piece = self.to_piece
+
+        # Handle castling
+        if self.castling:
+            d = sign(self.to_pos[1] - self.from_pos[1])
+            rook_pos = (self.from_pos[0], self.from_pos[1] + d)
+            rook = self.board.get_piece(rook_pos)
+            dest_rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))
+            self.board.get_tile(rook_pos).piece = None
+            self.board.get_tile(dest_rook_pos).piece = rook
 
         # Restore king position
         if self.from_piece.notation == "K":
@@ -268,12 +278,12 @@ class Move:
         if self.castling:
             string += "O" + "-O"*(get_value(sign(self.to_pos[1] - self.from_pos[1]) * self.board.flipped, 1, 2))
         else:
+            # Add the symbol of the piece
+            if self.from_piece.notation != "P":
+                string += self.from_piece.notation
             if self.capture:
-                # Add the symbol of the piece
-                if self.to_piece.notation != "P":
-                    string += self.to_piece.notation
                 # Add the starting column if it's a pawn
-                else:
+                if self.from_piece.notation == "P":
                     string += chr(flip_pos(self.from_pos[1], flipped = self.board.flipped) + 97)
                 # Add x if it's a capture
                 string += "x"
@@ -307,6 +317,7 @@ class MoveTree:
     def __init__(self, board):
         self.root = MoveNode(None, None, board)
         self.current = self.root
+        self.board = board
 
     def add(self, move_node: MoveNode):
         move_node.parent = self.current
@@ -317,16 +328,20 @@ class MoveTree:
         if self.current.children:
             self.current = self.current.children[index]
             self.current.move.move()
+            self.board.update_highlights()
 
     def go_backward(self):
         if self.current.parent:
             self.current.move.undo()
             self.current = self.current.parent
+            self.board.update_highlights()
 
     def go_previous(self):
         if self.current.parent:
             siblings = self.current.parent.children
             index = (siblings.index(self.current) - 1) % len(siblings)
+            siblings.append(siblings.pop(index))
+            self.current.parent.children = siblings
             self.go_backward()
             self.go_forward(index)
 
@@ -334,6 +349,8 @@ class MoveTree:
         if self.current.parent:
             siblings = self.current.parent.children
             index = (siblings.index(self.current) + 1) % len(siblings)
+            siblings.append(siblings.pop(index))
+            self.current.parent.children = siblings
             self.go_backward()
             self.go_forward(index)
 
@@ -354,7 +371,11 @@ class MoveTree:
         return moves[::-1]
     
     def flip_tree(self):
-        current = self.current
-        while current.parent:
-            current.move.flip_move()
-            current = current.parent
+        # go to root and visit all nodes
+        current = self.root
+        queue = [current]
+        while queue:
+            node = queue.pop()
+            if node.move:
+                node.move.flip_move()
+            queue.extend(node.children)

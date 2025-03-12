@@ -126,9 +126,8 @@ class Config:
         #self.width = self.height
         self.width, self.height = int(width*0.8), int(height*0.8)
         self.margin = self.height//(self.columns*2 + 2)
-        self.tile_size = self.height//(self.columns+1)
+        self.tile_size = self.height//(self.columns + 1)
         self.eval_bar_width = self.tile_size//2
-        
 
     def update_rule(self, rule, value = None):
         if value is None:

@@ -139,10 +139,6 @@ class PieceAssetsMenu(Scene):
         screen.blit(self.board_image, dest=(config.width*0.515, config.height*0.3), area=self.board_clip_rect)
         if config.piece_asset == 'blindfold':
             return
-        elif config.piece_asset == 'mono':
-            for i, image in enumerate(self.piece_images.values()):
-                screen.blit(image, (config.width*0.5+(config.tile_size*i), config.height*0.3+config.tile_size//2))
-
         else:
             for i, piece in enumerate(self.piece_images.items()):
                 notation, image = piece[0], piece[1]

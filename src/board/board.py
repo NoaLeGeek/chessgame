@@ -639,6 +639,16 @@ class Board:
         for tile in self.board.values():
             tile.highlight_color = None
 
+    def update_highlights(self):
+        """Update the highlighted tiles on the board."""
+        self.clear_highlights()
+        current_move = self.get_current_move()
+        if current_move is not None:
+            to_pos = current_move.to_pos if not current_move.castling else (current_move.to_pos[0], flip_pos(castling_king_column[(1 if current_move.to_pos[1] > current_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
+            self.highlight_tile(3, current_move.from_pos, to_pos)
+        if self.selected is not None and self.selected.piece is not None:
+            self.highlight_tile(4, self.selected.pos)
+
     def get_current_move(self):
         """
         Get the last move that was played on the board.
