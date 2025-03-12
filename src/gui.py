@@ -20,8 +20,7 @@ class Label:
                  background: pygame.Surface = None, background_pos=None):
         self.text = text
         self.center = center
-        self.font_path = f"assets/font/{font_name}"
-        self.font = pygame.font.Font(self.font_path, font_size)
+        self.font = pygame.font.Font(f"assets/font/{font_name}", font_size)
         self.color = color
         self.surface = self._create_surface()
         self.rect = self.surface.get_rect(center=center)
@@ -46,7 +45,7 @@ class Label:
 
 class RectButton:
     def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: tuple[int, int, int],
-                 text: str, font_name: str, text_color: tuple[int, int, int], command,
+                 text: str, font_name: str, font_size: int, text_color: tuple[int, int, int], command,
                  image: pygame.Surface = None, border_color=None):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
@@ -59,7 +58,7 @@ class RectButton:
         self.image = image
         
         self.filter = create_rect_surface(Colors.BLACK.value, width, height, border_radius, alpha=50)
-        self.label = Label(self.rect.center, text, font_name, self.rect.height, text_color)
+        self.label = Label(self.rect.center, text, font_name, font_size, text_color)
         
         if image:
             self.image_pos = (self.rect.centerx - image.get_width() // 2,
@@ -93,6 +92,7 @@ class RectButton:
 
     def update_color(self, color: tuple[int, int, int]):
         self.color = color
+
 
 
 class VideoPlayer:

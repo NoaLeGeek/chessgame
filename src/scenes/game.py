@@ -17,9 +17,36 @@ class Game(Scene):
         super().__init__()
 
     def create_buttons(self):
+        font_size = int(config.height*0.06 * 0.5)
+
         self.buttons = {
-            "quit": RectButton(config.width*0.9, config.height*0.95, config.width*0.15, config.height*0.06, int(config.height*0.06//2), Colors.WHITE.value, 'QUIT', Fonts.GEIZER, Colors.BLACK.value, self.manager.go_back),
-            "flip": RectButton(config.width*0.9, config.height*0.8, config.width*0.07, config.width*0.07, int(config.width*0.015), Colors.WHITE.value, '', Fonts.GEIZER, Colors.BLACK.value, self.board.flip_board, image=load_image("assets/images/arrows.png", (config.width*0.07, config.width*0.07)))
+            "quit": RectButton(
+                x=config.width*0.9, 
+                y=config.height*0.95,
+                width=config.width*0.15, 
+                height=config.height*0.06, 
+                border_radius=int(config.height*0.06//2),
+                color=Colors.WHITE.value, 
+                text='QUIT', 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size,
+                text_color=Colors.BLACK.value, 
+                command=self.manager.go_back
+            ),
+            "flip": RectButton(
+                x=config.width*0.9, 
+                y=config.height*0.8, 
+                width=config.width*0.07, 
+                height=config.width*0.07, 
+                border_radius=int(config.width*0.015), 
+                color=Colors.WHITE.value, 
+                text='', 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size,
+                text_color=Colors.BLACK.value, 
+                command=self.board.flip_board, 
+                image=load_image("assets/images/arrows.png",(config.width*0.07, config.width*0.07))
+            )
         }
         
     def render(self, screen:pygame.Surface):
