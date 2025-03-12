@@ -94,7 +94,7 @@ class RectButton:
 
 
 class RadioButton:
-    def __init__(self, x, y, radius, width, color, state, command):
+    def __init__(self, x, y, radius, width, color, state, command=lambda:None):
         self.x, self.y = x, y
         self.radius = radius
         self.rect = pygame.Rect(self.x-radius, self.y-radius, radius*2, radius*2)

@@ -18,9 +18,10 @@ class Config:
         self.columns = self.config.getint('BOARD', 'columns')
         self.debug = self.config.getboolean('GENERAL', 'debug')
         self.rules = {
+            "classic": True,
             "puissance_4_pawns": False,
             "mutation_chess": False,
-            "king_of_the_hill": True,
+            "king_of_the_hill": False,
             "+3_checks": False,
             "giveaway": False,
             "chess960": False,
@@ -123,9 +124,10 @@ class Config:
         #self.dimensions = (width, height)
         #self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
         #self.width = self.height
-        self.width, self.height = width, height
+        self.width, self.height = int(width*0.8), int(height*0.8)
         self.margin = self.height//(self.columns*2 + 2)
         self.tile_size = self.height//(self.columns+1)
+        self.eval_bar_width = self.tile_size//2
         
 
     def update_rule(self, rule, value = None):

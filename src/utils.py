@@ -26,7 +26,7 @@ def get_value(flipped: int, white_value: int, black_value: int) -> int:
 
 def get_pos(coord: tuple[int, int]) -> tuple[int, int]:
     x, y = coord
-    return (y - config.margin) // config.tile_size, (x - config.margin) // config.tile_size
+    return (y - config.margin) // config.tile_size, (x - config.margin - config.eval_bar_width) // config.tile_size
 
 def flip_pos(pos: tuple[int, int] | int, flipped: int = -1) -> tuple[int, int] | int:
     # No flip if flipped = 1

@@ -1,3 +1,5 @@
+import pygame
+
 from config import config
 from utils import load_image
 from scenes.game import Game
@@ -62,7 +64,7 @@ class SetupMenu(Scene):
             )
         }
 
-        rule_buttons = {
+        self.rule_buttons = {
             rule: RadioButton(
                 x=config.width*0.18,
                 y=config.height*0.355+i*button_height,
@@ -70,21 +72,31 @@ class SetupMenu(Scene):
                 width=int(config.height*0.005),
                 color=Colors.WHITE.value, 
                 state=config.rules[rule],
-                command=lambda:self.update_rule(rule)
             ) for i, rule in enumerate(available_rule)
         }
 
-        self.buttons.update(rule_buttons)
 
     def render(self, screen):
         screen.fill(Colors.BLACK.value)
         super().render(screen)
+        for button in self.rule_buttons.values():
+            button.draw(screen)
     
     def handle_event(self, event):
         super().handle_event(event)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 :
+                for rule, button in self.rule_buttons.items():
+                    if button.is_clicked():
+                        self.update_rule(rule, button)
 
-    def update_rule(self, rule):
+    def update_rule(self, rule, button):
         config.rules[rule] = not config.rules[rule]
+        button.state = True
+        for b in self.rule_buttons.values():
+            if button is not b :
+                b.state = False
+
 
 class PlayerVsIaMenu(Scene):
     def __init__(self, player1, player2):
@@ -100,7 +112,6 @@ class PlayerVsIaMenu(Scene):
                 border_radius=1,
                 color=Colors.WHITE.value, 
                 image = load_image('assets/piece/alpha/wK.svg', (config.tile_size, config.tile_size)),
-                command=lambda:None
             ),
             'black':RectButton(
                 x=config.width*0.5,
@@ -109,15 +120,13 @@ class PlayerVsIaMenu(Scene):
                 height=config.tile_size,
                 color=Colors.BLACK.value, 
                 image = load_image('assets/piece/alpha/bK.svg', (config.tile_size, config.tile_size)),
-                command=lambda:None
             ),
             'random':RectButton(
                 x=config.width*0.7,
                 y = config.height*0.7,
                 width=config.tile_size,
                 height=config.tile_size,
-                border_radius=1,
                 color=Colors.GRAY.value, 
-                command=lambda:None
+
             )
         }
