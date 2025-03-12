@@ -1,4 +1,4 @@
-import pygame
+from constants import Colors
 from config import config
 from utils import flip_pos
 
@@ -35,10 +35,30 @@ class Tile:
         board.get_tile(to).piece = self.piece
         self.piece = None
         # Check if the king is in check after the move
-        can_move = not board.current_player.is_king_check(board, board.waiting_player)
+        can_move = not board.current_player.is_king_check(board)
         # Restore the initial state of the board
         self.piece = self_piece
         board.get_tile(to).piece = save_piece
         if self.piece.notation == "K":
             board.get_player(self.piece.color).king = self.pos
         return can_move
+    
+    def get_color(self):
+        color, a = None, None
+        match self.highlight_color:
+            # Right click
+            case 0:
+                color, a = Colors.RED.value, 75
+            # Shift + Right click
+            case 1:
+                color, a = Colors.GREEN.value, 75
+            # Ctrl + Right click
+            case 2:
+                color, a = Colors.ORANGE.value, 75
+            # History move
+            case 3:
+                color, a = Colors.YELLOW.value, 75
+            # Selected piece
+            case 4:
+                color, a = Colors.CYAN.value, 75
+        return *color, a

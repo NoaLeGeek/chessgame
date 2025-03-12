@@ -23,13 +23,13 @@ class Scene():
     def update(self):
         mouse_pos = pygame.mouse.get_pos()
 
-        for button in self.buttons.values() :
+        for button in self.buttons.values():
             button.update(mouse_pos)
       
     def handle_event(self, event:pygame.event.Event):
-        if event.type == pygame.MOUSEBUTTONDOWN :
+        if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
-                for button in self.buttons.values() :
+                for button in self.buttons.values():
                     button.handle_click()
 
 

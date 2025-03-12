@@ -17,14 +17,14 @@ def main():
     while run:
         manager.render(screen)
         manager.update(clock.get_time()/1000)
-        pygame.display.update()  
+        pygame.display.update()
         clock.tick(config.fps)
         for event in pygame.event.get():
             manager.handle_event(event)
-            if event.type == pygame.KEYDOWN :
-                if event.key == pygame.K_ESCAPE :
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
                     manager.go_back()
-            elif event.type == pygame.QUIT :
+            elif event.type == pygame.QUIT:
                 run = False
     pygame.quit()
 

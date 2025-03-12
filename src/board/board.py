@@ -4,14 +4,13 @@ from board.tile import Tile
 from constants import castling_king_column, en_passant_direction
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
 from board.piece import notation_to_piece, piece_to_notation, piece_to_num
-from board.move import Move
+from board.move import Move, MoveTree
 from board.player import Player
 from random import choice
 from config import config
-from ia.ml.loader import load_model_from_checkpoint
 
 class Board:
-    def __init__(self, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+    def __init__(self, player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
         """
         Initialize the chess board with a default or custom FEN string.
 
@@ -24,20 +23,19 @@ class Board:
         self.turn = 1
         self.winner = None
         self.ep = None
-        self.ep_logs = []
         self.promotion = None
-        self.move_logs = []
         self.half_moves = 0
         self.full_moves = 1
         self.flipped = 1
         self.last_irreversible_move = 0
         self.game_over = False
-        self.current_player = Player(1)
-        self.waiting_player = Player(-1)
-
-        # Castling rights
+        self.current_player = player1
+        self.waiting_player = player2
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
-        self.castling_logs = []
+
+        # Anarchy chess
+        if config.rules["+3_checks"] == True:
+            self.checks = {1: 0, -1: 0}
 
         # Load resources
         self.image = generate_board_image()
@@ -46,6 +44,7 @@ class Board:
 
         # Initialize the board from the FEN string
         self._create_board(fen)
+        self.move_tree = MoveTree(self)
 
     def _create_board(self, fen: str) -> None:
         """
@@ -100,19 +99,19 @@ class Board:
                     piece_type = notation_to_piece(char)
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
-
-                    piece_image_key = f"{'w' if color == 1 else 'b'}{char.upper()}"
-                    if piece_image_key not in self.piece_images:
-                        raise ValueError(f"Missing piece image for: {piece_image_key}")
-                    
-                    piece = piece_type(color, self.piece_images[piece_image_key])
+                    piece = piece_type(color)
+                    if config.piece_asset != "blindfold":
+                        piece_image_key = f"{(('w' if color == 1 else 'b') if config.piece_asset != "mono" else "")}{char.upper()}"
+                        if piece_image_key not in self.piece_images:
+                            raise ValueError(f"Missing piece image for: {piece_image_key}")
+                        piece.image = self.piece_images[piece_image_key]
                     self.get_player(color).add_piece(piece)
                     tile.piece = piece
                     self.board[(r, c)] = tile
 
-                    # Track kings' positions
-                    if char.upper() == "K":  
-                        self.get_player(color).king = tile.pos
+                    # Track the king's position
+                    if char.upper() == "K":
+                        self.get_player(color).king = (r, c)
 
                     c += 1
 
@@ -214,29 +213,31 @@ class Board:
         for row in [0, 7]:
             rows[row] = "".join(last_row).lower() if row == 0 else "".join(last_row)
         fen_parts[0] = "/".join(rows)
-
         return " ".join(fen_parts)
     
     def check_game(self):
         """
         Determine if the game has ended and update the game state accordingly.
         """
-        if self.is_stalemate():
-            if self.current_player.is_king_check(self, self.waiting_player):
+        if config.rules["king_of_the_hill"] == True and self.waiting_player.king in self.get_center():
+            self.winner = "Black" if self.turn == 1 else "White"
+        elif config.rules["+3_checks"] == True and self.checks[-self.turn] >= 3:
+            self.winner = "Black" if self.turn == 1 else "White"
+        elif config.rules["giveaway"] == True and self.waiting_player.pieces == {}:
+            self.winner = "Black" if self.turn == 1 else "White"
+        elif self.is_stalemate():
+            if self.current_player.is_king_check(self) or config.rules["giveaway"] == True:
                 self.winner = "Black" if self.turn == 1 else "White"
             else:
                 self.winner = "Stalemate"
-            self.game_over = True
         elif self.half_moves >= 100:
             self.winner = "Draw by the 50-move rule"
-            self.game_over = True
         elif self.is_insufficient_material():
             self.winner = "Draw by insufficient material"
-            self.game_over = True
         elif self.is_threefold_repetition():
             self.winner = "Draw by threefold repetition"
+        if self.winner is not None:
             self.game_over = True
-        if self.game_over:
             self.play_sound("game-end")
             print(self.winner)
 
@@ -247,7 +248,7 @@ class Board:
         Returns:
             bool: True if the position has been repeated three times, otherwise False.
         """
-        positions = [move.fen.split(" ")[:4] for move in self.move_logs[self.last_irreversible_move:]]
+        positions = [move.fen.split(" ")[:4] for move in self.move_tree.get_root_to_leaf()[self.last_irreversible_move:]]
         return any(positions.count(pos) >= 3 for pos in positions)
 
     def is_stalemate(self):
@@ -273,17 +274,17 @@ class Board:
             bool: True if neither player can checkmate, otherwise False.
         """
         piece_count = self.count_pieces()
+        # Only kings remain
         if piece_count == 2:
-            return True  # Only kings remain
+            return True  
         if piece_count == 3:
             return any(
-                self.dict_color_pieces(color).get("B", 0) == 1 or
-                self.dict_color_pieces(color).get("K", 0) == 1
+                len(self.get_player(color).pieces.get("B")) == 1 or
+                len(self.get_player(color).pieces.get("K")) == 1
                 for color in [-1, 1]
             )
         if piece_count == 4:
-            bishops = [self.dict_color_pieces(color).get("B", 0) for color in [-1, 1]]
-            if all(b == 1 for b in bishops):
+            if all(len(self.get_player(color).pieces.get("B")) == 1 for color in [-1, 1]):
                 square_colors = [self.find_tile("B", color).get_square_color() for color in [-1, 1]]
                 if square_colors[0] == square_colors[1]:
                     return True
@@ -310,22 +311,6 @@ class Board:
             Tile or None: The tile with the matching piece, or None if no such tile exists.
         """
         return next((tile for tile in self.board.values() if tile.piece and tile.piece.notation == notation and tile.piece.color == color), None)
-    
-    def dict_color_pieces(self, color):
-        """
-        Count the pieces by their type and color on the board.
-        
-        Args:
-            color (int): The color of the pieces to count (1 for white, -1 for black).
-        
-        Returns:
-            dict: A dictionary where keys are piece notations, and values are the count of each piece type for the given color.
-        """
-        counts = {}
-        for tile in self.board.values():
-            if tile.piece and tile.piece.color == color:
-                counts[tile.piece.notation] = counts.get(tile.piece.notation, 0) + 1
-        return counts
     
     def convert_to_move(self, from_, to, promotion=None):
         """
@@ -366,7 +351,7 @@ class Board:
         try:
             return self.get_tile(pos).piece
         except AttributeError:
-            print("COULDNT GET PIECE", pos)
+            raise ValueError(f"Invalid position: {pos}")
     
     def is_empty(self, pos):
         """
@@ -378,7 +363,7 @@ class Board:
         Returns:
             bool: True if the position is empty, False otherwise.
         """
-        return self.get_tile(pos).piece is None
+        return self.get_piece(pos) is None
     
     def get_empty_tiles(self):
         """
@@ -413,13 +398,13 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.from_tile.piece
+        piece = move.from_piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
         elif piece.notation == "R":
             # If the Rook moves, update the castling rights for that rook's side
-            side = 1 if move.from_tile.pos[1] > self.current_player.king[1] else -1
+            side = 1 if move.from_pos[1] > self.current_player.king[1] else -1
             self.castling[piece.color][side] = False
 
     def _update_last_irreversible_move(self, move: Move):
@@ -431,9 +416,9 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.capture or move.from_tile.piece.notation == "P" or move.castling or self.castling_logs[-1] != self.castling:
+        if move.capture or move.from_piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
-            self.last_irreversible_move = len(self.move_logs)
+            self.last_irreversible_move = len(self.move_tree.get_root_to_leaf())
 
     def _is_valid_en_passant(self, pos: tuple[int, int], ep: tuple[int, int]):
         d_ep = en_passant_direction[ep[0]]
@@ -448,108 +433,14 @@ class Board:
                 return True
         return False
 
-    def _update_en_passant(self, from_pos, to_pos):
+    def _update_en_passant(self, move):
         """Update the en passant square logic after a pawn move."""
+        from_pos, to_pos = move.from_pos, move.to_pos
         self.ep = None
-        if not self.is_empty(from_pos) and self.get_tile(from_pos).piece.notation == "P" and abs(from_pos[0] - to_pos[0]) == 2:
+        if not self.is_empty(from_pos) and self.get_piece(from_pos).notation == "P" and abs(from_pos[0] - to_pos[0]) == 2:
             ep = ((from_pos[0] + to_pos[0]) // 2, from_pos[1])
             if self._is_valid_en_passant((to_pos[0], to_pos[1]), ep):
                 self.ep = ep
-    
-    def move_piece(self, move: Move):
-        """
-        Move a piece on the board and handle special moves like en passant and castling.
-
-        Args:
-            move (Move): The move to perform.
-        
-        This function handles all move types including normal moves, en passant, and castling,
-        and updates the board, castling rights, and en passant square accordingly.
-        """
-        from_pos, to_pos = move.from_pos, move.to_pos
-
-        if self.is_empty(from_pos):
-            raise ValueError(f"There is no piece at {from_pos}")
-        
-        # Remember the move for undo
-        self.move_logs.append(move)
-
-        # Update castling rights and kings' positions
-        self._update_castling(move)
-        if self.get_tile(from_pos).piece.notation == "K":
-            self.current_player.king = to_pos
-        self.castling_logs.append(self.castling)
-
-        # Handle en passant square logic
-        self._update_en_passant(from_pos, to_pos)
-        self.ep_logs.append(self.ep)
-
-        # Update last irreversible move
-        self._update_last_irreversible_move(move)
-
-        # Update player's pieces
-        if move.capture:
-            self.waiting_player.remove_piece(self.get_piece(to_pos))
-
-        # Capture en passant
-        if move.en_passant:
-            self.board[(from_pos[0], to_pos[1])].piece = None
-
-        # Handle castling logic
-        if move.castling:
-            print("Castling move")
-            self._handle_castling(from_pos, to_pos)
-        # Handle normal move
-        else:
-            self._handle_normal_move(from_pos, to_pos)
-        
-        # Verify if no bugs
-        # TODO TEST UNIT
-        self.testing()
-
-    def testing(self):
-        for pos, tile in self.board.items():
-            if pos != tile.pos:
-                raise ValueError(f"Tile position mismatch: In board position : {pos} != Tile position {tile.pos}")
-
-    def promote_piece(self, type_piece):
-        """
-        Promote a pawn to a new piece type.
-
-        Args:
-            type_piece: The type of piece to promote to (e.g., Queen, Rook).
-        """
-        new_piece = type_piece(self.selected.piece.color)
-        if config.piece_asset != "blindfold":
-            new_piece.image = self.piece_images[("w" if new_piece.color == 1 else "b") + new_piece.notation]
-        
-        self.board[self.promotion].piece = new_piece
-        self.board[self.selected.pos].piece = None
-        self.promotion = None
-
-    def _handle_castling(self, from_pos, to_pos):
-        """Handle the logic for castling move."""
-        d = sign(to_pos[1] - from_pos[1])
-        # Save the pieces
-        king = self.get_tile(from_pos).piece
-        rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d*self.flipped == 1 else 0))
-        rook = self.get_tile(rook_pos).piece
-
-        # Destinations columns
-        dest_king_column = flip_pos(castling_king_column[d * self.flipped], flipped=self.flipped)
-        dest_rook_column = flip_pos(castling_king_column[d * self.flipped] - d * self.flipped, flipped=self.flipped)
-        
-        # Castling move
-        self.board[from_pos].piece = None
-        self.board[rook_pos].piece = None
-        self.board[(from_pos[0], dest_king_column)].piece = king
-        self.board[(from_pos[0], dest_rook_column)].piece = rook
-        
-    def _handle_normal_move(self, from_pos, to_pos):
-        """Handle a normal move of a piece."""
-        save_tile = self.get_tile(from_pos)
-        self.board[to_pos].piece = save_tile.piece
-        self.board[from_pos].piece = None
         
     def select(self, pos: tuple[int, int]):
         """
@@ -619,7 +510,7 @@ class Board:
         """Handle illegal moves (either not in the possible moves or king is checked)."""
         if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
             self.selected = None
-            if self.current_player.is_king_check(self, self.waiting_player):
+            if self.current_player.is_king_check(self):
                 self.play_sound("illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
@@ -642,8 +533,14 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves)
-        return list(filter(lambda move: move.is_legal(), moves))
+        moves = list(map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves))
+        if config.rules["giveaway"] == True:
+            if any(self.convert_to_move(tile.pos, move).capture for move in self.current_player.get_moves(self)):
+                return list(filter(lambda move: move.capture, moves))
+            else:
+                return list(filter(lambda move: not move.castling, moves))
+        else:
+            return list(filter(lambda move: move.is_legal(), moves))
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """
@@ -663,6 +560,12 @@ class Board:
         This function also updates the pieces, kings' positions, en passant square, and last move.
         """
         self._flip_board_tiles()
+        self.flipped *= -1
+        # Remove the highlight of the selected piece
+        if self.selected is not None:
+            self.selected.highlight_color = None
+            self.selected = None
+        self.promotion = None
         # Flipping the kings' positions
         for color in [1, -1]:
             player = self.get_player(color)
@@ -670,9 +573,8 @@ class Board:
         # Flipping the en passant square
         if self.ep:
             self.ep = flip_pos(self.ep)
-        # Flipping the last move
-        if self.move_logs:
-            self.move_logs[-1].from_pos, self.move_logs[-1].to_pos = flip_pos(self.move_logs[-1].from_pos), flip_pos(self.move_logs[-1].to_pos)
+        # Flipping the move tree
+        self.move_tree.flip_tree()
         # Regenerating the piece images depending on the flipped state
         if config.flipped_assets:
             self.piece_images = generate_piece_images(self.flipped)
@@ -687,9 +589,6 @@ class Board:
             tile.flip()
             flipped_board[flip_pos(pos)] = tile
         self.board = flipped_board
-        self.flipped *= -1
-        self.selected = None
-        self.promotion = None
 
     def update_images(self):
         """
@@ -709,6 +608,62 @@ class Board:
             Player: The player object corresponding to the color.
         """
         return self.current_player if color == self.turn else self.waiting_player
+
+    def highlight_tile(self, highlight_color: int, *list_pos):
+        """
+        Highlight a tile on the board with a specific color.
+
+        Args:
+            list_pos (tuple[int, int] | list[tuple[int, int]]): The position of the tile to highlight.
+            highlight_color (int): The color to highlight the tile with.
+        """
+        for pos in list_pos:
+            tile = self.get_tile(pos)
+            if tile.highlight_color != highlight_color:
+                tile.highlight_color = highlight_color
+            else:
+                tile.highlight_color = None
+                current_move = self.get_current_move()
+                if current_move is not None:
+                    to_pos = current_move.to_pos if not current_move.castling else (current_move.to_pos[0], flip_pos(castling_king_column[(1 if current_move.to_pos[1] > current_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
+                    if pos in [current_move.from_pos, to_pos]:
+                        tile.highlight_color = 3
+                if self.selected is not None and self.selected.piece is not None:
+                    tile.highlight_color = 4
+
+    def clear_highlights(self):
+        """Clear all highlighted tiles on the board."""
+        for tile in self.board.values():
+            tile.highlight_color = None
+
+    def update_highlights(self):
+        """Update the highlighted tiles on the board."""
+        self.clear_highlights()
+        current_move = self.get_current_move()
+        if current_move is not None:
+            to_pos = current_move.to_pos if not current_move.castling else (current_move.to_pos[0], flip_pos(castling_king_column[(1 if current_move.to_pos[1] > current_move.from_pos[1] else -1)*self.flipped], flipped=self.flipped))
+            self.highlight_tile(3, current_move.from_pos, to_pos)
+        if self.selected is not None and self.selected.piece is not None:
+            self.highlight_tile(4, self.selected.pos)
+
+    def get_current_move(self):
+        """
+        Get the last move that was played on the board.
+
+        Returns:
+            Move or None: The last move that was played, or None if no move has been played yet.
+        """
+        return self.move_tree.current.move
+    
+    def get_center(self) -> list[tuple[int, int]]:
+        """
+        Get the center position of the board.
+
+        Returns:
+            list[tuple[int, int]]: The center position(s) of the board.
+        """
+        mid_x, mid_y = (config.columns - 1) // 2, (config.rows - 1) // 2
+        return [(mid_x + i, mid_y + j) for i in range(2 - config.columns % 2) for j in range(2 - config.rows % 2)]
 
     # FEN format
     def __str__(self):
@@ -745,17 +700,16 @@ class Board:
         matrix = np.zeros((14, 8, 8))
         for pos, tile in self.board.items():
             piece = tile.piece
-
-            if piece :
+            if piece:
                 channel = piece_to_num(type(piece))
-                if piece.color == -1 :
+                if piece.color == -1:
                     channel += 6
                 matrix[channel, pos[0], pos[1]] = 1
-                if piece.color == self.turn :
+                if piece.color == self.turn:
                     moves = piece.calc_moves(self, pos)
-                    if moves :
+                    if moves:
                         legal_moves = 0
-                        for move in moves :
+                        for move in moves:
                             if self.convert_to_move(pos, move).is_legal():
                                 matrix[13, move[0], move[1]] = 1 
                                 legal_moves += 1
@@ -765,11 +719,7 @@ class Board:
         return matrix
 
     def convert_uci_to_move(self, uci_move):
-        print(uci_move)
         columns = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
         from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
-        print(from_pos, to_pos)
         return self.convert_to_move(from_pos, to_pos)
-
-
