@@ -14,44 +14,97 @@ class Game(Scene):
         self.player1 = player1
         self.player2 = player2
         self.board = Board(player1, player2, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        self.evaluation_bar = pygame.Rect(config.margin, config.margin, config.eval_bar_width, config.height-config.margin*2)
+        self.history_background = pygame.Rect(config.margin+config.columns*config.tile_size+config.eval_bar_width, config.margin, config.width*0.35, config.height-config.margin*2)
         super().__init__()
 
+
     def create_buttons(self):
-        font_size = int(config.height*0.06 * 0.5)
+        font_size = int(config.height*0.06)
 
         self.buttons = {
             "quit": RectButton(
-                x=config.width*0.9, 
-                y=config.height*0.95,
-                width=config.width*0.15, 
-                height=config.height*0.06, 
-                border_radius=int(config.height*0.06//2),
-                color=Colors.WHITE.value, 
-                text='QUIT', 
+                x=config.width*0.955, 
+                y=config.height*0.92,
+                width=config.height*0.1, 
+                height=config.height*0.1, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
+                text='X', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.BLACK.value, 
                 command=self.manager.go_back
             ),
             "flip": RectButton(
-                x=config.width*0.9, 
-                y=config.height*0.8, 
-                width=config.width*0.07, 
-                height=config.width*0.07, 
-                border_radius=int(config.width*0.015), 
-                color=Colors.WHITE.value, 
-                text='', 
+                x=self.history_background.centerx, 
+                y=config.height*0.9, 
+                width=config.width*0.05, 
+                height=config.width*0.05, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
+                command=self.board.flip_board, 
+                image=load_image("assets/images/arrows.png",(config.width*0.05, config.width*0.05))
+            ),
+            'undo':RectButton(
+                x=self.history_background.centerx-config.width*0.07, 
+                y=config.height*0.9, 
+                width=config.width*0.05, 
+                height=config.width*0.05, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
+                text='<', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.BLACK.value, 
-                command=self.board.flip_board, 
-                image=load_image("assets/images/arrows.png",(config.width*0.07, config.width*0.07))
-            )
+                command=self.board.move_tree.go_backward
+            ) ,
+            'redo':RectButton(
+                x=self.history_background.centerx+config.width*0.07, 
+                y=config.height*0.9, 
+                width=config.width*0.05, 
+                height=config.width*0.05, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
+                text='>', 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size,
+                text_color=Colors.BLACK.value, 
+                command=self.board.move_tree.go_forward
+            ),
+            'root':RectButton(
+                x=self.history_background.centerx-config.width*0.14, 
+                y=config.height*0.9, 
+                width=config.width*0.05, 
+                height=config.width*0.05, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
+                text='<<', 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size,
+                text_color=Colors.BLACK.value, 
+                command=self.board.move_tree.go_root 
+            ),
+            'leaf':RectButton(
+                x=self.history_background.centerx+config.width*0.14, 
+                y=config.height*0.9, 
+                width=config.width*0.05, 
+                height=config.width*0.05, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
+                text='>>', 
+                font_name=Fonts.GEIZER, 
+                font_size=font_size,
+                text_color=Colors.BLACK.value, 
+                command=self.board.move_tree.go_leaf
+            ) 
         }
         
     def render(self, screen:pygame.Surface):
+        pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
         super().render(screen)
-        screen.blit(self.board.image, (config.margin, config.margin))
+        pygame.draw.rect(screen, Colors.WHITE.value, self.evaluation_bar)
+        screen.blit(self.board.image, (config.margin + config.eval_bar_width, config.margin))
         # Highlight
         self._draw_highlight(screen)
         # Pieces
@@ -62,6 +115,7 @@ class Game(Scene):
         # Promotion
         if self.board.promotion is not None:
             self._draw_promotion(screen)
+        
 
     def update(self):
         super().update()
@@ -84,7 +138,7 @@ class Game(Scene):
         for tile in self.board.board.values():
             if tile.highlight_color is not None:
                 highlight_surface.fill(tile.get_color())
-                x, y = tile.pos[1] * config.tile_size + config.margin, tile.pos[0] * config.tile_size + config.margin
+                x, y = tile.pos[1] * config.tile_size + config.margin + config.eval_bar_width, tile.pos[0] * config.tile_size + config.margin
                 screen.blit(highlight_surface, (x, y))
 
     def _draw_moves(self, screen):
@@ -98,7 +152,7 @@ class Game(Scene):
             # Normal move
             else:
                 pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
-            screen.blit(transparent_surface, (move.to_pos[1] * config.tile_size + config.margin, move.to_pos[0] * config.tile_size + config.margin))
+            screen.blit(transparent_surface, (move.to_pos[1] * config.tile_size + config.margin + config.eval_bar_width, move.to_pos[0] * config.tile_size + config.margin))
 
     def _draw_promotion(self, screen):
         piece = self.board.selected.piece
@@ -112,7 +166,7 @@ class Game(Scene):
         # Drawing the promotion's pieces
         for i, type_piece in enumerate(piece.promotion):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
-            screen.blit(image, (pos[1] * config.tile_size + config.margin, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
+            screen.blit(image, (pos[1] * config.tile_size + config.margin + config.eval_bar_width, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
     def handle_left_click(self, keys):
         pos = get_pos(pygame.mouse.get_pos())
@@ -163,5 +217,5 @@ class Game(Scene):
                 self.board.move_tree.go_next()
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous()
-            if keys[pygame.K_k]:
-                print(list(map(lambda move: move.notation, self.board.move_tree.get_root_to_leaf())))
+            if keys[pygame.K_t]:
+                print([move.notation for move in self.board.history])

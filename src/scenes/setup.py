@@ -1,10 +1,12 @@
-from scenes.scene import Scene
-from scenes.game import Game
-from gui import RectButton, Label, VideoPlayer, create_rect_surface
+import pygame
+
 from config import config
-from constants import Fonts, Colors
-from board.player import Player
 from utils import load_image
+from scenes.game import Game
+from scenes.scene import Scene
+from board.player import Player
+from constants import Fonts, Colors, available_rule
+from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
 
 class SetupMenu(Scene):
     def __init__(self):
@@ -15,7 +17,7 @@ class SetupMenu(Scene):
     def create_buttons(self):
         button_width = config.width * 0.27
         button_height = config.height * 0.1
-        font_size = int(button_height * 0.5)
+        font_size = int(button_height * 0.7)
 
         self.buttons = {
             "player vs player": RectButton(
@@ -24,7 +26,8 @@ class SetupMenu(Scene):
                 width=button_width, 
                 height=button_height, 
                 border_radius=int(button_height//2), 
-                color=Colors.WHITE.value, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
                 text='PLAYER VS PLAYER',
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
@@ -37,7 +40,8 @@ class SetupMenu(Scene):
                 width=button_width, 
                 height=button_height, 
                 border_radius=int(button_height//2), 
-                color=Colors.WHITE.value, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value, 
                 text='PLAYER VS IA', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
@@ -50,7 +54,8 @@ class SetupMenu(Scene):
                 width=button_width, 
                 height=button_height, 
                 border_radius=int(button_height//2), 
-                color=Colors.WHITE.value, 
+                color=Colors.LIGHT_GRAY.value, 
+                hovered_color=Colors.WHITE.value,
                 text='IA VS IA', 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
@@ -59,29 +64,39 @@ class SetupMenu(Scene):
             )
         }
 
-        rule_buttons = {
-            rule: RectButton(
+        self.rule_buttons = {
+            rule: RadioButton(
                 x=config.width*0.18,
                 y=config.height*0.355+i*button_height,
-                width=button_width,
-                height=button_height,
-                border_radius=0,
+                radius=config.height*0.03,
+                width=int(config.height*0.005),
                 color=Colors.WHITE.value, 
-                text=rule, 
-                font_name=Fonts.GEIZER, 
-                font_size=font_size, 
-                text_color=Colors.BLACK.value, 
-                command=lambda:None
-            ) for i, rule in enumerate(['chess960', 'giveaway', '3+ checks', 'king of the hill'])
+                state=config.rules[rule],
+            ) for i, rule in enumerate(available_rule)
         }
 
-        self.buttons.update(rule_buttons)
 
     def render(self, screen):
+        screen.fill(Colors.BLACK.value)
         super().render(screen)
+        for button in self.rule_buttons.values():
+            button.draw(screen)
     
     def handle_event(self, event):
         super().handle_event(event)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 :
+                for rule, button in self.rule_buttons.items():
+                    if button.is_clicked():
+                        self.update_rule(rule, button)
+
+    def update_rule(self, rule, button):
+        config.rules[rule] = not config.rules[rule]
+        button.state = True
+        for b in self.rule_buttons.values():
+            if button is not b :
+                b.state = False
+
 
 class PlayerVsIaMenu(Scene):
     def __init__(self, player1, player2):
@@ -96,25 +111,22 @@ class PlayerVsIaMenu(Scene):
                 height=config.tile_size,
                 border_radius=1,
                 color=Colors.WHITE.value, 
-                text='', 
-                font_name=Fonts.GEIZER, 
-                font_size=0, 
-                text_color=Colors.BLACK.value, 
                 image = load_image('assets/piece/alpha/wK.svg', (config.tile_size, config.tile_size)),
-                command=lambda:None
             ),
             'black':RectButton(
                 x=config.width*0.5,
                 y = config.height*0.7,
                 width=config.tile_size,
                 height=config.tile_size,
-                border_radius=1,
-                color=Colors.WHITE.value, 
-                text='', 
-                font_name=Fonts.GEIZER, 
-                font_size=0, 
-                text_color=Colors.BLACK.value, 
+                color=Colors.BLACK.value, 
                 image = load_image('assets/piece/alpha/bK.svg', (config.tile_size, config.tile_size)),
-                command=lambda:None
+            ),
+            'random':RectButton(
+                x=config.width*0.7,
+                y = config.height*0.7,
+                width=config.tile_size,
+                height=config.tile_size,
+                color=Colors.GRAY.value, 
+
             )
         }

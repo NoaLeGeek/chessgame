@@ -44,38 +44,36 @@ class Label:
 
 
 class RectButton:
-    def __init__(self, x: int, y: int, width: int, height: int, border_radius: int, color: tuple[int, int, int],
-                 text: str, font_name: str, font_size: int, text_color: tuple[int, int, int], command,
-                 image: pygame.Surface = None, border_color=None):
+    def __init__(self, x: int, y: int, width: int, height: int, color: tuple[int, int, int], hovered_color:tuple[int, int, int] = None,
+                 border_radius: int = 0, text: str = None, font_name: str = None, font_size: int = None, text_color: tuple[int, int, int] = None, 
+                 command = lambda:None, image: pygame.Surface = None, border_color=None):
         self.width, self.height = width, height
         self.x, self.y = x - width // 2, y - height // 2
         self.rect = pygame.Rect(self.x, self.y, width, height)
         self.color = color
+        self.hovered_color = hovered_color
         self.border_radius = border_radius
         self.border_color = border_color
         self.command = command
         self.is_hovered = False
         self.image = image
-        
-        self.filter = create_rect_surface(Colors.BLACK.value, width, height, border_radius, alpha=50)
-        self.label = Label(self.rect.center, text, font_name, font_size, text_color)
+        self.label = Label(self.rect.center, text, font_name, font_size, text_color) if text else None
         
         if image:
             self.image_pos = (self.rect.centerx - image.get_width() // 2,
                               self.rect.centery - image.get_height() // 2)
 
     def draw(self, screen: pygame.Surface):
-        pygame.draw.rect(screen, self.color, self.rect, 0, self.border_radius)
-        self.label.draw(screen)
-        
+        pygame.draw.rect(screen, self.color if not self.is_hovered or not self.hovered_color else self.hovered_color, self.rect, 0, self.border_radius)
+        if self.label :
+            self.label.draw(screen)
+    
         if self.border_color is not None:
             pygame.draw.rect(screen, self.border_color, self.rect, int(self.height // 11), self.border_radius)
         
         if self.image is not None:
             screen.blit(self.image, self.image_pos)
-        
-        if not self.is_hovered:
-            screen.blit(self.filter, (self.x, self.y))
+            
 
     def update(self, mouse_pos: tuple[int, int]):
         self.is_hovered = self.rect.collidepoint(mouse_pos)
@@ -90,9 +88,36 @@ class RectButton:
     def update_text(self, new_text: str):
         self.label.update_text(new_text)
 
-    def update_color(self, color: tuple[int, int, int]):
-        self.color = color
+    def update_color(self, color: tuple[int, int, int], hovered_color:tuple[int, int, int]):
+            self.color = color
+            self.hovered_color =  hovered_color
 
+
+class RadioButton:
+    def __init__(self, x, y, radius, width, color, state, command=lambda:None):
+        self.x, self.y = x, y
+        self.radius = radius
+        self.rect = pygame.Rect(self.x-radius, self.y-radius, radius*2, radius*2)
+        self.width = width
+        self.color = color
+        self.state = state
+        self.command = command
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius, self.width)
+        if self.state:
+            pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius//2)
+        
+    def update(self, mouse_pos):
+        pass
+
+    def handle_click(self):
+        if self.is_clicked():
+            self.state = not self.state
+            self.command()
+    
+    def is_clicked(self):
+        return self.rect.collidepoint(pygame.mouse.get_pos())
 
 
 class VideoPlayer:

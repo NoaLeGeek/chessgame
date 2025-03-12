@@ -44,6 +44,7 @@ class Move:
         self.board.move_tree.add(MoveNode(self, self.board.move_tree.current.move, self.board))
         # This is the board state after the move
         self.fen = str(self.board)
+        self.board.history = self.board.move_tree.get_root_to_leaf()
         self.notation = str(self)
         self.board.check_game()
 
@@ -155,6 +156,7 @@ class Move:
             self.undo_promote_piece()
         else:
             self.undo_move_piece()
+        self.board.history = self.board.move_tree.get_root_to_leaf()
 
     def undo_promote_piece(self):
         """
