@@ -150,3 +150,5 @@ class Game(Scene):
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous()
                 self._update_highlight()
+            if keys[pygame.K_k]:
+                print(list(map(lambda move: move.notation, self.board.move_tree.get_root_to_leaf())))

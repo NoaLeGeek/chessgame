@@ -43,8 +43,8 @@ class Move:
         # Remember the move for undo
         self.board.move_tree.add(MoveNode(self, self.board.move_tree.current.move, self.board))
         # This is the board state after the move
-        self.notation = str(self)
         self.fen = str(self.board)
+        self.notation = str(self)
         self.board.check_game()
 
     def move(self):
@@ -276,12 +276,12 @@ class Move:
         if self.castling:
             string += "O" + "-O"*(get_value(sign(self.to_pos[1] - self.from_pos[1]) * self.board.flipped, 1, 2))
         else:
+            # Add the symbol of the piece
+            if self.from_piece.notation != "P":
+                string += self.from_piece.notation
             if self.capture:
-                # Add the symbol of the piece
-                if self.to_piece.notation != "P":
-                    string += self.to_piece.notation
                 # Add the starting column if it's a pawn
-                else:
+                if self.from_piece.notation == "P":
                     string += chr(flip_pos(self.from_pos[1], flipped = self.board.flipped) + 97)
                 # Add x if it's a capture
                 string += "x"
