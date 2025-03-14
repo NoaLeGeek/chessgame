@@ -1,13 +1,13 @@
 from config import config
 
 class Player:
-    def __init__(self, color: int, ia = None):
+    def __init__(self, color: int):
         self.color = color
         # Pieces' position depending on their type
         self.pieces = {"P": [], "R": [], "N": [], "B": [], "Q": [], "K": []}
         # King's position
         self.king = None
-        self.ia = ia
+        self.ia = False
 
     def add_piece(self, piece):
         self.pieces[piece.notation].append(piece)

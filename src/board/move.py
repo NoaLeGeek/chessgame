@@ -1,3 +1,5 @@
+from random import random
+
 from utils import flip_pos, sign, get_value, debug_print
 from config import config
 from constants import castling_king_column
@@ -47,6 +49,14 @@ class Move:
         self.board.history = self.board.move_tree.get_root_to_leaf()
         self.notation = str(self)
         self.board.check_game()
+        if self.board.current_player.ia == True:
+            move = self.board.current_player.get_best_move(self.board)
+            self.board.select(move.from_pos)
+            self.board.select(move.to_pos)
+            if self.board.promotion is not None:
+                row, column = self.board.promotion
+                promotion_column = random.choice(range(column, column + 4*self.board.flipped, self.board.flipped))
+                self.board.select((row, promotion_column))
 
     def move(self):
         """Moves the piece on the board and updates the game state."""
@@ -340,19 +350,26 @@ class MoveTree:
         if self.current.parent:
             siblings = self.current.parent.children
             index = (siblings.index(self.current) - 1) % len(siblings)
-            siblings.append(siblings.pop(index))
+            print("SIBLINGS BEFORE", [s.move.notation for s in siblings])
+            siblings.append(siblings.pop(0))
+            siblings.insert(0, siblings.pop(index))
             self.current.parent.children = siblings
+            print("SIBLINGS AFTER", [s.move.notation for s in siblings])
             self.go_backward()
-            self.go_forward(index)
+            self.go_forward()
 
     def go_next(self):
         if self.current.parent:
             siblings = self.current.parent.children
             index = (siblings.index(self.current) + 1) % len(siblings)
-            siblings.append(siblings.pop(index))
+            #TODO broken et sert à rien
+            print("SIBLINGS BEFORE", [s.move.notation for s in siblings])
+            siblings.append(siblings.pop(0))
+            siblings.insert(0, siblings.pop(index))
             self.current.parent.children = siblings
+            print("SIBLINGS AFTER", [s.move.notation for s in siblings])
             self.go_backward()
-            self.go_forward(index)
+            self.go_forward()
 
     def go_root(self):
         while self.current.parent:
