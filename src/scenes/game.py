@@ -2,8 +2,8 @@ import pygame
 from scenes.scene import Scene
 from board.board import Board
 from board.piece import piece_to_notation
-from utils import left_click, right_click, get_pos, flip_pos, debug_print, load_image
-from constants import Fonts, castling_king_column, Colors
+from utils import left_click, right_click, get_pos, debug_print, load_image
+from constants import Fonts, Colors
 from config import config
 from gui import RectButton
 from board.player import Player

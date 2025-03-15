@@ -26,10 +26,10 @@ class Player:
                 continue
             if tile.piece.color != self.color:
                 continue
-            moves += tile.calc_moves(board)
+            moves += [board.convert_to_move(tile.pos, to_pos) for to_pos in tile.calc_moves(board)]
         return moves
     
     def is_king_check(self, board):
         if config.rules["giveaway"]:
             return False
-        return self.king in board.get_player(-self.color).get_moves(board)
+        return self.king in [move.to_pos for move in board.get_player(-self.color).get_moves(board)]

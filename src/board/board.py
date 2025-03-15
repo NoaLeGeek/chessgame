@@ -45,9 +45,28 @@ class Board:
         self.sounds = generate_sounds()
 
         # Initialize the board from the FEN string
-        self._create_board(fen)
         self.move_tree = MoveTree(self)
         self.history = []
+        self._create_board(fen)
+
+        # IA plays first if the white player is an IA
+        if self.current_player.ia == True:
+            self.current_player.play_move(self)
+
+    def left_click(self, pos: tuple[int, int], keys=None) -> None:
+        if self.in_bounds(pos):
+            if self.game_over == False:
+                if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
+                    self.get_tile(pos).calc_moves(self)
+                self.select(pos)
+
+    def right_click(self, pos: tuple[int, int], keys=None) -> None:
+        if self.board.in_bounds(pos):
+            if self.board.selected is not None:
+                self.board.selected.highlight_color = None
+                self.board.selected = None
+            highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
+            self.board.highlight_tile(highlight_color, pos)
 
     def _create_board(self, fen: str) -> None:
         """
@@ -315,7 +334,7 @@ class Board:
         """
         return next((tile for tile in self.board.values() if tile.piece and tile.piece.notation == notation and tile.piece.color == color), None)
     
-    def convert_to_move(self, from_, to, promotion=None):
+    def convert_to_move(self, from_pos, to_pos, promotion=None):
         """
         Convert the start and end positions to a Move object, optionally including a promotion.
         
@@ -327,7 +346,7 @@ class Board:
         Returns:
             Move: A Move object representing the move.
         """
-        return Move(self, from_, to, promotion)
+        return Move(self, from_pos, to_pos, promotion)
 
     def get_tile(self, pos: tuple[int, int]):
         """
@@ -511,7 +530,7 @@ class Board:
 
     def _handle_illegal_move(self, pos):
         """Handle illegal moves (either not in the possible moves or king is checked)."""
-        if pos not in list(map(lambda move: move.to_pos, self.selected.piece.moves)):
+        if pos not in [move.to_pos for move in self.selected.piece.moves]:
             self.selected = None
             if self.current_player.is_king_check(self):
                 self.play_sound("illegal")
@@ -536,9 +555,9 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = list(map(lambda move: self.convert_to_move(tile.pos, move), tile.piece.moves))
+        moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.moves]
         if config.rules["giveaway"] == True:
-            if any(self.convert_to_move(tile.pos, move).capture for move in self.current_player.get_moves(self)):
+            if any(move.capture for move in self.current_player.get_moves(self)):
                 return list(filter(lambda move: move.capture, moves))
             else:
                 return list(filter(lambda move: not move.castling, moves))

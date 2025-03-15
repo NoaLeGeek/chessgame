@@ -1,4 +1,4 @@
-from random import random
+from random import choice
 
 from utils import flip_pos, sign, get_value, debug_print
 from config import config
@@ -33,7 +33,8 @@ class Move:
     def execute(self) -> None:
         """Executes the move on the board and updates the game state."""
         # All the things to update when the move is done for the first time
-        self.board._update_castling(self)
+        if config.rules["giveaway"] == False:
+            self.board._update_castling(self)
         self.board._update_en_passant(self)
         self.board._update_last_irreversible_move(self)
         self.board.half_moves += 1
@@ -49,14 +50,8 @@ class Move:
         self.board.history = self.board.move_tree.get_root_to_leaf()
         self.notation = str(self)
         self.board.check_game()
-        if self.board.current_player.ia == True:
-            move = self.board.current_player.get_best_move(self.board)
-            self.board.select(move.from_pos)
-            self.board.select(move.to_pos)
-            if self.board.promotion is not None:
-                row, column = self.board.promotion
-                promotion_column = random.choice(range(column, column + 4*self.board.flipped, self.board.flipped))
-                self.board.select((row, promotion_column))
+        if self.board.game_over == False and self.board.current_player.ia == True:
+            self.board.current_player.play_move(self.board)
 
     def move(self):
         """Moves the piece on the board and updates the game state."""

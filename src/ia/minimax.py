@@ -1,4 +1,4 @@
-from random import random
+from random import choice
 
 from board.player import Player
 
@@ -19,4 +19,13 @@ class RandomIA(Player):
 
     def get_best_move(self, board):
         moves = list(filter(lambda move: move.is_legal(), self.get_moves(board)))
-        return random.choice(moves)
+        return choice(moves)
+    
+    def play_move(self, board):
+        move = board.current_player.get_best_move(board)
+        board.select(move.from_pos)
+        board.select(move.to_pos)
+        if board.promotion is not None:
+            row, column = board.promotion
+            promotion_column = choice(range(column, column + 4*board.flipped, board.flipped))
+            board.select((row, promotion_column))
