@@ -53,21 +53,6 @@ class Board:
         if self.current_player.ia == True:
             self.current_player.play_move(self)
 
-    def left_click(self, pos: tuple[int, int], keys=None) -> None:
-        if self.in_bounds(pos):
-            if self.game_over == False:
-                if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
-                    self.get_tile(pos).calc_moves(self)
-                self.select(pos)
-
-    def right_click(self, pos: tuple[int, int], keys=None) -> None:
-        if self.board.in_bounds(pos):
-            if self.board.selected is not None:
-                self.board.selected.highlight_color = None
-                self.board.selected = None
-            highlight_color = (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) + (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) * 2
-            self.board.highlight_tile(highlight_color, pos)
-
     def _create_board(self, fen: str) -> None:
         """
         Create the chess board from a FEN string.
@@ -543,6 +528,7 @@ class Board:
         """Set the promotion square if the selected piece is a pawn and reaches the last rank."""
         if self.selected.piece.notation == "P" and pos[0] in [0, config.rows - 1]:
             self.promotion = pos
+            debug_print("PROMOTION SETTED", self.promotion)
             return True
         return False
 
