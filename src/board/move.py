@@ -51,7 +51,7 @@ class Move:
         self.notation = str(self)
         self.board.check_game()
         if self.board.game_over == False and self.board.current_player.ia == True:
-            self.board.current_player.play_move(self.board)
+            self.board.current_player.play_best_move(self.board)
 
     def move(self):
         """Moves the piece on the board and updates the game state."""

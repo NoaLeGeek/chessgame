@@ -265,13 +265,7 @@ class Board:
         Returns:
             bool: True if the game is a stalemate, otherwise False.
         """
-        for tile in list(self.board.values()).copy():
-            if not tile.piece or tile.piece.color != self.turn:
-                continue
-            for move in tile.calc_moves(self):
-                if self.convert_to_move(tile.pos, move).is_legal():
-                    return False
-        return True
+        return not any(move.is_legal() for move in self.current_player.get_moves(self))
     
     def is_insufficient_material(self):
         """

@@ -26,7 +26,12 @@ class Player:
                 continue
             if tile.piece.color != self.color:
                 continue
-            moves += [board.convert_to_move(tile.pos, to_pos) for to_pos in tile.calc_moves(board)]
+            for to_pos in tile.calc_moves(board):
+                if to_pos[0] in [0, config.rows - 1] and tile.piece.notation == "P":
+                    for promotion in tile.piece.promotion:
+                        moves.append(board.convert_to_move(tile.pos, to_pos, promotion))
+                else:
+                    moves.append(board.convert_to_move(tile.pos, to_pos))
         return moves
     
     def is_king_check(self, board):

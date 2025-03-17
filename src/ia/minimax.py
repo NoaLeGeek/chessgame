@@ -56,15 +56,9 @@ class MinimaxAI(Player):
         _, best_move = self.minimax(board, self.depth, self.color)
         return best_move
     
-    def play_move(self, board):
-        move = board.current_player.get_best_move(board)
-        board.select(move.from_pos)
-        board.select(move.to_pos)
-        # TODO euhh ouais générer tous les moves de promotion selon le move.from_piece.promotion directement au lieu de faire ça
-        if board.promotion is not None:
-            row, column = board.promotion
-            promotion_row = choice(range(row, row + len(move.from_piece.promotion)*board.flipped*self.color, board.flipped*self.color))
-            board.select((promotion_row, column))
+    def play_best_move(self, board):
+        self.get_best_move(board).execute()
+        board.update_highlights()
 
 class RandomAI(Player):
     def __init__(self, color: int):
@@ -75,12 +69,6 @@ class RandomAI(Player):
         moves = list(filter(lambda move: move.is_legal(), self.get_moves(board)))
         return choice(moves)
     
-    def play_move(self, board):
-        move = board.current_player.get_best_move(board)
-        board.select(move.from_pos)
-        board.select(move.to_pos)
-        # TODO euhh ouais générer tous les moves de promotion selon le move.from_piece.promotion directement au lieu de faire ça
-        if board.promotion is not None:
-            row, column = board.promotion
-            promotion_row = choice(range(row, row + len(move.from_piece.promotion)*board.flipped*self.color, board.flipped*self.color))
-            board.select((promotion_row, column))
+    def play_best_move(self, board):
+        self.get_best_move(board).execute()
+        board.update_highlights()
