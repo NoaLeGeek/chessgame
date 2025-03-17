@@ -5,7 +5,7 @@ from utils import load_image
 from scenes.game import Game
 from scenes.scene import Scene
 from board.player import Player
-from ia.minimax import RandomIA
+from ia.minimax import RandomAI, MinimaxAI
 from constants import Fonts, Colors, available_rule
 from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
 
@@ -13,7 +13,7 @@ class SetupMenu(Scene):
     def __init__(self):
         super().__init__()
         self.player1 = Player(1)
-        self.player2 = RandomIA(-1)
+        self.player2 = MinimaxAI(-1, 3)
     
     def create_buttons(self):
         button_width = config.width * 0.27
