@@ -1,5 +1,5 @@
 from random import choice
-from constants import piece_values
+from constants import piece_values, piece_heatmaps
 
 from board.player import Player
 
@@ -16,6 +16,7 @@ class Minimax(Player):
             if tile.piece is None:
                 continue
             score += piece_values.get(tile.piece.notation, 0)*tile.piece.color
+        score += self.apply_heatmap(board)
         return score
 
     def minimax(self, board, depth, maximizing_player):
@@ -42,17 +43,15 @@ class Minimax(Player):
                     best_move = move
             return min_eval, best_move
 
-    def apply_heatmap(board, heatmap):
-        """Applique une heatmap à l'évaluation pour influencer les choix."""
+    def apply_heatmap(self, board):
         adjusted_score = 0
         for position, piece in board.items():
-            if piece and piece.lower() in heatmap:
-                adjusted_score += heatmap[piece.lower()][position[1]][position[0]]
+            if piece is not None and piece.notation in piece_heatmaps:
+                adjusted_score += piece_heatmaps[piece.lower()][position[1]][position[0]]
         return adjusted_score
 
-    def get_best_move(board, depth, player):
-        """Renvoie le meilleur coup pour le joueur donné en utilisant Minimax."""
-        _, best_move = minimax(board, depth, player == 1)
+    def get_best_move(self, board):
+        _, best_move = self.minimax(board, self.depth, self.color)
         return best_move
 
 class RandomIA(Player):
