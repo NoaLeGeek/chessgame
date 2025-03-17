@@ -111,14 +111,14 @@ class PieceAssetsMenu(Scene):
         self.board_clip_rect = pygame.Rect(0, 0, config.tile_size*6, config.tile_size*2)
 
     def create_buttons(self):
-        button_width = config.width * 0.3
-        button_height = config.height * 0.1
+        button_width = int(config.width * 0.3)
+        button_height = int(config.height * 0.1)
         font_size = int(button_height * 0.5)
 
         self.buttons = {
             asset: RectButton(
                 x=config.width*0.25,
-                y=config.height*0.05+(button_height*i), 
+                y=int(config.height*0.05)+(button_height*i), 
                 width=button_width, 
                 height=button_height, 
                 color=Colors.LIGHT_GRAY.value, 
@@ -182,14 +182,14 @@ class BoardAssetsMenu(Scene):
         self.buttons[config.board_asset].update_color(Colors.GREEN.value, None) 
 
     def create_buttons(self):
-        button_width = config.width * 0.3
-        button_height = config.height * 0.1
+        button_width = int(config.width * 0.3)
+        button_height = int(config.height * 0.1)
         font_size = int(button_height * 0.5)
 
         self.buttons = {
             asset: RectButton(
                 x=config.width*0.2, 
-                y=config.height*0.05+(button_height*i), 
+                y=int(config.height*0.05)+(button_height*i), 
                 width=button_width, 
                 height=button_height, 
                 color=Colors.LIGHT_GRAY.value, 
@@ -243,14 +243,14 @@ class SoundAssetsMenu(Scene):
         self.buttons[config.sound_asset].update_color(Colors.GREEN.value, None)
 
     def create_buttons(self):
-        button_width = config.width * 0.3
-        button_height = config.height * 0.1
+        button_width = int(config.width * 0.3)
+        button_height = int(config.height * 0.1)
         font_size = int(button_height * 0.5)
 
         self.buttons = {
             asset: RectButton(
                 x=config.width*0.2, 
-                y=config.height*0.1+(button_height*i), 
+                y=int(config.height*0.1)+(button_height*i), 
                 width=button_width, 
                 height=button_height, 
                 color=Colors.LIGHT_GRAY.value, 

@@ -112,9 +112,7 @@ class RadioButton:
         pass
 
     def handle_click(self):
-        if self.is_clicked():
-            self.state = not self.state
-            self.command()
+        pass
     
     def is_clicked(self):
         return self.rect.collidepoint(pygame.mouse.get_pos())
