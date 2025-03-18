@@ -7,6 +7,8 @@ class Move:
     def __init__(self, board, from_pos, to_pos, promotion=None):
         self.from_pos = from_pos
         self.to_pos = to_pos
+        if board.is_empty(self.from_pos):
+            raise ValueError(f"There is no piece at {self.from_pos}")
         self.from_piece = board.get_piece(from_pos)
         self.to_piece = board.get_piece(to_pos)
         self.capture = self._is_capture(board)
@@ -74,9 +76,6 @@ class Move:
         This function handles all move types including normal moves, en passant, and castling,
         and updates the board, castling rights, and en passant square accordingly.
         """
-        if board.is_empty(self.from_pos):
-            raise ValueError(f"There is no piece at {self.from_pos}")
-
         # Update kings' positions
         if self.from_piece.notation == "K":
             board.current_player.king = self.to_pos
