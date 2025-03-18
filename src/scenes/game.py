@@ -202,7 +202,7 @@ class Game(Scene):
                 self.board.flip_board()
             if keys[pygame.K_SPACE]:
                 move = self.board.ia.predict(self.board)
-                move.execute()
+                move.execute(self.board)
             if keys[pygame.K_LEFT]:
                 if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
                     self.board.move_tree.go_root()

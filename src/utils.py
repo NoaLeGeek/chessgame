@@ -63,7 +63,6 @@ def generate_board_image():
             return load_image(filepath, (config.tile_size * 8, config.tile_size * 8))
     raise FileNotFoundError(f"No board image found for {config.board_asset} with extensions .jpg or .png")
 
-# TODO prendre les sons de lichess
 def generate_sounds():
     sounds = dict()
     for sound in os.listdir(os.path.join('assets', 'sound', config.sound_asset)):
@@ -76,6 +75,21 @@ def generate_sounds():
         for name in custom_sounds
     })
     return sounds
+
+def play_sound(sounds: dict[str, pygame.Sound], type: str):
+    """
+    Play a sound of the specified type.
+
+    Args:
+        type (str): The type of sound to play, e.g., 'illegal', 'notify', etc.
+        
+    Raises:
+        ValueError: If the specified sound type is not found in the sounds dictionary.
+    """
+    # Check if the sound type exists in the sounds dictionary
+    if type not in sounds:
+        raise ValueError(f"Sound type '{type}' not found in the sound library.")
+    sounds[type].play()
 
 def debug_print(*args):
     if config.debug:

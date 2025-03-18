@@ -13,7 +13,7 @@ class SetupMenu(Scene):
     def __init__(self):
         super().__init__()
         self.player1 = Player(1)
-        self.player2 = RandomAI(-1)
+        self.player2 = MinimaxAI(-1, 3)
     
     def create_buttons(self):
         button_width = config.width * 0.27

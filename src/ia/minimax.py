@@ -27,7 +27,7 @@ class MinimaxAI(Player):
         if maximizing_player:
             max_eval = float('-inf')
             for move in self.get_moves(board):
-                move.move()
+                move.move(board)
                 eval_score, _ = self.minimax(board, depth - 1, False)
                 if eval_score > max_eval:
                     max_eval = eval_score
@@ -36,7 +36,7 @@ class MinimaxAI(Player):
         else:
             min_eval = float('inf')
             for move in self.get_moves(board):
-                move.move()
+                move.move(board)
                 eval_score, _ = self.minimax(board, depth - 1, True)
                 if eval_score < min_eval:
                     min_eval = eval_score
@@ -57,7 +57,7 @@ class MinimaxAI(Player):
         return best_move
     
     def play_best_move(self, board):
-        self.get_best_move(board).execute()
+        self.get_best_move(board).execute(board)
         board.update_highlights()
 
 class RandomAI(Player):
@@ -66,9 +66,9 @@ class RandomAI(Player):
         self.ia = True
 
     def get_best_move(self, board):
-        moves = list(filter(lambda move: move.is_legal(), self.get_moves(board)))
+        moves = list(filter(lambda move: move.is_legal(board), self.get_moves(board)))
         return choice(moves)
     
     def play_best_move(self, board):
-        self.get_best_move(board).execute()
+        self.get_best_move(board).execute(board)
         board.update_highlights()

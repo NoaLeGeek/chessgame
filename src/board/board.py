@@ -9,7 +9,7 @@ from board.player import Player
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction
 from board.piece import notation_to_piece, piece_to_notation, piece_to_num
-from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print
+from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
 
 class Board:
     def __init__(self, player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -84,7 +84,7 @@ class Board:
             self.ep = self._parse_en_passant(fen_parts[3])
             self.half_moves = int(fen_parts[4])
             self.full_moves = int(fen_parts[5])
-            self.play_sound("game-start")
+            play_sound(self.sounds, "game-start")
         except (IndexError, ValueError) as e:
             raise ValueError(f"Failed to parse FEN string: {fen}. Error: {e}")
 
@@ -245,7 +245,7 @@ class Board:
             self.winner = "Draw by threefold repetition"
         if self.winner is not None:
             self.game_over = True
-            self.play_sound("game-end")
+            play_sound(self.sounds, "game-end")
             print(self.winner)
 
     def is_threefold_repetition(self):
@@ -265,7 +265,7 @@ class Board:
         Returns:
             bool: True if the game is a stalemate, otherwise False.
         """
-        return not any(move.is_legal() for move in self.current_player.get_moves(self))
+        return not any(move.is_legal(self) for move in self.current_player.get_moves(self))
     
     def is_insufficient_material(self):
         """
@@ -374,21 +374,6 @@ class Board:
             list: A list of positions (tuples) representing empty tiles.
         """
         return [pos for pos in self.board if self.is_empty(pos)]
-    
-    def play_sound(self, type: str):
-        """
-        Play a sound of the specified type.
-
-        Args:
-            type (str): The type of sound to play, e.g., 'illegal', 'notify', etc.
-        
-        Raises:
-            ValueError: If the specified sound type is not found in the sounds dictionary.
-        """
-        # Check if the sound type exists in the sounds dictionary
-        if type not in self.sounds:
-            raise ValueError(f"Sound type '{type}' not found in the sound library.")
-        self.sounds[type].play()
 
     def _update_castling(self, move: Move):
         """
@@ -430,7 +415,7 @@ class Board:
             piece = self.get_piece(new_pos)
             if piece.notation != "P" or piece.color != d_ep*self.flipped:
                 continue
-            if self.convert_to_move(new_pos, ep).is_legal():
+            if self.convert_to_move(new_pos, ep).is_legal(self):
                 return True
         return False
 
@@ -471,7 +456,7 @@ class Board:
             if self._set_promotion(pos):
                 return
             debug_print("EXECUTE MOVE")
-            self.convert_to_move(self.selected.pos, pos).execute()
+            self.convert_to_move(self.selected.pos, pos).execute(self)
         else:
             self._select_piece(pos)
 
@@ -480,7 +465,7 @@ class Board:
         if self.selected.piece.notation == "P" and self.promotion is not None:
             d = self.selected.piece.color * self.flipped
             if pos[0] in range(flip_pos(0, flipped=d), flip_pos(0, flipped=d) + d*len(self.selected.piece.promotion), d) and pos[1] == self.promotion[1]:
-                self.convert_to_move(self.selected.pos, self.promotion, self.selected.piece.promotion[flip_pos(pos[0], flipped=d)]).execute()
+                self.convert_to_move(self.selected.pos, self.promotion, self.selected.piece.promotion[flip_pos(pos[0], flipped=d)]).execute(self)
                 return True
             # Cancel promotion if the player doesn't click in the range of promotion
             self.promotion = None
@@ -493,7 +478,7 @@ class Board:
         if not self.is_empty(pos) and self.get_piece(pos).is_ally(self.selected.piece) and pos != self.selected.pos:
             # Castling move
             if self.selected.piece.notation == "K" and not self.is_empty(pos) and self.get_piece(pos).notation == "R" and pos in self.selected.calc_moves(self):
-                self.convert_to_move(self.selected.pos, pos).execute()
+                self.convert_to_move(self.selected.pos, pos).execute(self)
                 return True
             self.selected = None
             self.select(pos)
@@ -512,7 +497,7 @@ class Board:
         if pos not in [move.to_pos for move in self.selected.piece.moves]:
             self.selected = None
             if self.current_player.is_king_check(self):
-                self.play_sound("illegal")
+                play_sound(self.sounds, "illegal")
             if not self.is_empty(pos) and self.get_piece(pos).color == self.turn:
                 self.select(pos)
             return True
@@ -542,7 +527,7 @@ class Board:
             else:
                 return list(filter(lambda move: not move.castling, moves))
         else:
-            return list(filter(lambda move: move.is_legal(), moves))
+            return list(filter(lambda move: move.is_legal(self), moves))
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """
@@ -712,7 +697,7 @@ class Board:
                     if moves:
                         legal_moves = 0
                         for move in moves:
-                            if self.convert_to_move(pos, move).is_legal():
+                            if self.convert_to_move(pos, move).is_legal(self):
                                 matrix[13, move[0], move[1]] = 1 
                                 legal_moves += 1
                             if legal_moves:       
