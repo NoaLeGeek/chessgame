@@ -47,10 +47,10 @@ class Move:
         # This is the board state after the move
         self.fen = str(board)
         self.notation = self.to_notation(board)
-        self.board.update_history()
+        board.update_history()
         board.check_game()
         if board.game_over == False and board.current_player.ia == True:
-            board.current_player.play_best_move(board)
+            board.current_player.play_move(board)
 
     def move(self, board):
         """Moves the piece on the board and updates the game state."""
@@ -157,7 +157,7 @@ class Move:
             self.undo_promote_piece()
         else:
             self.undo_move_piece()
-        self.board.update_history()
+        board.update_history()
 
     def undo_promote_piece(self, board):
         """
