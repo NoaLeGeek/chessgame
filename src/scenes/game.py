@@ -99,7 +99,8 @@ class Game(Scene):
                 command=self.board.move_tree.go_leaf
             ) 
         }
-        
+
+
     def render(self, screen:pygame.Surface):
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
         super().render(screen)

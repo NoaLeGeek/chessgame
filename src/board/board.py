@@ -732,13 +732,18 @@ class Board:
 
     
     def update_history(self):
+        moves = self.move_tree.get_root_to_leaf()
+        if len(moves)%2 == 0 :
+            moves = moves[-24:]
+        else :
+            moves = moves[-23:]
         self.history = [
             Label(
-                center =  (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.2+(config.height*0.03)*(i if i %2 == 0 else i-1)),
+                center =  (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.1+(config.height*0.03)*(i if i %2 == 0 else i-1)),
                 text = move.notation,
                 font_name=Fonts.GEIZER, 
                 font_size=int(config.height*0.05),
                 color = Colors.WHITE.value
             )
-            for i, move in enumerate(self.move_tree.get_root_to_leaf())
+            for i, move in enumerate(moves)
         ]
