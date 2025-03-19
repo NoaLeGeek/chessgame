@@ -5,15 +5,15 @@ from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, debug_print, load_image
 from constants import Fonts, Colors
 from config import config
-from gui import RectButton
+from gui import RectButton, Label
 from board.player import Player
 
 
 class Game(Scene):
-    def __init__(self, player1: Player, player2: Player):
-        self.player1 = player1
-        self.player2 = player2
-        self.board = Board(player1, player2, "4k3/R7/8/8/8/8/K2R1R1p/8 w - - 0 1")
+    def __init__(self, current_player: Player, waiting_player: Player):
+        self.current_player = current_player
+        self.waiting_player = waiting_player
+        self.board = Board(current_player, waiting_player, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         self.evaluation_bar = pygame.Rect(config.margin, config.margin, config.eval_bar_width, config.height-config.margin*2)
         self.history_background = pygame.Rect(config.margin+config.columns*config.tile_size+config.eval_bar_width, config.margin, config.width*0.35, config.height-config.margin*2)
         super().__init__()
@@ -99,7 +99,8 @@ class Game(Scene):
                 command=self.board.move_tree.go_leaf
             ) 
         }
-        
+
+
     def render(self, screen:pygame.Surface):
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
         super().render(screen)
@@ -115,8 +116,10 @@ class Game(Scene):
         # Promotion
         if self.board.promotion is not None:
             self._draw_promotion(screen)
-        
 
+        for label in self.board.history:
+            label.draw(screen)
+        
     def update(self):
         super().update()
 
@@ -218,4 +221,4 @@ class Game(Scene):
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous()
             if keys[pygame.K_t]:
-                print([move.notation for move in self.board.history])
+                print(self.board.history)

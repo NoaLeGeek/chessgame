@@ -46,8 +46,8 @@ class Move:
         board.move_tree.add(board, MoveNode(self, board.move_tree.current.move, board))
         # This is the board state after the move
         self.fen = str(board)
-        board.history = board.move_tree.get_root_to_leaf()
         self.notation = self.to_notation(board)
+        self.board.update_history()
         board.check_game()
         if board.game_over == False and board.current_player.ia == True:
             board.current_player.play_best_move(board)
@@ -157,7 +157,7 @@ class Move:
             self.undo_promote_piece()
         else:
             self.undo_move_piece()
-        board.history = board.move_tree.get_root_to_leaf()
+        self.board.update_history()
 
     def undo_promote_piece(self, board):
         """

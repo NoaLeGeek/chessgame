@@ -3,16 +3,17 @@ from random import choice
 import pygame
 import numpy as np
 
+from gui import Label
 from config import config
 from board.tile import Tile
 from board.player import Player
 from board.move import Move, MoveTree
-from constants import castling_king_column, en_passant_direction
+from constants import castling_king_column, en_passant_direction, Fonts, Colors
 from board.piece import notation_to_piece, piece_to_notation, piece_to_num
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
 
 class Board:
-    def __init__(self, player1: Player, player2: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+    def __init__(self, current_player: Player, waiting_player: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
         """
         Initialize the chess board with a default or custom FEN string.
 
@@ -31,8 +32,8 @@ class Board:
         self.flipped = 1
         self.last_irreversible_move = 0
         self.game_over = False
-        self.current_player = player1
-        self.waiting_player = player2
+        self.current_player = current_player
+        self.waiting_player = waiting_player
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
 
         # Anarchy chess
@@ -46,6 +47,8 @@ class Board:
 
         # Initialize the board from the FEN string
         self.move_tree = MoveTree(self)
+
+        self.history_change = False
         self.history = []
         self._create_board(fen)
 
@@ -710,3 +713,21 @@ class Board:
         from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
         return self.convert_to_move(from_pos, to_pos)
+
+    
+    def update_history(self):
+        moves = self.move_tree.get_root_to_leaf()
+        if len(moves)%2 == 0 :
+            moves = moves[-24:]
+        else :
+            moves = moves[-23:]
+        self.history = [
+            Label(
+                center =  (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.1+(config.height*0.03)*(i if i %2 == 0 else i-1)),
+                text = move.notation,
+                font_name=Fonts.GEIZER, 
+                font_size=int(config.height*0.05),
+                color = Colors.WHITE.value
+            )
+            for i, move in enumerate(moves)
+        ]
