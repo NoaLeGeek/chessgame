@@ -154,9 +154,9 @@ class Move:
         if config.rules["+3_checks"] == True and board.current_player.is_king_check(board):
             board.checks[board.waiting_player.color] -= 1
         if self.promotion is not None:
-            self.undo_promote_piece()
+            self.undo_promote_piece(board)
         else:
-            self.undo_move_piece()
+            self.undo_move_piece(board)
         board.update_history()
 
     def undo_promote_piece(self, board):
