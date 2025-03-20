@@ -65,7 +65,20 @@ class SetupMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
                 text_color=Colors.BLACK.value, 
-                command=lambda:self.manager.go_to(Game(self.player1, self.player2))
+                command=lambda:self.manager.go_to(IaVsIaMenu(self.player1, self.player2))
+            ),
+            'back': RectButton(
+                x=config.width*0.95,
+                y=config.height*0.09, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.LIGHT_GRAY.value,
+                hovered_color=Colors.WHITE.value,
+                text='<-',
+                text_color=Colors.DARK_GRAY.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=self.manager.go_back
             )
         }
 
@@ -108,9 +121,9 @@ class SetupMenu(Scene):
                         self.update_rule(rule, button)
 
     def update_rule(self, rule, button):
-        for rule in available_rule:
-            if config.rules[rule]:
-                config.rules[rule] = False
+        for r in available_rule:
+            if config.rules[r]:
+                config.rules[r] = False
         config.rules[rule] = not config.rules[rule]
         button.state = True
         for b in self.rule_buttons.values():
@@ -165,6 +178,19 @@ class PlayerVsIaMenu(Scene):
                 height=config.tile_size,
                 color=Colors.GRAY.value, 
                 command=lambda:self.update_color('random_color')
+            ),
+            'back': RectButton(
+                x=config.width*0.95,
+                y=config.height*0.09, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.LIGHT_GRAY.value,
+                hovered_color=Colors.WHITE.value,
+                text='<-',
+                text_color=Colors.DARK_GRAY.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=self.manager.go_back
             )
         }
 
@@ -174,10 +200,10 @@ class PlayerVsIaMenu(Scene):
                 y=config.height*0.305+i*config.height * 0.1,
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
-                color=Colors.RED.value if (ia == 'nn' and not config.rules['classic']) else Colors.WHITE.value,
+                color=Colors.GRAY.value if (ia in ['nn', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
                 state=False
             )
-            for i, ia in enumerate(['random_ia', 'minimax', 'nn'])
+            for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
         }
         self.buttons.update(self.ia_buttons)
 
@@ -188,9 +214,9 @@ class PlayerVsIaMenu(Scene):
                 text = ia,
                 font_name=Fonts.GEIZER,
                 font_size=int(config.height*0.08),
-                color = Colors.RED.value if (ia == 'neural network' and not config.rules['classic']) else Colors.WHITE.value,
+                color = Colors.GRAY.value if (ia in ['neural network', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
             )
-            for i, ia in enumerate(['random', 'minimax', 'neural network'])
+            for i, ia in enumerate(['random', 'negamax', 'neural network'])
         }
 
     def update_color(self, color):
@@ -218,7 +244,7 @@ class PlayerVsIaMenu(Scene):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 :
                 for ia, button in self.ia_buttons.items():
-                    if button.is_clicked() and (ia =='nn' and config.rules['classic'] or ia != 'nn'): 
+                    if button.is_clicked() and (ia in ['nn', 'negamax'] and not config.rules['classic'] and not config.rules['chess960'] or ia != 'nn'): 
                         print(ia, config.rules['classic'])
                         self.update_ia(ia, button)
 
@@ -229,8 +255,78 @@ class PlayerVsIaMenu(Scene):
                 b.state = False
                 print(b)
         
+class IaVsIaMenu(Scene):
+    def __init__(self, player1, player2):
+        self.player1, self.player2 = player1, player2 
+        super().__init__()
+        print(config.rules)
+        self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
+        self.white_king = load_image('assets/piece/alpha/wK.svg', (config.tile_size, config.tile_size))
+        self.white_rect = pygame.Rect(config.width*0.55-config.tile_size//2, config.height*0.22, config.tile_size, config.tile_size)
+        self.black_king = load_image('assets/piece/alpha/bK.svg', (config.tile_size, config.tile_size))
+        self.black_rect = pygame.Rect(config.width*0.65-config.tile_size//2, config.height*0.22, config.tile_size, config.tile_size)
 
-    
+    def create_buttons(self):
+        self.buttons = {
+            'back': RectButton(
+                x=config.width*0.95,
+                y=config.height*0.09, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.LIGHT_GRAY.value,
+                hovered_color=Colors.WHITE.value,
+                text='<-',
+                text_color=Colors.DARK_GRAY.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=self.manager.go_back
+            )
+        }    
+        self.white_buttons = {
+            ia+'1' : RadioButton(
+                x=config.width*0.55,
+                y=config.height*0.4+i*config.height * 0.1,
+                radius=config.height*0.03,
+                width=int(config.height*0.005),
+                color=Colors.GRAY.value if (ia in ['nn', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+                state=False
+            )
+            for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
+        }
+        self.black_buttons = {
+            ia+'2' : RadioButton(
+                x=config.width*0.65,
+                y=config.height*0.4+i*config.height * 0.1,
+                radius=config.height*0.03,
+                width=int(config.height*0.005),
+                color=Colors.GRAY.value if (ia in ['nn', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+                state=False
+            )
+            for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
+        }
+        self.buttons.update(self.white_buttons)
+        self.buttons.update(self.black_buttons)
+
+    def create_labels(self):
+          self.labels = {
+            ia : Label(
+                center = (config.width*0.35, config.height*0.4+(i*config.height*0.1)),
+                text = ia,
+                font_name=Fonts.GEIZER,
+                font_size=int(config.height*0.08),
+                color = Colors.GRAY.value if (ia in ['neural network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+            )
+            for i, ia in enumerate(['random', 'negamax', 'neural network'])
+        }
+
+    def render(self, screen):
+        pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.frame)
+        pygame.draw.rect(screen, Colors.WHITE.value, self.white_rect)
+        pygame.draw.rect(screen, Colors.BLACK.value, self.black_rect)
+        screen.blit(self.white_king, self.white_rect)
+        screen.blit(self.black_king, self.black_rect)
+        super().render(screen)
         
+
         
 
