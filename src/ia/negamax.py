@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, shuffle
 from constants import piece_values, piece_heatmaps
 
 from board.player import Player
@@ -13,59 +13,48 @@ class NegamaxAI(Player):
         self.checkmate = 1000
         self.ia = True
 
-    def findBestMove(game_state, valid_moves, return_queue):
+    def get_best_move(self, board, valid_moves, return_queue):
         next_move = None
-        random.shuffle(valid_moves)
-        findMoveNegaMaxAlphaBeta(game_state, valid_moves, DEPTH, -CHECKMATE, CHECKMATE,
-                                1 if game_state.white_to_move else -1)
+        shuffle(valid_moves)
+        findMoveNegaMaxAlphaBeta(board, valid_moves, self.depth, -self.checkmate, self.checkmate, board.turn)
         return_queue.put(next_move)
 
-
-    def findMoveNegaMaxAlphaBeta(game_state, valid_moves, depth, alpha, beta, turn_multiplier):
+    def findMoveNegaMaxAlphaBeta(self, board, valid_moves, depth, alpha, beta, turn_multiplier):
         if depth == 0:
-            return turn_multiplier * scoreBoard(game_state)
-        # move ordering - implement later //TODO
-        max_score = -CHECKMATE
+            return turn_multiplier * self.evaluate_board(board)
+        max_score = -self.checkmate
         for move in valid_moves:
-            game_state.makeMove(move)
-            next_moves = game_state.getValidMoves()
-            score = -findMoveNegaMaxAlphaBeta(game_state, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
+            board.makeMove(move)
+            next_moves = board.getValidMoves()
+            score = -findMoveNegaMaxAlphaBeta(board, next_moves, depth - 1, -beta, -alpha, -turn_multiplier)
             if score > max_score:
                 max_score = score
-                if depth == DEPTH:
+                if depth == self.depth:
                     next_move = move
-            game_state.undoMove()
+            board.undoMove()
             if max_score > alpha:
                 alpha = max_score
             if alpha >= beta:
                 break
         return max_score
 
-
-    def evaluate_board(board):
+    def evaluate_board(self, board):
         """
         Score the board. A positive score is good for white, a negative score is good for black.
         """
         if board.is_stalemate():
-            if board.current_player.
-                return -CHECKMATE  # black wins
+            if board.current_player.is_king_check():
+                return self.checkmate * -board.turn
             else:
-                return CHECKMATE  # white wins
-        elif game_state.stalemate:
-            return STALEMATE
+                return self.stalemate
         score = 0
-        for row in range(len(game_state.board)):
-            for col in range(len(game_state.board[row])):
-                piece = game_state.board[row][col]
-                if piece != "--":
-                    piece_position_score = 0
-                    if piece[1] != "K":
-                        piece_position_score = piece_position_scores[piece][row][col]
-                    if piece[0] == "w":
-                        score += piece_score[piece[1]] + piece_position_score
-                    if piece[0] == "b":
-                        score -= piece_score[piece[1]] + piece_position_score
-
+        for tile in board.board.values():
+            if tile is None:
+                raise ValueError("Tile is None")
+            if board.is_empty(tile.pos):
+                continue
+            piece_score = [row[::tile.piece.color] for row in piece_heatmaps][::tile.piece.color][tile.piece.notation.upper()][row][col]
+            score += (piece_values[tile.piece.notation.upper()] + piece_score) * tile.piece.color
         return score
         
     def play_move(self, board):
