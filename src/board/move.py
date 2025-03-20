@@ -56,7 +56,7 @@ class Move:
         """Moves the piece on the board and updates the game state."""
         # Update the board state
         if self.promotion is not None:
-            self.promote_piece(self.promotion)
+            self.promote_piece(board, self.promotion)
         else:
             self.move_piece(board)
         board.turn *= -1
@@ -64,7 +64,6 @@ class Move:
         board.current_player, board.waiting_player = board.waiting_player, board.current_player
         if config.rules["+3_checks"] == True and board.current_player.is_king_check(board):
             board.checks[board.waiting_player.color] += 1
-        self._play_sound_move(board)
 
     def move_piece(self, board):
         """
@@ -147,7 +146,6 @@ class Move:
 
     def undo(self, board) -> None:
         """Undoes the move on the board and updates the game state."""
-        self._play_sound_move(board)
         board.turn *= -1
         board.selected = None
         board.current_player, board.waiting_player = board.waiting_player, board.current_player
@@ -202,7 +200,7 @@ class Move:
             ep_pos = (self.from_pos[0], self.to_pos[1])
             board.get_tile(ep_pos).piece = self.to_piece
 
-    def _play_sound_move(self, board) -> None:
+    def play_sound_move(self, board) -> None:
         """Plays the appropriate sound based on the move type."""
         if self.castling:
             play_sound(board.sounds, "castle")
@@ -328,11 +326,13 @@ class MoveTree:
         if self.current.children:
             self.current = self.current.children[index]
             self.current.move.move(board)
+            self.current.move.play_sound_move(board)
             board.update_highlights()
 
     def go_backward(self, board):
         if self.current.parent:
             self.current.move.undo()
+            self.current.move.play_sound_move(board)
             self.current = self.current.parent
             board.update_highlights()
 
