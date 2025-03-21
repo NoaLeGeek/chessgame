@@ -12,11 +12,16 @@ from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
 from ia.negamax import NegamaxAI, RandomAI
 from ia.ml.loader import load_model_from_checkpoint
 
+def str_to_ia(ia:str, color, depth=None):
+    if ia[:6] == 'random':
+        ia = 'random'
+    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'nn':None}[ia]
+
 class SetupMenu(Scene):
     def __init__(self):
         super().__init__()
         self.player1 = Player(1)
-        self.player2 = NegamaxAI(-1, 3)
+        self.player2 = Player(-1)
         self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
     
     def create_buttons(self):
@@ -51,7 +56,7 @@ class SetupMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
                 text_color=Colors.BLACK.value, 
-                command=lambda:self.manager.go_to(PlayerVsIaMenu(self.player1, self.player2))
+                command=lambda:self.manager.go_to(PlayerVsIaMenu())
             ),
             "ia vs ia": RectButton(
                 x=config.width*0.6, 
@@ -65,11 +70,11 @@ class SetupMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
                 text_color=Colors.BLACK.value, 
-                command=lambda:self.manager.go_to(IaVsIaMenu(self.player1, self.player2))
+                command=lambda:self.manager.go_to(IaVsIaMenu())
             ),
             'back': RectButton(
-                x=config.width*0.95,
-                y=config.height*0.09, 
+                x=config.width*0.955,
+                y=config.height*0.08, 
                 width=config.height*0.1,
                 height=config.height*0.1,
                 color=Colors.LIGHT_GRAY.value,
@@ -131,11 +136,13 @@ class SetupMenu(Scene):
                 b.state = False
 
 class PlayerVsIaMenu(Scene):
-    def __init__(self, player1, player2):
-        super().__init__()
-        self.player1, self.player2 = player1, player2
+    def __init__(self):
+        self.player1 = Player(1)
+        self.player2 = RandomAI(-1)
         self.selected_color = 1
         self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
+        self.depth = 2
+        super().__init__()
 
     def create_buttons(self):
         self.buttons = {
@@ -150,8 +157,8 @@ class PlayerVsIaMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=int(config.height*0.06), 
                 text_color=Colors.BLACK.value, 
-                command=lambda:self.manager.go_to(Game(self.player1 if self.player1.color == 1 else self.player2, self.player1 if self.player1.color == -1 else self.player2)),
-             ),
+                command=self.start_game
+            ),
             'white':RectButton(
                 x=config.width*0.25,
                 y = config.height*0.7,
@@ -179,9 +186,33 @@ class PlayerVsIaMenu(Scene):
                 color=Colors.GRAY.value, 
                 command=lambda:self.update_color('random_color')
             ),
+             'decrease_depth': RectButton(
+                x=config.width*0.67,
+                y=config.height*0.305+config.height*0.1, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.DARK_GRAY.value,
+                text='<',
+                text_color=Colors.GRAY.value if not config.rules['classic'] and not config.rules['chess960'] else Colors.WHITE.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=lambda:self.update_depth(-1) if config.rules['classic'] or config.rules['chess960'] else lambda:None
+             ),
+            'increase_depth': RectButton(
+                x=config.width*0.745,
+                y=config.height*0.305+config.height*0.1, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.DARK_GRAY.value,
+                text='>',
+                text_color=Colors.GRAY.value if not config.rules['classic'] and not config.rules['chess960'] else Colors.WHITE.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=lambda:self.update_depth(1) if config.rules['classic'] or config.rules['chess960'] else lambda:None
+            ),
             'back': RectButton(
-                x=config.width*0.95,
-                y=config.height*0.09, 
+                x=config.width*0.955,
+                y=config.height*0.08, 
                 width=config.height*0.1,
                 height=config.height*0.1,
                 color=Colors.LIGHT_GRAY.value,
@@ -201,14 +232,23 @@ class PlayerVsIaMenu(Scene):
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
                 color=Colors.GRAY.value if (ia in ['nn', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
-                state=False
+                state=False if ia != 'random_ia' else True
             )
             for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
         }
         self.buttons.update(self.ia_buttons)
 
     def create_labels(self):
-         self.labels = {
+        self.labels = {
+            'depth': Label(
+                center=(config.width*0.63, config.height*0.305+config.height*0.1),
+                text = f'depth :       {self.depth}',
+                font_name=Fonts.GEIZER,
+                font_size=int(config.height*0.07),
+                color = Colors.GRAY.value if (not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+            )
+        }
+        self.ia_labels = {
             ia : Label(
                 center = (config.width*0.35, config.height*0.305+(i*config.height*0.1)),
                 text = ia,
@@ -218,14 +258,12 @@ class PlayerVsIaMenu(Scene):
             )
             for i, ia in enumerate(['random', 'negamax', 'neural network'])
         }
+        self.labels.update(self.ia_labels)
 
     def update_color(self, color):
         if color != 'random_color':
             self.player1.color = color
-            self.player2.color = -color
-        else :
-            self.player1.color = random.choice((1, -1))
-            self.player2.color = -self.player1.color
+            self.player2.color = -color       
         self.selected_color = color
     
     def render(self, screen):
@@ -250,14 +288,32 @@ class PlayerVsIaMenu(Scene):
 
     def update_ia(self, ia, button):
         button.state = True
+        self.player2 = str_to_ia(ia, self.player2.color, self.depth)
         for b in self.ia_buttons.values():
             if button is not b :
                 b.state = False
                 print(b)
-        
+
+    def update_depth(self, n):
+        self.depth = (self.depth+n)
+        if self.depth > 3 :
+            self.depth = 1
+        elif self.depth < 1:
+            self.depth = 3
+
+        self.labels['depth'].update_text(f'depth :       {self.depth}')
+
+    def start_game(self):
+        if self.selected_color == 'random_color':
+            self.player1.color = random.choice((1, -1))
+            self.player2.color = -self.player1.color
+        print(True)
+        self.manager.go_to(Game(self.player1 if self.player1.color == 1 else self.player2, self.player1 if self.player1.color == -1 else self.player2, False if self.player1.color == 1 else True))
+
 class IaVsIaMenu(Scene):
-    def __init__(self, player1, player2):
-        self.player1, self.player2 = player1, player2 
+    def __init__(self):
+        self.player1 = RandomAI(1) 
+        self.player2 = RandomAI(-1)
         super().__init__()
         print(config.rules)
         self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
@@ -269,8 +325,8 @@ class IaVsIaMenu(Scene):
     def create_buttons(self):
         self.buttons = {
             'back': RectButton(
-                x=config.width*0.95,
-                y=config.height*0.09, 
+                x=config.width*0.955,
+                y=config.height*0.08, 
                 width=config.height*0.1,
                 height=config.height*0.1,
                 color=Colors.LIGHT_GRAY.value,
@@ -289,7 +345,7 @@ class IaVsIaMenu(Scene):
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
                 color=Colors.GRAY.value if (ia in ['nn', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
-                state=False
+                state=False if ia != 'random_ia' else True
             )
             for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
         }
@@ -300,7 +356,7 @@ class IaVsIaMenu(Scene):
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
                 color=Colors.GRAY.value if (ia in ['nn', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
-                state=False
+                state=False if ia != 'random_ia' else True
             )
             for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
         }

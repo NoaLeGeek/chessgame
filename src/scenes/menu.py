@@ -117,8 +117,8 @@ class CreditsMenu(Scene):
     def create_buttons(self):
         self.buttons = {
             'back': RectButton(
-                x=config.width*0.95,
-                y=config.height*0.09, 
+                x=config.width*0.955,
+                y=config.height*0.08, 
                 width=config.height*0.1,
                 height=config.height*0.1,
                 color=Colors.LIGHT_GRAY.value,
