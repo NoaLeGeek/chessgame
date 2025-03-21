@@ -1,13 +1,13 @@
 from config import config
 
 class Player:
-    def __init__(self, color: int, ia = None):
+    def __init__(self, color: int):
         self.color = color
         # Pieces' position depending on their type
         self.pieces = {"P": [], "R": [], "N": [], "B": [], "Q": [], "K": []}
         # King's position
         self.king = None
-        self.ia = ia
+        self.ia = False
 
     def add_piece(self, piece):
         self.pieces[piece.notation].append(piece)
@@ -26,10 +26,15 @@ class Player:
                 continue
             if tile.piece.color != self.color:
                 continue
-            moves += tile.calc_moves(board)
+            for to_pos in tile.calc_moves(board):
+                if to_pos[0] in [0, config.rows - 1] and tile.piece.notation == "P":
+                    for promotion in tile.piece.promotion:
+                        moves.append(board.convert_to_move(tile.pos, to_pos, promotion))
+                else:
+                    moves.append(board.convert_to_move(tile.pos, to_pos))
         return moves
     
     def is_king_check(self, board):
         if config.rules["giveaway"]:
             return False
-        return self.king in board.get_player(-self.color).get_moves(board)
+        return self.king in [move.to_pos for move in board.get_player(-self.color).get_moves(board)]
