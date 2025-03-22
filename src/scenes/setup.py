@@ -15,7 +15,7 @@ from ia.ml.loader import load_model_from_checkpoint
 def str_to_ia(ia:str, color, depth=None):
     if ia[:6] == 'random':
         ia = 'random'
-    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'nn':None}[ia]
+    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'neural_network':None}[ia]
 
 class SetupMenu(Scene):
     def __init__(self):
@@ -282,7 +282,7 @@ class PlayerVsIaMenu(Scene):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 :
                 for ia, button in self.ia_buttons.items():
-                    if button.is_clicked() and (ia in ['nn', 'negamax'] and not config.rules['classic'] and not config.rules['chess960'] or ia != 'nn'): 
+                    if button.is_clicked() and (ia in ['neural_network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960'] or ia != 'neural_network'): 
                         print(ia, config.rules['classic'])
                         self.update_ia(ia, button)
 
@@ -344,10 +344,10 @@ class IaVsIaMenu(Scene):
                 y=config.height*0.4+i*config.height * 0.1,
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
-                color=Colors.GRAY.value if (ia in ['nn', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+                color=Colors.GRAY.value if (ia in ['neural_network', 'negamax']  and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
                 state=False if ia != 'random_ia' else True
             )
-            for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
+            for i, ia in enumerate(['random_ia', 'negamax', 'neural_network'])
         }
         self.black_buttons = {
             ia+'2' : RadioButton(
@@ -355,10 +355,10 @@ class IaVsIaMenu(Scene):
                 y=config.height*0.4+i*config.height * 0.1,
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
-                color=Colors.GRAY.value if (ia in ['nn', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+                color=Colors.GRAY.value if (ia in ['neural_network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
                 state=False if ia != 'random_ia' else True
             )
-            for i, ia in enumerate(['random_ia', 'negamax', 'nn'])
+            for i, ia in enumerate(['random_ia', 'negamax', 'neural_network'])
         }
         self.buttons.update(self.white_buttons)
         self.buttons.update(self.black_buttons)

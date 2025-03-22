@@ -53,7 +53,7 @@ class Move:
             board.current_player.play_move(board)
 
     def move(self, board):
-        debug_print(f"Move {self.from_pos} -> {self.to_pos}")
+        #debug_print(f"Move {self.from_pos} -> {self.to_pos}")
         """Moves the piece on the board and updates the game state."""
         # Update the board state
         if self.promotion is not None:
@@ -146,7 +146,7 @@ class Move:
         board.promotion = None
 
     def undo(self, board) -> None:
-        debug_print(f"Undo move {self.from_pos} -> {self.to_pos}")
+        #debug_print(f"Undo move {self.from_pos} -> {self.to_pos}")
         """Undoes the move on the board and updates the game state."""
         board.turn *= -1
         board.selected = None
