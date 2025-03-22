@@ -7,7 +7,7 @@ class Player:
         self.pieces = {"P": [], "R": [], "N": [], "B": [], "Q": [], "K": []}
         # King's position
         self.king = None
-        self.ia = False
+        self.ia = -1
 
     def add_piece(self, piece):
         self.pieces[piece.notation].append(piece)

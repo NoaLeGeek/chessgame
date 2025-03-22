@@ -11,7 +11,7 @@ class NegamaxAI(Player):
         self.depth = depth
         self.stalemate = 0
         self.checkmate = 1000
-        self.ia = True
+        self.ia = 1
 
     def get_best_move(self, board):
         best_move, _ = self.negamax(board, self.depth, -self.checkmate, self.checkmate)
@@ -66,7 +66,7 @@ class NegamaxAI(Player):
 class RandomAI(Player):
     def __init__(self, color: int):
         super().__init__(color)
-        self.ia = True
+        self.ia = 1
 
     def get_best_move(self, board):
         moves = [move for move in self.get_moves(board) if move.is_legal(board)]

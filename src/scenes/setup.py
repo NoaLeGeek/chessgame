@@ -296,10 +296,10 @@ class PlayerVsIaMenu(Scene):
 
     def update_depth(self, n):
         self.depth = (self.depth+n)
-        if self.depth > 3 :
+        if self.depth > 5 :
             self.depth = 1
         elif self.depth < 1:
-            self.depth = 3
+            self.depth = 5
 
         self.labels['depth'].update_text(f'depth :       {self.depth}')
 
@@ -308,7 +308,7 @@ class PlayerVsIaMenu(Scene):
             self.player1.color = random.choice((1, -1))
             self.player2.color = -self.player1.color
         print(True)
-        self.manager.go_to(Game(self.player1 if self.player1.color == 1 else self.player2, self.player1 if self.player1.color == -1 else self.player2, False if self.player1.color == 1 else True))
+        self.manager.go_to(Game(self.player1 if self.player1.color == 1 else self.player2, self.player1 if self.player1.color == -1 else self.player2))
 
 class IaVsIaMenu(Scene):
     def __init__(self):

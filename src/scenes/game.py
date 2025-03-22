@@ -10,11 +10,11 @@ from board.player import Player
 
 
 class Game(Scene):
-    def __init__(self, current_player: Player, waiting_player: Player, flip_board: bool = False):
+    def __init__(self, current_player: Player, waiting_player: Player):
         self.current_player = current_player
         self.waiting_player = waiting_player
         self.board = Board(current_player, waiting_player, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-        if flip_board :
+        if (self.current_player.ia + self.waiting_player.ia) == 0 and self.current_player.color == -1:
             self.board.flip_board()
         self.evaluation_bar = pygame.Rect(config.margin, config.margin, config.eval_bar_width, config.height-config.margin*2)
         self.history_background = pygame.Rect(config.margin+config.columns*config.tile_size+config.eval_bar_width, config.margin, config.width*0.35, config.height-config.margin*2)
@@ -169,7 +169,7 @@ class Game(Scene):
         # Drawing the promotion's frame
         # We normalize the rect to avoid negative width or height, this flips the rect and makes it in the right direction when the board is flipped
         # pos needs to be offset by 1 if the board is flipped
-        rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
+        rect = pygame.Rect((pos[1] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin + config.eval_bar_width, (pos[0] - min(0, self.board.flipped*piece.color)) * config.tile_size + config.margin, self.board.flipped*piece.color * config.tile_size, self.board.flipped*piece.color * len(piece.promotion) * config.tile_size)
         rect.normalize()
         pygame.draw.rect(screen, Colors.WHITE.value, rect)
         # Drawing the promotion's pieces

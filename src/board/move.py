@@ -335,7 +335,7 @@ class MoveTree:
 
     def go_backward(self, board):
         if self.current.parent:
-            self.current.move.undo()
+            self.current.move.undo(board)
             self.current.move.play_sound_move(board)
             self.current = self.current.parent
             board.update_highlights()
