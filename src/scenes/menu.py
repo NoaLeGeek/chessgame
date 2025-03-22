@@ -114,9 +114,26 @@ class CreditsMenu(Scene):
     def __init__(self):
         super().__init__()
 
+    def create_buttons(self):
+        self.buttons = {
+            'back': RectButton(
+                x=config.width*0.955,
+                y=config.height*0.08, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.LIGHT_GRAY.value,
+                hovered_color=Colors.WHITE.value,
+                text='<-',
+                text_color=Colors.DARK_GRAY.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=self.manager.go_back
+            )
+        }
+
     def create_labels(self):
         self.labels = {
-            "kasparov": Label((config.width*0.5, config.height*0.5), "ISSA HAKIM", Fonts.GEIZER, int(config.height*0.25), Colors.WHITE.value)
+            "kasparov": Label((config.width*0.5, config.height*0.5), "Créateurs du jeu :\n\nOttermann Noa et Beltzung Lilian\n\nMerci à :\n\nIssa Hakim\nLichess\nGrégoire Heymann\nGarry Kaparov\nBourlier Jean Damien", Fonts.GEIZER, int(config.height*0.1), Colors.WHITE.value)
         }
 
     def render(self, screen):

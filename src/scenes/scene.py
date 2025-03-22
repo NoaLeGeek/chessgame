@@ -5,9 +5,9 @@ from utils import singleton
 class Scene():
     def __init__(self):
         self.manager = SceneManager()
-        self.create_buttons()
         self.create_labels()
-
+        self.create_buttons()
+        
     def create_buttons(self):
         self.buttons = {}
 

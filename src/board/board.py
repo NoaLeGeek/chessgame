@@ -1,4 +1,5 @@
 from random import choice
+from math import ceil
 
 import pygame
 import numpy as np
@@ -722,4 +723,14 @@ class Board:
                 color = Colors.WHITE.value
             )
             for i, move in enumerate(moves)
+        ]
+        self.history += [
+            Label(
+                center =  (config.width*0.6, config.height*0.1+(config.height*0.06*i)),
+                text = str(i)+'.',
+                font_name=Fonts.GEIZER, 
+                font_size=int(config.height*0.05),
+                color = Colors.WHITE.value
+            )   
+            for i in range(ceil(len(moves)/2))
         ]

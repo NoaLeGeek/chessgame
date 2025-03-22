@@ -10,30 +10,31 @@ from board.player import Player
 
 
 class Game(Scene):
-    def __init__(self, current_player: Player, waiting_player: Player):
+    def __init__(self, current_player: Player, waiting_player: Player, flip_board: bool = False):
         self.current_player = current_player
         self.waiting_player = waiting_player
         self.board = Board(current_player, waiting_player, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        if flip_board :
+            self.board.flip_board()
         self.evaluation_bar = pygame.Rect(config.margin, config.margin, config.eval_bar_width, config.height-config.margin*2)
         self.history_background = pygame.Rect(config.margin+config.columns*config.tile_size+config.eval_bar_width, config.margin, config.width*0.35, config.height-config.margin*2)
         super().__init__()
-
 
     def create_buttons(self):
         font_size = int(config.height*0.06)
 
         self.buttons = {
-            "quit": RectButton(
-                x=config.width*0.955, 
-                y=config.height*0.92,
-                width=config.height*0.1, 
-                height=config.height*0.1, 
-                color=Colors.LIGHT_GRAY.value, 
+            'back': RectButton(
+                x=config.width*0.955,
+                y=config.height*0.08, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.LIGHT_GRAY.value,
                 hovered_color=Colors.WHITE.value,
-                text='X', 
-                font_name=Fonts.GEIZER, 
-                font_size=font_size,
-                text_color=Colors.BLACK.value, 
+                text='<-',
+                text_color=Colors.DARK_GRAY.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
                 command=self.manager.go_back
             ),
             "flip": RectButton(
@@ -100,10 +101,11 @@ class Game(Scene):
             ) 
         }
 
+    def create_labels(self):
+        self.labels = {}
 
     def render(self, screen:pygame.Surface):
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
-        super().render(screen)
         pygame.draw.rect(screen, Colors.WHITE.value, self.evaluation_bar)
         screen.blit(self.board.image, (config.margin + config.eval_bar_width, config.margin))
         # Highlight
@@ -119,9 +121,13 @@ class Game(Scene):
 
         for label in self.board.history:
             label.draw(screen)
+
+        super().render(screen)
         
     def update(self):
         super().update()
+        if self.board.winner and not self.labels:
+            self.handle_winner()
 
     def _draw_pieces(self, screen):
         for tile in self.board.board.values():
@@ -198,7 +204,7 @@ class Game(Scene):
                 self.handle_right_click(keys)
         elif event.type == pygame.KEYDOWN:
             if keys[pygame.K_r]:
-                self.board = Board(self.current_player, self.waiting_player)
+                self.board = Board(self.current_player if self.current_player.color == 1 else self.waiting_player, self.current_player if self.current_player.color == -1 else self.waiting_player)
             if keys[pygame.K_f]:
                 self.board.flip_board()
             if keys[pygame.K_SPACE]:
@@ -218,3 +224,23 @@ class Game(Scene):
                 self.board.move_tree.go_next(self.board)
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous(self.board)
+            if keys[pygame.K_t]:
+                print(self.board.history)
+
+    def handle_winner(self):
+        if self.board.winner == 'White':
+            text = 'Checkmate !\nWhite win'
+        elif self.board.winner == 'Black' :
+            text = 'Checkmate !\nBlack win'
+        elif self.board.winner == 'Draw by threefold repetition':
+            text = '          Draw by\nthreefold repetition'
+        self.labels.update({
+                'end': Label(
+                center=((config.tile_size*8)//2+config.margin+config.eval_bar_width, config.height//2),
+                text = text,
+                font_name=Fonts.GEIZER,
+                font_size=int(config.height*0.1),
+                color=Colors.WHITE.value,
+            )
+        })
+
