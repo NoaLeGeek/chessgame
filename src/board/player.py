@@ -34,6 +34,9 @@ class Player:
                     moves.append(board.convert_to_move(tile.pos, to_pos))
         return moves
     
+    def get_legal_moves(self, board):
+        return [move for move in self.get_moves(board) if move.is_legal(board)]
+    
     def is_king_check(self, board):
         if config.rules["giveaway"]:
             return False

@@ -24,7 +24,7 @@ class Tile:
 
     def can_move(self, board, to: tuple[int, int]) -> bool:
         if self.piece is None:
-            raise ValueError(f"No piece on the tile {self.pos}, cannot move to {to}")
+            raise ValueError(f"No piece on the tile {self.pos}, cannot move to {to}. Board state: {str(board)}")
         if self.pos == to:
             return True
         # When called, to is empty or occupied by a opponent piece

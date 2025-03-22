@@ -268,7 +268,7 @@ class Board:
         Returns:
             bool: True if the game is a stalemate, otherwise False.
         """
-        return not any(move.is_legal(self) for move in self.current_player.get_moves(self))
+        return len(self.current_player.get_legal_moves(self)) == 0
     
     def is_insufficient_material(self):
         """
@@ -441,24 +441,16 @@ class Board:
         This function handles piece selection, move execution, promotion logic, and special moves like castling.
         """
         if self.selected is not None:
-            debug_print("SELECTED", self.selected.pos)
-            debug_print("POS", pos)
-            debug_print("TRIGGER PROMOTION")
             if self._trigger_promotion(pos):
                 return
-            debug_print("ALLY PIECE")
             if self._ally_piece(pos):
                 return
-            debug_print("DESELECT PIECE")
             if self._deselect_piece(pos):
                 return
-            debug_print("HANDLE ILLEGAL MOVE")
             if self._handle_illegal_move(pos):
                 return
-            debug_print("SET PROMOTION")
             if self._set_promotion(pos):
                 return
-            debug_print("EXECUTE MOVE")
             self.convert_to_move(self.selected.pos, pos).execute(self)
         else:
             self._select_piece(pos)
@@ -523,14 +515,14 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.moves]
+        moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.calc_moves(self, tile.pos)]
         if config.rules["giveaway"] == True:
-            if any(move.capture for move in self.current_player.get_moves(self)):
-                return list(filter(lambda move: move.capture, moves))
+            if len([move for move in self.current_player.get_moves() if move.capture]) == 0:
+                return [move for move in moves if move.capture]
             else:
                 return list(filter(lambda move: not move.castling, moves))
         else:
-            return list(filter(lambda move: move.is_legal(self), moves))
+            return [move for move in moves if move.is_legal(self)]
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """

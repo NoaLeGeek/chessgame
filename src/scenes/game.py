@@ -176,8 +176,6 @@ class Game(Scene):
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
             if self.board.game_over == False:
-                if not self.board.is_empty(pos) and self.board.get_piece(pos).color == self.board.turn:
-                    self.board.get_tile(pos).calc_moves(self.board)
                 self.board.select(pos)
 
     def handle_right_click(self, keys):

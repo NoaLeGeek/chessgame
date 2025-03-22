@@ -16,7 +16,7 @@ class SetupMenu(Scene):
     def __init__(self):
         super().__init__()
         self.player1 = Player(1)
-        self.player2 = NegamaxAI(-1, 3)
+        self.player2 = Player(-1)
         self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
     
     def create_buttons(self):
@@ -174,10 +174,10 @@ class PlayerVsIaMenu(Scene):
                 y=config.height*0.305+i*config.height * 0.1,
                 radius=config.height*0.03,
                 width=int(config.height*0.005),
-                color=Colors.RED.value if (ia == 'nn' and not config.rules['classic']) else Colors.WHITE.value,
+                color=Colors.RED.value if (ia == 'neural_network' and not config.rules['classic']) else Colors.WHITE.value,
                 state=False
             )
-            for i, ia in enumerate(['random_ia', 'minimax', 'nn'])
+            for i, ia in enumerate(['random_ia', 'negamax', 'neural_network'])
         }
         self.buttons.update(self.ia_buttons)
 
@@ -188,16 +188,16 @@ class PlayerVsIaMenu(Scene):
                 text = ia,
                 font_name=Fonts.GEIZER,
                 font_size=int(config.height*0.08),
-                color = Colors.RED.value if (ia == 'neural network' and not config.rules['classic']) else Colors.WHITE.value,
+                color = Colors.RED.value if (ia == 'neural_network' and not config.rules['classic']) else Colors.WHITE.value,
             )
-            for i, ia in enumerate(['random', 'minimax', 'neural network'])
+            for i, ia in enumerate(['random', 'negamax', 'neural_network'])
         }
 
     def update_color(self, color):
         if color != 'random_color':
             self.player1.color = color
             self.player2.color = -color
-        else :
+        else:
             self.player1.color = random.choice((1, -1))
             self.player2.color = -self.player1.color
         self.selected_color = color

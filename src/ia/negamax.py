@@ -24,9 +24,7 @@ class NegamaxAI(Player):
         max_score = -self.checkmate
         best_move = None
 
-        for move in board.current_player.get_moves(board):
-            if not move.is_legal(board):
-                continue
+        for move in board.current_player.get_legal_moves(board):
             move.move(board)
             _, score = self.negamax(board, depth - 1, -beta, -alpha)
             score = -score
