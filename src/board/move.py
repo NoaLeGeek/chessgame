@@ -347,6 +347,7 @@ class MoveTree:
             # print("SIBLINGS AFTER", [s.move.notation for s in siblings])
             self.go_backward(board)
             self.go_forward(board, index)
+            board.update_history()
 
     def go_next(self, board):
         if self.current.parent:
@@ -360,6 +361,7 @@ class MoveTree:
             #print("SIBLINGS AFTER", [s.move.notation for s in siblings])
             self.go_backward(board)
             self.go_forward(board, index)
+            board.update_history()
 
     def go_root(self, board):
         while self.current.parent:

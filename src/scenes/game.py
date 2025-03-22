@@ -200,7 +200,7 @@ class Game(Scene):
                 self.handle_right_click(keys)
         elif event.type == pygame.KEYDOWN:
             if keys[pygame.K_r]:
-                self.board = Board(self.player1, self.player2)
+                self.board = Board(self.current_player, self.waiting_player)
             if keys[pygame.K_f]:
                 self.board.flip_board()
             if keys[pygame.K_SPACE]:
@@ -208,17 +208,15 @@ class Game(Scene):
                 move.execute(self.board)
             if keys[pygame.K_LEFT]:
                 if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
-                    self.board.move_tree.go_root()
+                    self.board.move_tree.go_root(self.board)
                 else:
-                    self.board.move_tree.go_backward()
+                    self.board.move_tree.go_backward(self.board)
             if keys[pygame.K_RIGHT]:
                 if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
-                    self.board.move_tree.go_leaf()
+                    self.board.move_tree.go_leaf(self.board)
                 else:
-                    self.board.move_tree.go_forward()
+                    self.board.move_tree.go_forward(self.board)
             if keys[pygame.K_UP]:
-                self.board.move_tree.go_next()
+                self.board.move_tree.go_next(self.board)
             if keys[pygame.K_DOWN]:
-                self.board.move_tree.go_previous()
-            if keys[pygame.K_t]:
-                print(self.board.history)
+                self.board.move_tree.go_previous(self.board)
