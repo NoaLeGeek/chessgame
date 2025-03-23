@@ -58,7 +58,7 @@ class Game(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.BLACK.value, 
-                command=self.board.move_tree.go_backward
+                command=lambda:self.board.move_tree.go_backward(self.board)
             ) ,
             'redo':RectButton(
                 x=self.history_background.centerx+config.width*0.07, 
@@ -71,7 +71,7 @@ class Game(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.BLACK.value, 
-                command=self.board.move_tree.go_forward
+                command=lambda:self.board.move_tree.go_forward(self.board)
             ),
             'root':RectButton(
                 x=self.history_background.centerx-config.width*0.14, 
@@ -84,7 +84,7 @@ class Game(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.BLACK.value, 
-                command=self.board.move_tree.go_root 
+                command=lambda:self.board.move_tree.go_root(self.board)
             ),
             'leaf':RectButton(
                 x=self.history_background.centerx+config.width*0.14, 
@@ -97,7 +97,7 @@ class Game(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.BLACK.value, 
-                command=self.board.move_tree.go_leaf
+                command=lambda:self.board.move_tree.go_leaf(self.board)
             ) 
         }
 
@@ -106,7 +106,7 @@ class Game(Scene):
 
     def render(self, screen:pygame.Surface):
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
-        pygame.draw.rect(screen, Colors.WHITE.value, self.evaluation_bar)
+        self.draw_eval_bar(screen)
         screen.blit(self.board.image, (config.margin + config.eval_bar_width, config.margin))
         # Highlight
         self._draw_highlight(screen)
@@ -243,4 +243,21 @@ class Game(Scene):
                 color=Colors.WHITE.value,
             )
         })
+
+    def draw_eval_bar(self, screen):
+        value = (self.board.score + self.board.negamax.checkmate) / (self.board.negamax.checkmate*2)
+        print(self.board.score)
+        
+        if self.board.score >= 0:
+            white_height = value
+            black_height = 1-value
+        else :
+            white_height = 1-value
+            black_height = value
+        white_height *= self.evaluation_bar.height
+        black_height *= self.evaluation_bar.height
+        pygame.draw.rect(screen, Colors.WHITE.value, (self.evaluation_bar.x, self.evaluation_bar.y, self.evaluation_bar.width, white_height))
+        pygame.draw.rect(screen, Colors.BLACK.value, (self.evaluation_bar.x+white_height, self.evaluation_bar.y, self.evaluation_bar.width, black_height))
+
+
 

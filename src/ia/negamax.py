@@ -2,7 +2,6 @@ from random import choice, shuffle
 from constants import piece_values, piece_heatmaps
 
 from board.player import Player
-from board.board import Board
 
 
 class NegamaxAI(Player):
@@ -45,7 +44,7 @@ class NegamaxAI(Player):
         Score the board. A positive score is good for white, a negative score is good for black.
         """
         if board.is_stalemate():
-            if board.current_player.is_king_check():
+            if board.current_player.is_king_check(board):
                 return self.checkmate * -board.turn
             else:
                 return self.stalemate

@@ -8,6 +8,7 @@ from gui import Label
 from config import config
 from board.tile import Tile
 from board.player import Player
+from ia.negamax import NegamaxAI
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction, Fonts, Colors
 from board.piece import notation_to_piece, piece_to_notation, piece_to_num
@@ -36,6 +37,8 @@ class Board:
         self.current_player = current_player
         self.waiting_player = waiting_player
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
+        self.score = 0
+        self.negamax = NegamaxAI(0, 0)
 
         # Anarchy chess
         if config.rules["+3_checks"] == True:
@@ -710,27 +713,26 @@ class Board:
     
     def update_history(self):
         moves = self.move_tree.get_root_to_leaf()
-        if len(moves)%2 == 0 :
-            moves = moves[-24:]
-        else :
-            moves = moves[-23:]
+        start_num = max(1, ceil((len(moves) - 20) / 2)) if len(moves) > 20 else 1
+        moves = moves[-(22 if len(moves) % 2 == 0 else 21):]
+
         self.history = [
             Label(
-                center =  (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.1+(config.height*0.03)*(i if i %2 == 0 else i-1)),
-                text = move.notation,
-                font_name=Fonts.GEIZER, 
-                font_size=int(config.height*0.05),
-                color = Colors.WHITE.value
+                center=(config.width * 0.7 + (config.width * 0.1 * (i % 2)), 
+                        config.height * 0.1 + (config.height * 0.035) * (i - i % 2)),
+                text=move.notation,
+                font_name=Fonts.TYPE_MACHINE,
+                font_size=int(config.height * 0.05),
+                color=Colors.WHITE.value
             )
             for i, move in enumerate(moves)
-        ]
-        self.history += [
+        ] + [
             Label(
-                center =  (config.width*0.6, config.height*0.1+(config.height*0.06*i)),
-                text = str(i+1)+'.',
-                font_name=Fonts.GEIZER, 
-                font_size=int(config.height*0.05),
-                color = Colors.WHITE.value
-            )   
-            for i in range(ceil(len(moves)/2))
+                center=(config.width * 0.6, config.height * 0.1 + (config.height * 0.035) * 2 * i),
+                text=f"{start_num + i}.",
+                font_name=Fonts.TYPE_MACHINE,
+                font_size=int(config.height * 0.05),
+                color=Colors.WHITE.value
+            )
+            for i in range(ceil(len(moves) / 2))
         ]

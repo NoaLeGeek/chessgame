@@ -2,6 +2,7 @@ import pygame
 from scenes.scene import SceneManager
 from config import config
 from scenes.menu import MainMenu
+from constants import Colors
 
 def main():
     pygame.init()
@@ -15,6 +16,7 @@ def main():
     manager.set(MainMenu())
     run = True
     while run:
+        screen.fill(Colors.BLACK.value)
         manager.render(screen)
         manager.update(clock.get_time()/1000)
         pygame.display.update()

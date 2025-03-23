@@ -49,6 +49,7 @@ class Move:
         self.notation = self.to_notation(board)
         board.update_history()
         board.check_game()
+        board.score = board.negamax.evaluate_board(board)
         if board.game_over == False and board.current_player.ia == True:
             board.current_player.play_move(board)
 
