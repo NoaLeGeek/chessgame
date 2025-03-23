@@ -18,8 +18,8 @@ def str_to_ia(ia:str, color, depth=None):
     elif 'negamax' in ia:
         ia = 'negamax'
     elif 'neural_network' in ia:
-        ia == 'neural_network'
-    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'neural_network':None}[ia]
+        ia = 'neural_network'
+    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'neural_network':load_model('models/v1', color)}[ia]
 
 class SetupMenu(Scene):
     def __init__(self):
