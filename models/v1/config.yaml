@@ -35,11 +35,12 @@ data:
   val_path: ''
 
 training:
-  num_epochs: 100
-  batch_size: 256
+  num_epochs: 200
+  batch_size: 128
   num_workers: 4
   checkpoint: 0
 
   optimizer:
     AdamW: 
       lr: 0.0001
+      weight_decay: 0.01

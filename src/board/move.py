@@ -224,8 +224,8 @@ class Move:
         # Castling
         if config.rules["giveaway"] == True or board.current_player.is_king_check(board):
             return False
-        is_legal = True
         d = sign(self.to_pos[1] - self.from_pos[1])
+        is_legal = True
         # -1 for O-O-O, 1 for O-O
         castling_direction = d*board.flipped
         rook_pos = self.to_pos if config.rules["chess960"] == True else (self.to_pos[0], (7 if d == 1 else 0))

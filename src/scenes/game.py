@@ -204,7 +204,7 @@ class Game(Scene):
             if keys[pygame.K_f]:
                 self.board.flip_board()
             if keys[pygame.K_SPACE]:
-                move = self.board.ia.predict(self.board)
+                move = self.board.ia.get_best_move(self.board)
                 move.execute(self.board)
             if keys[pygame.K_LEFT]:
                 if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:

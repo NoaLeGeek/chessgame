@@ -8,26 +8,27 @@ from tqdm import tqdm
 from chess import pgn, Board
 from torch.utils.data import IterableDataset
 
-
 class ChessDataset(IterableDataset):
     """
     A custom dataset for processing chess games stored in PGN format.
-
-    Args:
-        file_path (str): The path to the PGN file.
-        encoded_moves (dict): A dictionary to store encoded chess moves.
-        batch_size (int): The number of samples per batch.
-        num_samples: The number of samples in the dataset.
     """
-    def __init__(self, file_path, encoded_moves={}, batch_size=64):
+    def __init__(self, file_path: str, encoded_moves: dict[str, int] = {}, batch_size: int = 64):
+        """
+        Initializes the ChessDataset.
+
+        Args:
+            file_path (str): The path to the PGN file.
+            encoded_moves (dict[str, int]): A dictionary mapping move strings to encoded values.
+            batch_size (int): The number of samples per batch.
+        """
         self.file_path = file_path
         self.encoded_moves = encoded_moves
         self.batch_size = batch_size
         self.num_games, self.num_samples = self.process_dataset()
-        print(F'Number of games : {self.num_games}')
-        print(f'Number of samples : {self.num_samples}')
+        print(f'Number of games: {self.num_games}')
+        print(f'Number of samples: {self.num_samples}')
 
-    def process_segment(self, start_offset, end_offset):
+    def process_segment(self, start_offset: int, end_offset: int) -> tuple[int, int]:
         """
         Processes a segment of the PGN file.
 
@@ -36,15 +37,13 @@ class ChessDataset(IterableDataset):
             end_offset (int): The end byte offset.
 
         Returns:
-            num_samples (int): The number of samples processed.
-            num_games (int): The number of games processed.
+            tuple[int, int]: Number of samples and games processed.
         """
         num_samples = 0
         num_games = 0
 
         with open(self.file_path, "r", encoding="UTF-8", errors="ignore") as f:
             f.seek(start_offset)
-
             if start_offset != 0:
                 f.readline()
                 while True:
@@ -59,22 +58,21 @@ class ChessDataset(IterableDataset):
                 num_games += 1
                 for move in game.mainline_moves():
                     num_samples += 1
-
+        
         return num_samples, num_games
 
-    def process_dataset(self):
+    def process_dataset(self) -> tuple[int, int]:
         """
         Processes the entire PGN dataset using multiple workers.
 
         Returns:
-            total_games (int): The total number of games processed.
-            total_samples (int): The total number of samples processed.
+            tuple[int, int]: Total number of games and samples processed.
         """
         total_games, total_samples = 0, 0
         file_size = os.path.getsize(self.file_path)
         num_workers = cpu_count()
         chunk_size = file_size // num_workers
-
+        
         offsets = sorted([
             (i * chunk_size, min((i + 1) * chunk_size, file_size))
             for i in range(num_workers)
@@ -90,15 +88,15 @@ class ChessDataset(IterableDataset):
         return total_games, total_samples
 
     @staticmethod
-    def board_to_matrix(board: Board):
+    def board_to_matrix(board: Board) -> np.ndarray:
         """
-        Converts a chess board (from the chess library) to a matrix representation.
+        Converts a chess board to a 14x8x8 matrix representation.
 
         Args:
             board (Board): A chess board object.
 
         Returns:
-            matrix (np.ndarray): A 14x8x8 matrix representation of the board.
+            np.ndarray: A 14x8x8 matrix representation of the board.
         """
         matrix = np.zeros((14, 8, 8))
         for square, piece in board.piece_map().items():
@@ -119,27 +117,27 @@ class ChessDataset(IterableDataset):
         return matrix
 
     @staticmethod
-    def process_X(X):
+    def process_X(X: list[np.ndarray]) -> torch.Tensor:
         """
         Processes the input data.
 
         Args:
-            X (list): The input data.
+            X (list[np.ndarray]): The input data.
 
         Returns:
-            torch.Tensor: The processed input data.
+            torch.Tensor: Processed input tensor.
         """
         return torch.tensor(np.array(X), dtype=torch.float32)
 
-    def process_y(self, y):
+    def process_y(self, y: list[str]) -> torch.Tensor:
         """
         Processes the target data.
 
         Args:
-            y (list): The target data.
+            y (list[str]): The target data (list of move strings).
 
         Returns:
-            torch.Tensor: The processed target data.
+            torch.Tensor: Processed target tensor.
         """
         y = np.array([self.encoded_moves[move] for move in y])
         return torch.tensor(y, dtype=torch.long)
@@ -149,7 +147,7 @@ class ChessDataset(IterableDataset):
         Creates an iterator over the dataset.
 
         Yields:
-            tuple: A tuple of processed input and target data.
+            tuple[torch.Tensor, torch.Tensor]: A tuple of processed input and target tensors.
         """
         worker_info = torch.utils.data.get_worker_info()
         if worker_info is None:
@@ -161,7 +159,7 @@ class ChessDataset(IterableDataset):
             chunk_size = file_size // num_workers
             iter_start = worker_id * chunk_size
             iter_end = (worker_id + 1) * chunk_size if worker_id < num_workers - 1 else file_size
-
+        
         X, y = [], []
         with open(self.file_path, "r", encoding="UTF-8", errors="ignore") as f:
             f.seek(iter_start)
@@ -176,17 +174,16 @@ class ChessDataset(IterableDataset):
                 game = pgn.read_game(f)
                 if game is None:
                     break
-
+                
                 board = game.board()
                 for move in game.mainline_moves():
                     X.append(self.board_to_matrix(board))
                     y.append(move.uci())
                     board.push(move)
-
+                    
                     if len(X) >= self.batch_size:
                         yield self.process_X(X), self.process_y(y)
                         X, y = [], []
+        
         if X:
             yield self.process_X(X), self.process_y(y)
-
-

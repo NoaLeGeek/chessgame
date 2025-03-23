@@ -6,7 +6,6 @@ import yaml
 import warnings
 
 import torch
-import torch_directml
 from tqdm import tqdm
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
@@ -22,16 +21,16 @@ CONFIG_PATH = os.path.join(MODEL_PATH, 'config.yaml')
 CHECKPOINT_DIR = os.path.join(MODEL_PATH, 'checkpoints')
 LOGS_PATH = os.path.join(MODEL_PATH, 'training_logs.csv')
 
-def initialize_dataloaders(config, encoded_moves):
+def initialize_dataloaders(config: dict, encoded_moves: dict) -> tuple[DataLoader, DataLoader]:
     """
     Initialize DataLoaders with specified parameters.
 
     Args:
-        config (dict): Configuration dictionary
-        encoded_moves (dict): Dictionary of encoded moves.
+        config (dict): Configuration dictionary containing data paths and training parameters.
+        encoded_moves (dict): Dictionary containing encoded moves used for model training.
 
     Returns:
-        DataLoader: DataLoader objects for training and validation datasets.
+        tuple: A tuple containing two DataLoader objects, one for training data and one for validation data.
     """
     print('Initializing Training Dataset...')
     train_dataset = ChessDataset(config["data"]["train_path"], encoded_moves, config["training"]["batch_size"])
@@ -42,38 +41,37 @@ def initialize_dataloaders(config, encoded_moves):
         DataLoader(val_dataset, batch_size=None, num_workers=config["training"]["num_workers"], pin_memory=True)
     )
 
-def setup_device():
+def setup_device() -> str:
     """
     Setup the device for computation.
 
     Returns:
-        torch_directml.device: The device to be used.
+        device (str): The device to be used.
     """
-    device = torch_directml.device()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     return device
 
-
-def compute_accuracy(outputs, labels):
+def compute_accuracy(outputs: torch.Tensor, labels: torch.Tensor) -> int:
     """
     Compute the accuracy of the model's predictions.
 
     Args:
-        outputs (torch.Tensor): Model outputs.
-        labels (torch.Tensor): True labels.
+        outputs (torch.Tensor): Model outputs, typically the raw logits.
+        labels (torch.Tensor): True labels (ground truth).
 
     Returns:
-        int: Number of correct predictions.
-    """ 
+        int: The number of correct predictions.
+    """
     _, predicted = torch.max(outputs, 1)
     return (predicted == labels).sum().item()
 
-def save_logs(logs):
+def save_logs(logs: list):
     """
     Save training logs to a CSV file.
 
     Args:
-        logs (list): List of logs to save.
+        logs (list): List of logs to save, including epoch, loss, accuracy, etc.
     """
     with open(LOGS_PATH, mode='a', newline='') as file:
         writer = csv.writer(file)
@@ -81,14 +79,13 @@ def save_logs(logs):
             writer.writerow(["Epoch", "Training Loss", "Training Accuracy (%)", "Validation Loss", "Validation Accuracy (%)", "Learning Rate", "Time"])
         writer.writerow(logs)
 
-
-def save_checkpoint(model, optimizer, epoch):
+def save_checkpoint(model: torch.nn.Module, optimizer: torch.optim.Optimizer, epoch: int):
     """
     Save the model checkpoint.
 
     Args:
         model (torch.nn.Module): The model to save.
-        optimizer (torch.optim.Optimizer): The optimizer.
+        optimizer (torch.optim.Optimizer): The optimizer state to save.
         epoch (int): The current epoch.
     """
     checkpoint = {
@@ -99,21 +96,19 @@ def save_checkpoint(model, optimizer, epoch):
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     torch.save(checkpoint, os.path.join(CHECKPOINT_DIR, f'checkpoint_{epoch}.pth'))
 
-
-def validate_model(model, dataloader, criterion, device, batch_size):
+def validate_model(model: torch.nn.Module, dataloader: DataLoader, criterion: torch.nn.Module, device: torch.device, batch_size: int) -> tuple[float, float]:
     """
     Validate the model.
 
     Args:
         model (torch.nn.Module): The model to validate.
-        dataloader (DataLoader): The DataLoader.
-        criterion (torch.nn.Module): The loss function.
-        device (torch.device): The device to use.
-        batch_size (int): The batch size.
+        dataloader (DataLoader): The DataLoader used for validation.
+        criterion (torch.nn.Module): The loss function to compute.
+        device (torch.device): The device to run the validation on.
+        batch_size (int): The batch size used during validation.
 
     Returns:
-        float: Validation loss.
-        float: Validation accuracy.
+        tuple: A tuple containing the average validation loss and accuracy.
     """
     model.eval()
     total_loss, total_accuracy, total_samples = 0, 0, 0
@@ -137,20 +132,19 @@ def validate_model(model, dataloader, criterion, device, batch_size):
     
     return avg_loss, avg_accuracy
 
-
-def train_model(config, model, train_dataloader, val_dataloader, criterion, optimizer, device, start_epoch):
+def train_model(config: dict, model: torch.nn.Module, train_dataloader: DataLoader, val_dataloader: DataLoader, criterion: torch.nn.Module, optimizer: torch.optim.Optimizer, device: torch.device, start_epoch: int):
     """
     Train the model.
 
     Args:
-        config (dict): Configuration dictionary.
+        config (dict): Configuration dictionary containing training settings.
         model (torch.nn.Module): The model to train.
         train_dataloader (DataLoader): The DataLoader for training data.
         val_dataloader (DataLoader): The DataLoader for validation data.
-        criterion (torch.nn.Module): The loss function.
-        optimizer (torch.optim.Optimizer): The optimizer.
-        device (torch.device): The device to use.
-        start_epoch (int): The starting epoch.
+        criterion (torch.nn.Module): The loss function used during training.
+        optimizer (torch.optim.Optimizer): The optimizer for gradient updates.
+        device (torch.device): The device (CPU/GPU) for training.
+        start_epoch (int): The epoch from which to start training (useful for resuming training).
     """
     num_epochs = config["training"]["num_epochs"]
     batch_size = config["training"]["batch_size"]
@@ -194,7 +188,6 @@ def train_model(config, model, train_dataloader, val_dataloader, criterion, opti
 
         save_checkpoint(model, optimizer, epoch + 1)
         save_logs([epoch + 1, avg_loss, avg_accuracy, val_loss, val_accuracy, learning_rate, f'{minutes}m{seconds}s'])
-
 
 def main():
     """

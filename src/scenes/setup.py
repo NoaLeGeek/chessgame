@@ -10,13 +10,13 @@ from board.player import Player
 from constants import Fonts, Colors, available_rule
 from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
 from ia.negamax import NegamaxAI, RandomAI
-from ia.ml.loader import load_model_from_checkpoint
+from ia.ml.loader import load_model, load_model_from_checkpoint
 
 class SetupMenu(Scene):
     def __init__(self):
         super().__init__()
         self.player1 = Player(1)
-        self.player2 = NegamaxAI(-1, 3)
+        self.player2 = load_model('models/v1', -1)
         self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
     
     def create_buttons(self):
