@@ -99,7 +99,7 @@ class Move:
             self._handle_normal_move(board)
         
         # Anarchy chess
-        if config.rules["+3_checks"] == True and board.current_player.is_king_check(self):
+        if config.rules["+3_checks"] == True and board.current_player.is_king_check(board):
             self.checks[board.waiting_player.color] += 1
 
     def _handle_castling(self, board):
