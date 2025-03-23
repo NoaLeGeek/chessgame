@@ -716,7 +716,7 @@ class Board:
             moves = moves[-23:]
         self.history = [
             Label(
-                center =  (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.1+(config.height*0.03)*(i if i %2 == 0 else i-1)),
+                center = (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.1+(config.height*0.03)*(i if i %2 == 0 else i-1)),
                 text = move.notation,
                 font_name=Fonts.GEIZER, 
                 font_size=int(config.height*0.05),
@@ -732,5 +732,5 @@ class Board:
                 font_size=int(config.height*0.05),
                 color = Colors.WHITE.value
             )   
-            for i in range(ceil(len(moves)/2))
+            for i in range(max(0, 1), ceil(len(moves)/2))
         ]
