@@ -11,7 +11,7 @@ from board.player import Player
 from ia.negamax import NegamaxAI
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction, Fonts, Colors
-from board.piece import notation_to_piece, piece_to_notation, piece_to_num
+from board.piece import notation_captured_piece, piece_to_notation, piece_to_num
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
 
 class Board:
@@ -110,7 +110,7 @@ class Board:
                 else:
                     color = 1 if char.isupper() else -1
                     tile = Tile((r, c))
-                    piece_type = notation_to_piece(char)
+                    piece_type = notation_captured_piece(char)
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
                     piece = piece_type(color)
@@ -391,7 +391,7 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.from_piece
+        piece = move.moving_piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
@@ -409,7 +409,7 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.capture or move.from_piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
+        if move.is_capture() or move.moving_piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_tree.get_root_to_leaf())
 
@@ -521,8 +521,8 @@ class Board:
         """Filter the legal moves for the selected piece."""
         moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.calc_moves(self, tile.pos)]
         if config.rules["giveaway"] == True:
-            if len([move for move in self.current_player.get_moves() if move.capture]) == 0:
-                return [move for move in moves if move.capture]
+            if len([move for move in self.current_player.get_moves() if move.is_capture()]) == 0:
+                return [move for move in moves if move.is_capture()]
             else:
                 return list(filter(lambda move: not move.castling, moves))
         else:
