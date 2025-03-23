@@ -85,6 +85,7 @@ available_rule = ['classic', 'chess960', 'giveaway', '+3_checks', 'king_of_the_h
 class Fonts(StrEnum):
     GEIZER = "Geizer.otf"
     ONE_SLICE = "One Slice.otf"
+    TYPE_MACHINE = "Type Machine.ttf"
 
 class Colors(Enum):
     BROWN = (92, 64, 51)

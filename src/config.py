@@ -124,7 +124,8 @@ class Config:
         #self.dimensions = (width, height)
         #self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
         #self.width = self.height
-        self.width, self.height = int(width*0.8), int(height*0.8)
+        self.width = width
+        self.height = int(self.width*(9/16))
         self.margin = self.height//(self.columns*2 + 2)
         self.tile_size = self.height//(self.columns + 1)
         self.eval_bar_width = self.tile_size//2

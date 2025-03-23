@@ -1,4 +1,5 @@
 from random import choice
+from math import ceil
 
 import pygame
 import numpy as np
@@ -7,9 +8,10 @@ from gui import Label
 from config import config
 from board.tile import Tile
 from board.player import Player
+from ia.negamax import NegamaxAI
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction, Fonts, Colors
-from board.piece import notation_to_piece, piece_to_notation, piece_to_num
+from board.piece import notation_captured_piece, piece_to_notation, piece_to_num
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
 from ia.ml.loader import load_model_from_checkpoint
 
@@ -36,6 +38,8 @@ class Board:
         self.current_player = current_player
         self.waiting_player = waiting_player
         self.castling = {1: {1: False, -1: False}, -1: {1: False, -1: False}}
+        self.score = 0
+        self.negamax = NegamaxAI(0, 0)
 
         # Anarchy chess
         if config.rules["+3_checks"] == True:
@@ -108,7 +112,7 @@ class Board:
                 else:
                     color = 1 if char.isupper() else -1
                     tile = Tile((r, c))
-                    piece_type = notation_to_piece(char)
+                    piece_type = notation_captured_piece(char)
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
                     piece = piece_type(color)
@@ -270,7 +274,7 @@ class Board:
         Returns:
             bool: True if the game is a stalemate, otherwise False.
         """
-        return not any(move.is_legal(self) for move in self.current_player.get_moves(self))
+        return len(self.current_player.get_legal_moves(self)) == 0
     
     def is_insufficient_material(self):
         """
@@ -389,7 +393,7 @@ class Board:
         
         Updates the castling rights based on the piece involved in the move.
         """
-        piece = move.from_piece
+        piece = move.moving_piece
         if piece.notation == "K":
             # If the King moves, reset castling rights for that player
             self.castling[piece.color] = {1: False, -1: False}
@@ -407,7 +411,7 @@ class Board:
         
         Updates the `last_irreversible_move` based on the conditions that make a move irreversible.
         """
-        if move.capture or move.from_piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
+        if move.is_capture() or move.moving_piece.notation == "P" or move.castling or self.move_tree.current.castling != self.castling:
             # If the move is a capture, pawn move, castling, or a change in castling rights, mark it as irreversible
             self.last_irreversible_move = len(self.move_tree.get_root_to_leaf())
 
@@ -443,24 +447,16 @@ class Board:
         This function handles piece selection, move execution, promotion logic, and special moves like castling.
         """
         if self.selected is not None:
-            debug_print("SELECTED", self.selected.pos)
-            debug_print("POS", pos)
-            debug_print("TRIGGER PROMOTION")
             if self._trigger_promotion(pos):
                 return
-            debug_print("ALLY PIECE")
             if self._ally_piece(pos):
                 return
-            debug_print("DESELECT PIECE")
             if self._deselect_piece(pos):
                 return
-            debug_print("HANDLE ILLEGAL MOVE")
             if self._handle_illegal_move(pos):
                 return
-            debug_print("SET PROMOTION")
             if self._set_promotion(pos):
                 return
-            debug_print("EXECUTE MOVE")
             self.convert_to_move(self.selected.pos, pos).execute(self)
         else:
             self._select_piece(pos)
@@ -525,14 +521,14 @@ class Board:
 
     def _filter_moves(self, tile):
         """Filter the legal moves for the selected piece."""
-        moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.moves]
+        moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.calc_moves(self, tile.pos)]
         if config.rules["giveaway"] == True:
-            if any(move.capture for move in self.current_player.get_moves(self)):
-                return list(filter(lambda move: move.capture, moves))
+            if len([move for move in self.current_player.get_moves() if move.is_capture()]) == 0:
+                return [move for move in moves if move.is_capture()]
             else:
                 return list(filter(lambda move: not move.castling, moves))
         else:
-            return list(filter(lambda move: move.is_legal(self), moves))
+            return [move for move in moves if move.is_legal(self)]
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """
@@ -706,7 +702,8 @@ class Board:
                                 matrix[13, move[0], move[1]] = 1 
                                 legal_moves += 1
                             if legal_moves:       
-                                matrix[12, pos[0], pos[1]] = 1               
+                                matrix[12, pos[0], pos[1]] = 1    
+        print(matrix[12], matrix[13])             
         return matrix
 
     def convert_uci_to_move(self, uci_move):
@@ -726,17 +723,26 @@ class Board:
 
     def update_history(self):
         moves = self.move_tree.get_root_to_leaf()
-        if len(moves)%2 == 0 :
-            moves = moves[-24:]
-        else :
-            moves = moves[-23:]
+        start_num = max(1, ceil((len(moves) - 20) / 2)) if len(moves) > 20 else 1
+        moves = moves[-(22 if len(moves) % 2 == 0 else 21):]
+
         self.history = [
             Label(
-                center =  (config.width*0.7+(config.width*0.1*(i%2)), config.height*0.1+(config.height*0.03)*(i if i %2 == 0 else i-1)),
-                text = move.notation,
-                font_name=Fonts.GEIZER, 
-                font_size=int(config.height*0.05),
-                color = Colors.WHITE.value
+                center=(config.width * 0.7 + (config.width * 0.1 * (i % 2)), 
+                        config.height * 0.1 + (config.height * 0.035) * (i - i % 2)),
+                text=move.notation,
+                font_name=Fonts.TYPE_MACHINE,
+                font_size=int(config.height * 0.05),
+                color=Colors.WHITE.value
             )
             for i, move in enumerate(moves)
+        ] + [
+            Label(
+                center=(config.width * 0.6, config.height * 0.1 + (config.height * 0.035) * 2 * i),
+                text=f"{start_num + i}.",
+                font_name=Fonts.TYPE_MACHINE,
+                font_size=int(config.height * 0.05),
+                color=Colors.WHITE.value
+            )
+            for i in range(ceil(len(moves) / 2))
         ]

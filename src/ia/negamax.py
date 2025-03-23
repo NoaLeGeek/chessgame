@@ -2,7 +2,6 @@ from random import choice, shuffle
 from constants import piece_values, piece_heatmaps
 
 from board.player import Player
-from board.board import Board
 
 
 class NegamaxAI(Player):
@@ -11,7 +10,7 @@ class NegamaxAI(Player):
         self.depth = depth
         self.stalemate = 0
         self.checkmate = 1000
-        self.ia = True
+        self.ia = 1
 
     def get_best_move(self, board):
         best_move, _ = self.negamax(board, self.depth, -self.checkmate, self.checkmate)
@@ -24,9 +23,7 @@ class NegamaxAI(Player):
         max_score = -self.checkmate
         best_move = None
 
-        for move in board.current_player.get_moves(board):
-            if not move.is_legal(board):
-                continue
+        for move in board.current_player.get_legal_moves(board):
             move.move(board)
             _, score = self.negamax(board, depth - 1, -beta, -alpha)
             score = -score
@@ -47,7 +44,7 @@ class NegamaxAI(Player):
         Score the board. A positive score is good for white, a negative score is good for black.
         """
         if board.is_stalemate():
-            if board.current_player.is_king_check():
+            if board.current_player.is_king_check(board):
                 return self.checkmate * -board.turn
             else:
                 return self.stalemate
@@ -68,7 +65,7 @@ class NegamaxAI(Player):
 class RandomAI(Player):
     def __init__(self, color: int):
         super().__init__(color)
-        self.ia = True
+        self.ia = 1
 
     def get_best_move(self, board):
         moves = [move for move in self.get_moves(board) if move.is_legal(board)]

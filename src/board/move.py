@@ -5,24 +5,23 @@ from board.piece import piece_to_notation
 
 class Move:
     def __init__(self, board, from_pos, to_pos, promotion=None):
+        if board.is_empty(from_pos):
+            raise ValueError(f"There is no piece at {from_pos}")
         self.from_pos = from_pos
         self.to_pos = to_pos
-        if board.is_empty(self.from_pos):
-            raise ValueError(f"There is no piece at {self.from_pos}")
-        self.from_piece = board.get_piece(from_pos)
-        self.to_piece = board.get_piece(to_pos)
-        self.capture = self._is_capture(board)
-        self.castling = self._is_castling(board)
+        self.moving_piece = board.get_piece(from_pos)
+        if promotion is not None and (to_pos[0] not in [0, config.rows - 1] or self.moving_piece.notation != "P"):
+            raise ValueError("Promotion is only possible for pawns at the last row")
         self.en_passant = self._is_en_passant(board)
-        self.promotion = self._get_promotion(promotion)
+        self.captured_piece = board.get_piece((self.from_pos[0], board.ep[1])) if self.en_passant else board.get_piece(to_pos) 
+        self.castling = self._is_castling(board)
+        self.promotion = promotion
         self.notation = None
         self.fen = None
-
-    def _get_promotion(self, promotion) -> None:
-        """Validates if the promotion is possible based on the piece's position."""
-        if promotion is not None and (self.to_pos[0] not in [0, config.rows - 1] or self.from_piece.notation != "P"):
-            raise ValueError("Promotion is only possible for pawns at the last row")
-        return promotion
+    
+    def is_capture(self) -> bool:
+        """Checks if the move is a capture."""
+        return self.captured_piece is not None
     
     def flip_move(self) -> None:
         """Flips the move's positions."""
@@ -38,7 +37,7 @@ class Move:
         board._update_last_irreversible_move(self)
         board.half_moves += 1
         # Reset half_moves if it's a capture, castling or a pawn move
-        if self.capture or self.castling or (not board.is_empty(self.to_pos) and self.to_piece.notation == "P"):
+        if self.is_capture() or self.castling or (not board.is_empty(self.to_pos) and self.captured_piece.notation == "P"):
             board.half_moves = 0
         if board.turn == -1:
             board.full_moves += 1
@@ -49,10 +48,11 @@ class Move:
         self.notation = self.to_notation(board)
         board.update_history()
         board.check_game()
-        if board.game_over == False and board.current_player.ia == True:
-            board.current_player.play_move(board)
+        board.score = board.negamax.evaluate_board(board)
+        
 
     def move(self, board):
+        #debug_print(f"Move {self.from_pos} -> {self.to_pos}")
         """Moves the piece on the board and updates the game state."""
         # Update the board state
         if self.promotion is not None:
@@ -76,29 +76,27 @@ class Move:
         and updates the board, castling rights, and en passant square accordingly.
         """
         # Update kings' positions
-        if self.from_piece.notation == "K":
+        if self.moving_piece.notation == "K":
             board.current_player.king = self.to_pos
 
         # Update player's pieces
-        if self.capture and not self.castling and not self.en_passant:
-            board.waiting_player.remove_piece(self.to_piece)
+        if self.is_capture() and not self.castling and not self.en_passant:
+            board.waiting_player.remove_piece(self.captured_piece)
 
         # Capture en passant
         if self.en_passant:
-            ep_pos = (self.from_pos[0], self.to_pos[1])
-            board.waiting_player.remove_piece(board.get_tile(ep_pos).piece)
-            board.get_tile(ep_pos).piece = None
+            board.waiting_player.remove_piece(board.get_tile((self.from_pos[0], self.to_pos[1])).piece)
+            board.get_tile((self.from_pos[0], self.to_pos[1])).piece = None
 
         # Handle castling logic
         if self.castling:
-            debug_print("Castling move")
             self._handle_castling(board)
         # Handle normal move
         else:
             self._handle_normal_move(board)
         
         # Anarchy chess
-        if config.rules["+3_checks"] == True and board.current_player.is_king_check(self):
+        if config.rules["+3_checks"] == True and board.current_player.is_king_check(board):
             self.checks[board.waiting_player.color] += 1
 
     def _handle_castling(self, board):
@@ -106,7 +104,7 @@ class Move:
         from_pos, to_pos = self.from_pos, self.to_pos
         d = sign(to_pos[1] - from_pos[1])
         # Save the pieces
-        king = self.from_piece
+        king = self.moving_piece
         rook_pos = to_pos if config.rules["chess960"] == True else (to_pos[0], (7 if d == 1 else 0))
         rook = board.get_piece(rook_pos)
 
@@ -123,7 +121,7 @@ class Move:
     def _handle_normal_move(self, board):
         """Handle a normal move of a piece."""
         from_pos, to_pos = self.from_pos, self.to_pos
-        board.get_tile(to_pos).piece = self.from_piece
+        board.get_tile(to_pos).piece = self.moving_piece
         board.get_tile(from_pos).piece = None
 
     def promote_piece(self, board, type_piece):
@@ -133,7 +131,7 @@ class Move:
         Args:
             type_piece: The type of piece to promote to (e.g., Queen, Rook).
         """
-        new_piece = type_piece(self.from_piece.color)
+        new_piece = type_piece(self.moving_piece.color)
         if config.piece_asset != "blindfold":
             piece_image_key = f"{(('w' if new_piece.color == 1 else 'b') if config.piece_asset != "mono" else "")}{new_piece.notation}"
             if piece_image_key not in board.piece_images:
@@ -145,6 +143,7 @@ class Move:
         board.promotion = None
 
     def undo(self, board) -> None:
+        #debug_print(f"Undo move {self.from_pos} -> {self.to_pos}")
         """Undoes the move on the board and updates the game state."""
         board.turn *= -1
         board.selected = None
@@ -155,7 +154,6 @@ class Move:
             self.undo_promote_piece(board)
         else:
             self.undo_move_piece(board)
-        board.update_history()
 
     def undo_promote_piece(self, board):
         """
@@ -163,9 +161,9 @@ class Move:
         
         This function reverses the effects of the last promotion, restoring the pawn to its previous state.
         """
-        board.get_tile(self.from_pos).piece = self.from_piece
+        board.get_tile(self.from_pos).piece = self.moving_piece
         board.current_player.remove_piece(board.get_tile(self.to_pos).piece)
-        board.get_tile(self.to_pos).piece = self.to_piece
+        board.get_tile(self.to_pos).piece = self.captured_piece
 
     def undo_move_piece(self, board):
         """
@@ -175,8 +173,10 @@ class Move:
         en passant square, and player's pieces to their previous state.
         """
         # Restore the board state
-        board.get_tile(self.from_pos).piece = self.from_piece
-        board.get_tile(self.to_pos).piece = self.to_piece
+        board.get_tile(self.from_pos).piece = self.moving_piece
+        board.get_tile((self.to_pos[0] + self.moving_piece.color*board.flipped, self.to_pos[1]) if self.en_passant else self.to_pos).piece = self.captured_piece
+        if self.en_passant:
+            board.get_tile(self.to_pos).piece = None
 
         # Handle castling
         if self.castling:
@@ -188,17 +188,12 @@ class Move:
             board.get_tile(dest_rook_pos).piece = rook
 
         # Restore king position
-        if self.from_piece.notation == "K":
+        if self.moving_piece.notation == "K":
             board.current_player.king = self.from_pos
 
         # Restore player's pieces
-        if self.capture and not self.castling and not self.en_passant:
-            board.waiting_player.add_piece(self.to_piece)
-
-        # Restore en passant capture
-        if self.en_passant:
-            ep_pos = (self.from_pos[0], self.to_pos[1])
-            board.get_tile(ep_pos).piece = self.to_piece
+        if self.is_capture() and not self.castling:
+            board.waiting_player.add_piece(self.captured_piece)
 
     def play_sound_move(self, board) -> None:
         """Plays the appropriate sound based on the move type."""
@@ -208,18 +203,16 @@ class Move:
             play_sound(board.sounds, "move-check")
         elif self.promotion is not None:
             play_sound(board.sounds, "promote")
-        elif self.capture:
+        elif self.is_capture():
             play_sound(board.sounds, "capture")
         else:
             play_sound(board.sounds, ("move-self" if board.turn * board.flipped == 1 else "move-opponent"))
-
-    def _is_capture(self, board) -> bool:
-        """Checks if the move results in a capture."""
-        return self.to_piece is not None or (board.ep is not None and not board.is_empty((self.from_pos[0], self.to_pos[1])) and board.get_piece((self.from_pos[0], self.to_pos[1])).is_enemy(self.from_piece))
     
     def is_legal(self, board) -> bool:
         """Validates if the move is legal according to the game rules."""
         if not self.castling:
+            if config.rules["giveaway"] == True:
+                return True
             return board.get_tile(self.from_pos).can_move(board, self.to_pos)
         # Castling
         if config.rules["giveaway"] == True or board.current_player.is_king_check(board):
@@ -244,16 +237,16 @@ class Move:
         """
         Checks if the move is a castling move.
         """
-        if self.from_piece.notation != "K":
+        if self.moving_piece.notation != "K":
             return False
         d = 1 if self.to_pos[1] > self.from_pos[1] else -1
-        if (config.rules["chess960"] == False and abs(self.from_pos[1] - self.to_pos[1]) != 2) or (config.rules["chess960"] == True and (not self.capture or board.is_empty(self.to_pos) or self.to_piece.notation != "R" or self.from_piece.is_enemy(self.to_piece))):
+        if (config.rules["chess960"] == False and abs(self.from_pos[1] - self.to_pos[1]) != 2) or (config.rules["chess960"] == True and (not self.is_capture() or board.is_empty(self.to_pos) or self.captured_piece.notation != "R" or self.moving_piece.is_enemy(self.captured_piece))):
             return False
         # O-O-O castling's right
-        if d == -1 and not board.castling[self.from_piece.color][d]:
+        if d == -1 and not board.castling[self.moving_piece.color][d]:
             return False
         # O-O castling's right
-        elif d == 1 and not board.castling[self.from_piece.color][d]:
+        elif d == 1 and not board.castling[self.moving_piece.color][d]:
             return False
         return True
     
@@ -262,8 +255,7 @@ class Move:
         Checks if the move is an en passant capture.
         """
         return (
-            self.from_piece.notation == "P" and
-            self.capture and
+            self.moving_piece.notation == "P" and
             board.ep is not None and
             self.to_pos == board.ep
             )
@@ -278,11 +270,11 @@ class Move:
             string += "O" + "-O"*(get_value(sign(self.to_pos[1] - self.from_pos[1]) * board.flipped, 1, 2))
         else:
             # Add the symbol of the piece
-            if self.from_piece.notation != "P":
-                string += self.from_piece.notation
-            if self.capture:
+            if self.moving_piece.notation != "P":
+                string += self.moving_piece.notation
+            if self.is_capture():
                 # Add the starting column if it's a pawn
-                if self.from_piece.notation == "P":
+                if self.moving_piece.notation == "P":
                     string += chr(flip_pos(self.from_pos[1], flipped = board.flipped) + 97)
                 # Add x if it's a capture
                 string += "x"
@@ -328,13 +320,15 @@ class MoveTree:
             self.current.move.move(board)
             self.current.move.play_sound_move(board)
             board.update_highlights()
+            board.update_history()
 
     def go_backward(self, board):
         if self.current.parent:
-            self.current.move.undo()
+            self.current.move.undo(board)
             self.current.move.play_sound_move(board)
             self.current = self.current.parent
             board.update_highlights()
+            board.update_history()
 
     def go_previous(self, board):
         if self.current.parent:

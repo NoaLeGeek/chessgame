@@ -6,8 +6,6 @@ from gui import Label, RectButton, create_rect_surface
 from constants import Colors, Fonts, available_board, available_piece, available_sound
 from utils import generate_piece_images, generate_board_image, load_image, generate_sounds, resize_image
 
-#TODO Faire les sons mais flemme
-
 class SettingsMenu(Scene):
     def __init__(self):
         super().__init__()
@@ -66,6 +64,19 @@ class SettingsMenu(Scene):
                 font_name=Fonts.GEIZER,
                 text_color=Colors.BLACK.value,
                 command=lambda: self.change_assets_menu(self.sound_assets_menu),
+            ),
+            'back': RectButton(
+                x=config.width*0.955,
+                y=config.height*0.08, 
+                width=config.height*0.1,
+                height=config.height*0.1,
+                color=Colors.LIGHT_GRAY.value,
+                hovered_color=Colors.WHITE.value,
+                text='<-',
+                text_color=Colors.DARK_GRAY.value,
+                font_size=int(config.height*0.1),
+                font_name=Fonts.GEIZER,
+                command=self.manager.go_back
             )
         }
 
@@ -308,7 +319,6 @@ class SoundAssetsMenu(Scene):
     def update_volume(self):
         for sound in self.sounds.values():
             sound.set_volume(config.volume)
-
 
 class VolumeBar:
     def __init__(self):
