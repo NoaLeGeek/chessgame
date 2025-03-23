@@ -174,7 +174,7 @@ class Move:
         """
         # Restore the board state
         board.get_tile(self.from_pos).piece = self.moving_piece
-        board.get_tile((self.to_pos[0] - self.moving_piece.color*board.flipped, self.to_pos[1]) if self.en_passant else self.to_pos).piece = self.captured_piece
+        board.get_tile((self.to_pos[0] + self.moving_piece.color*board.flipped, self.to_pos[1]) if self.en_passant else self.to_pos).piece = self.captured_piece
         if self.en_passant:
             board.get_tile(self.to_pos).piece = None
 
@@ -192,7 +192,7 @@ class Move:
             board.current_player.king = self.from_pos
 
         # Restore player's pieces
-        if self.is_capture() and not self.castling and not self.en_passant:
+        if self.is_capture() and not self.castling:
             board.waiting_player.add_piece(self.captured_piece)
 
     def play_sound_move(self, board) -> None:
