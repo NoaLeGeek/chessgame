@@ -18,6 +18,7 @@ class Game(Scene):
             self.board.flip_board()
         self.evaluation_bar = pygame.Rect(config.margin, config.margin, config.eval_bar_width, config.height-config.margin*2)
         self.history_background = pygame.Rect(config.margin+config.columns*config.tile_size+config.eval_bar_width, config.margin, config.width*0.35, config.height-config.margin*2)
+        self.ia_counter = 0
         super().__init__()
 
     def create_buttons(self):
@@ -126,6 +127,13 @@ class Game(Scene):
         
     def update(self):
         super().update()
+        if self.board.game_over == False and self.board.current_player.ia == True:
+            if self.ia_counter >= 1:
+
+                self.board.current_player.play_move(self.board)
+                self.ia_counter = 0
+            else :
+                self.ia_counter += 1/config.fps
         if self.board.winner and not self.labels:
             self.handle_winner()
 
@@ -181,7 +189,7 @@ class Game(Scene):
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
-            if self.board.game_over == False:
+            if self.board.game_over == False and self.board.current_player.ia == -1:
                 self.board.select(pos)
 
     def handle_right_click(self, keys):
@@ -232,8 +240,15 @@ class Game(Scene):
             text = 'Checkmate !\nWhite win'
         elif self.board.winner == 'Black' :
             text = 'Checkmate !\nBlack win'
+        elif self.board.winner == 'Stalemate':
+            text = 'Stalemate'
         elif self.board.winner == 'Draw by threefold repetition':
             text = '          Draw by\nthreefold repetition'
+        elif self.board.winner == 'Draw by insufficient material':
+            text = '          Draw by\ninsufficient material'
+        elif self.board.winner == 'Draw by the 50-move rule':
+            text = 'Draw by the 50-move rule'
+
         self.labels.update({
                 'end': Label(
                 center=((config.tile_size*8)//2+config.margin+config.eval_bar_width, config.height//2),
@@ -246,7 +261,6 @@ class Game(Scene):
 
     def draw_eval_bar(self, screen):
         value = (self.board.score + self.board.negamax.checkmate) / (self.board.negamax.checkmate*2)
-        print(self.board.score)
         
         if self.board.score >= 0:
             white_height = value
