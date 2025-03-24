@@ -87,7 +87,14 @@ class ChessModel(nn.Module, Player):
         Args:
             board: The current chess board state.
         """
+        if board.flipped == -1:
+            flip = True
+            board.flip_board()
+        else :
+            flip = False
         best_move = self.get_best_move(board)
         if best_move:
             best_move.execute(board)
             board.update_highlights()
+        if flip:
+            board.flip_board()
