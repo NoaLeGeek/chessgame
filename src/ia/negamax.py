@@ -50,11 +50,9 @@ class NegamaxAI(Player):
                 return self.stalemate
         score = 0
         for tile in board.board.values():
-            if tile is None:
-                raise ValueError("Tile is None")
             if board.is_empty(tile.pos):
                 continue
-            piece_score = [row[::tile.piece.color] for row in piece_heatmaps[tile.piece.notation.upper()][::tile.piece.color]][tile.pos[0]][tile.pos[1]]
+            piece_score = piece_heatmaps[tile.piece.color][tile.piece.notation][tile.pos[0]][tile.pos[1]]
             score += (piece_values[tile.piece.notation.upper()] + piece_score) * tile.piece.color
         return score
 
