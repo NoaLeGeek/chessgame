@@ -19,6 +19,7 @@ class Game(Scene):
         self.evaluation_bar = pygame.Rect(config.margin, config.margin, config.eval_bar_width, config.height-config.margin*2)
         self.history_background = pygame.Rect(config.margin+config.columns*config.tile_size+config.eval_bar_width, config.margin, config.width*0.35, config.height-config.margin*2)
         self.ia_counter = 0
+        self.bg = load_image('assets/images/game_bg.jpeg', (config.width, config.height))
         super().__init__()
 
     def create_buttons(self):
@@ -106,6 +107,7 @@ class Game(Scene):
         self.labels = {}
 
     def render(self, screen:pygame.Surface):
+        screen.blit(self.bg, (0, 0))
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
         self.draw_eval_bar(screen)
         screen.blit(self.board.image, (config.margin + config.eval_bar_width, config.margin))
@@ -237,9 +239,9 @@ class Game(Scene):
 
     def handle_winner(self):
         if self.board.winner == 'White':
-            text = 'Checkmate !\nWhite win'
+            text = 'Checkmate !\n  White win'
         elif self.board.winner == 'Black' :
-            text = 'Checkmate !\nBlack win'
+            text = 'Checkmate !\n  Black win'
         elif self.board.winner == 'Stalemate':
             text = 'Stalemate'
         elif self.board.winner == 'Draw by threefold repetition':
@@ -259,19 +261,22 @@ class Game(Scene):
             )
         })
 
-    def draw_eval_bar(self, screen):
-        value = (self.board.score + self.board.negamax.checkmate) / (self.board.negamax.checkmate*2)
-        
-        if self.board.score >= 0:
-            white_height = value
-            black_height = 1-value
-        else :
-            white_height = 1-value
-            black_height = value
-        white_height *= self.evaluation_bar.height
-        black_height *= self.evaluation_bar.height
-        pygame.draw.rect(screen, Colors.WHITE.value, (self.evaluation_bar.x, self.evaluation_bar.y, self.evaluation_bar.width, white_height))
-        pygame.draw.rect(screen, Colors.BLACK.value, (self.evaluation_bar.x+white_height, self.evaluation_bar.y, self.evaluation_bar.width, black_height))
+    def draw_eval_bar(self, screen, flip=False):
+        value = min(1, (self.board.score + self.board.negamax.checkmate) / (2 * self.board.negamax.checkmate))
+
+        white_height = value * self.evaluation_bar.height
+        black_height = self.evaluation_bar.height - white_height
+ 
+        x, y, width = self.evaluation_bar.x, self.evaluation_bar.y, self.evaluation_bar.width
+
+        if self.board.flipped == -1:
+            pygame.draw.rect(screen, Colors.WHITE.value, pygame.Rect(x, y, width, white_height))
+            pygame.draw.rect(screen, Colors.BLACK.value, pygame.Rect(x, y + white_height, width, black_height))
+        else:
+            pygame.draw.rect(screen, Colors.BLACK.value, pygame.Rect(x, y, width, black_height))
+            pygame.draw.rect(screen, Colors.WHITE.value, pygame.Rect(x, y + black_height, width, white_height))
+
+
 
 
 
