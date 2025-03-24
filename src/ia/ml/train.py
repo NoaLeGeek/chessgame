@@ -6,6 +6,7 @@ import yaml
 import warnings
 
 import torch
+import torch_directml
 from tqdm import tqdm
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
@@ -48,7 +49,7 @@ def setup_device() -> str:
     Returns:
         device (str): The device to be used.
     """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch_directml.device() #torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     return device
 
@@ -206,7 +207,7 @@ def main():
     train_dataloader, val_dataloader = initialize_dataloaders(config, encoded_moves)
     device = setup_device()
 
-    model = build_model(config['model'], variables, encoded_moves).to(device)
+    model = build_model(config['model'], variables, encoded_moves, 1).to(device)
     optimizer = build_optimizer(config['training']['optimizer'], model.parameters(), variables)
     criterion = CrossEntropyLoss()
     

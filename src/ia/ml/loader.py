@@ -69,6 +69,9 @@ def load_model_from_checkpoint(model_path: str, num_checkpoint: int, color: str)
     model = build_model(config["model"], {"num_classes": len(encoded_moves)}, encoded_moves, color)
     checkpoint = torch.load(os.path.join(model_path, 'checkpoints', f'checkpoint_{num_checkpoint}.pth'))
     model.load_state_dict(checkpoint["model_state_dict"])
+    model.eval()
+    model.to('cpu')
+    torch.save(model.state_dict(), 'models/v1/ChessModel.pth')
     return model
 
 def load_model(model_path: str, color: int) -> torch.nn.Module:
@@ -85,6 +88,6 @@ def load_model(model_path: str, color: int) -> torch.nn.Module:
     config = load_config(os.path.join(model_path, 'config.yaml'))
     encoded_moves = load_encoded_moves('data/encoded_moves.json')
     model = build_model(config["model"], {"num_classes": len(encoded_moves)}, encoded_moves, color)
-    state_dict = torch.load(os.path.join(model_path, 'ChessModel.pth'))
+    state_dict = torch.load(os.path.join(model_path, 'ChessModel.pth'), weights_only=True)
     model.load_state_dict(state_dict)
     return model
