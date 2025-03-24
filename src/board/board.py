@@ -709,7 +709,7 @@ class Board:
         columns = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
         from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
-        promotion = notation_to_piece(uci_move[4]) if len(uci_move) == 5 else None
+        promotion = notation_captured_piece(uci_move[4]) if len(uci_move) == 5 else None
         if self.is_empty(from_pos):
             return None
         exist = False

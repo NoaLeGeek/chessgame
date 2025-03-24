@@ -10,7 +10,7 @@ from board.player import Player
 from constants import Fonts, Colors, available_rule
 from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
 from ia.negamax import NegamaxAI, RandomAI
-from ia.ml.loader import load_model
+from ia.ml.loader import load_model, load_model_from_checkpoint
 
 def str_to_ia(ia:str, color, depth=None):
     if 'random' in ia:
@@ -321,7 +321,7 @@ class IaVsIaMenu(Scene):
         self.white_rect = pygame.Rect(config.width*0.45-config.tile_size//2, config.height*0.17, config.tile_size, config.tile_size)
         self.black_king = load_image('assets/piece/alpha/bK.svg', (config.tile_size, config.tile_size))
         self.black_rect = pygame.Rect(config.width*0.66-config.tile_size//2, config.height*0.17, config.tile_size, config.tile_size)
-        self.depth = {1: 1, 2: 1}
+        self.depth = {1: 2, 2: 2}
         super().__init__()
 
     def create_buttons(self):
