@@ -6,7 +6,6 @@ import yaml
 import warnings
 
 import torch
-import torch_directml
 from tqdm import tqdm
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
@@ -49,7 +48,7 @@ def setup_device() -> str:
     Returns:
         device (str): The device to be used.
     """
-    device = torch_directml.device() #torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     return device
 
