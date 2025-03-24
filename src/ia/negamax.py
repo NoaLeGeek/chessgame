@@ -52,7 +52,7 @@ class NegamaxAI(Player):
         for tile in board.board.values():
             if board.is_empty(tile.pos):
                 continue
-            piece_score = piece_heatmaps[tile.piece.color][tile.piece.notation][tile.pos[0]][tile.pos[1]]
+            piece_score = piece_heatmaps[tile.piece.color*board.flipped][tile.piece.notation][tile.pos[0]][tile.pos[1]]
             score += (piece_values[tile.piece.notation.upper()] + piece_score) * tile.piece.color
         return score
 
