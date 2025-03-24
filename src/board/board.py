@@ -11,7 +11,7 @@ from board.player import Player
 from ia.negamax import NegamaxAI
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction, Fonts, Colors
-from board.piece import notation_captured_piece, piece_to_notation, piece_to_num
+from board.piece import notation_to_piece, piece_to_notation, piece_to_num
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
 
 class Board:
@@ -110,7 +110,7 @@ class Board:
                 else:
                     color = 1 if char.isupper() else -1
                     tile = Tile((r, c))
-                    piece_type = notation_captured_piece(char)
+                    piece_type = notation_to_piece(char)
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
                     piece = piece_type(color)
