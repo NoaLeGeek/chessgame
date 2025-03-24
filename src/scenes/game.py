@@ -5,7 +5,7 @@ from board.piece import piece_to_notation
 from utils import left_click, right_click, get_pos, debug_print, load_image
 from constants import Fonts, Colors
 from config import config
-from gui import RectButton, Label
+from gui import RectButton, Label, create_rect_surface
 from board.player import Player
 
 
@@ -239,9 +239,9 @@ class Game(Scene):
 
     def handle_winner(self):
         if self.board.winner == 'White':
-            text = 'Checkmate !\n  White win'
+            text = 'White win'
         elif self.board.winner == 'Black' :
-            text = 'Checkmate !\n  Black win'
+            text = 'Black win'
         elif self.board.winner == 'Stalemate':
             text = 'Stalemate'
         elif self.board.winner == 'Draw by threefold repetition':
@@ -249,7 +249,7 @@ class Game(Scene):
         elif self.board.winner == 'Draw by insufficient material':
             text = '          Draw by\ninsufficient material'
         elif self.board.winner == 'Draw by the 50-move rule':
-            text = 'Draw by the 50-move rule'
+            text = '        Draw by\n the 50-move rule'
 
         self.labels.update({
                 'end': Label(
@@ -258,6 +258,8 @@ class Game(Scene):
                 font_name=Fonts.GEIZER,
                 font_size=int(config.height*0.1),
                 color=Colors.WHITE.value,
+                background=create_rect_surface(Colors.BLACK.value, (config.tile_size*7) if len(text) > 9 else config.tile_size*4, config.height*0.2 if len(text) > 9 else config.height*0.1, 0, 150),
+                background_pos=((config.tile_size*8)//2+config.margin+config.eval_bar_width, config.height//2)
             )
         })
 
