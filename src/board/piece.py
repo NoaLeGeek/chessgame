@@ -3,7 +3,7 @@ from constants import bishop_directions, rook_directions, queen_directions, knig
 from utils import flip_pos, debug_print
 from config import config
 
-def notation_captured_piece(notation: str):
+def notation_to_piece(notation: str):
     return {'P':Pawn, 'K':King, 'R':Rook, 'B':Bishop, 'N':Knight, 'Q':Queen}[notation.upper()]
     
 def piece_to_notation(piece: "Piece"):

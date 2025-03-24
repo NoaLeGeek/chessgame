@@ -18,6 +18,8 @@ class SettingsMenu(Scene):
         self.frame = pygame.Rect(config.width*0.3, config.height*0.2, config.width*0.4, config.height*0.6)
         self.volume_icon = load_image('assets/images/volume.png', (config.height*0.1, config.height*0.1))
         self.volume_icon_rect = self.volume_icon.get_rect(center=(config.width*0.353, config.height*0.732))
+        self.bg = load_image('assets/images/settings_bg.jpeg', (config.width, config.height))
+
 
     def create_buttons(self):
         button_width = config.width * 0.3
@@ -87,8 +89,9 @@ class SettingsMenu(Scene):
             menu.update_volume()
     
     def render(self, screen):
-        screen.fill(Colors.BLACK.value)
+        screen.blit(self.bg, (0, 0))
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.frame)
+        pygame.draw.rect(screen, Colors.WHITE.value, self.frame, width=1)
         pygame.draw.ellipse(screen, Colors.WHITE.value, self.volume_icon_rect)
         screen.blit(self.volume_icon, self.volume_icon_rect)
         super().render(screen)
