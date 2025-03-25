@@ -302,7 +302,7 @@ class BoardAssetsMenu(Scene):
                 height=button_height, 
                 color=Colors.LIGHT_GRAY.value, 
                 hovered_color=Colors.WHITE.value,
-                text=asset, 
+                text=asset.replace('-', ' '), 
                 font_name=Fonts.GEIZER, 
                 font_size=font_size,
                 text_color=Colors.DARK_GRAY.value, 
