@@ -11,8 +11,9 @@ from board.player import Player
 from ia.negamax import NegamaxAI
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction, Fonts, Colors
-from board.piece import notation_captured_piece, piece_to_notation, piece_to_num
+from board.piece import notation_to_piece, piece_to_notation, piece_to_num
 from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
+from ia.ml.loader import load_model_from_checkpoint
 
 class Board:
     def __init__(self, current_player: Player, waiting_player: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -59,6 +60,7 @@ class Board:
         # IA plays first if the white player is an IA
         if self.current_player.ia == True:
             self.current_player.play_move(self)
+
 
     def _create_board(self, fen: str) -> None:
         """
@@ -110,7 +112,7 @@ class Board:
                 else:
                     color = 1 if char.isupper() else -1
                     tile = Tile((r, c))
-                    piece_type = notation_captured_piece(char)
+                    piece_type = notation_to_piece(char)
                     if not piece_type:
                         raise ValueError(f"Invalid piece notation: {char}")
                     piece = piece_type(color)
@@ -700,16 +702,24 @@ class Board:
                                 matrix[13, move[0], move[1]] = 1 
                                 legal_moves += 1
                             if legal_moves:       
-                                matrix[12, pos[0], pos[1]] = 1            
+                                matrix[12, pos[0], pos[1]] = 1               
         return matrix
 
     def convert_uci_to_move(self, uci_move):
         columns = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
         from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
-        return self.convert_to_move(from_pos, to_pos)
+        promotion = notation_captured_piece(uci_move[4]) if len(uci_move) == 5 else None
+        if self.is_empty(from_pos):
+            return None
+        exist = False
+        for move in self.current_player.get_moves(self):
+            if (move.from_pos, move.to_pos) == (from_pos, to_pos):
+                exist = True
+        if not exist:
+            return None
+        return self.convert_to_move(from_pos, to_pos, promotion)
 
-    
     def update_history(self):
         moves = self.move_tree.get_root_to_leaf()
         start_num = max(1, ceil((len(moves) - 20) / 2)) if len(moves) > 20 else 1

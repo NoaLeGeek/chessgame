@@ -10,7 +10,7 @@ from board.player import Player
 from constants import Fonts, Colors, available_rule
 from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
 from ia.negamax import NegamaxAI, RandomAI
-from ia.ml.loader import load_model_from_checkpoint
+from ia.ml.loader import load_model, load_model_from_checkpoint
 
 def str_to_ia(ia:str, color, depth=None):
     if 'random' in ia:
@@ -18,14 +18,15 @@ def str_to_ia(ia:str, color, depth=None):
     elif 'negamax' in ia:
         ia = 'negamax'
     elif 'neural_network' in ia:
-        ia == 'neural_network'
-    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'neural_network':None}[ia]
+        ia = 'neural_network'
+    return {'random':RandomAI(color), 'negamax':NegamaxAI(color, depth), 'neural_network':load_model('models/v1', color)}[ia]
 
 class SetupMenu(Scene):
     def __init__(self):
         super().__init__()
         self.player1 = Player(1)
         self.player2 = Player(-1)
+
         self.frame = pygame.Rect(config.width*0.2, config.height*0.2, config.width*0.6, config.height*0.6)
         self.bg = load_image('assets/images/setup_bg.jpg', (config.width, config.height))
 

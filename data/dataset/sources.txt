@@ -1,1 +1,1 @@
-datasets are taken from https://lumbrasgigabase.com
+Datasets were built with pgn files from https://www.pgnmentor.com/files.html
