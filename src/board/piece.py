@@ -181,10 +181,39 @@ class Pawn(Piece):
 
 class Rook(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
+        """
+        Initializes a chess piece with a specified color and optional image.
+
+        Attributes:
+            color (int): The color of the chess piece, typically represented as an integer (e.g., 0 for white, 1 for black).
+            image (pygame.Surface, optional): The graphical representation of the chess piece. Defaults to None.
+            notation (str): The notation symbol for the chess piece. Defaults to 'R' (e.g., for a rook).
+
+        Parameters:
+            color (int): The color of the chess piece.
+            image (pygame.Surface, optional): The image representing the chess piece. Defaults to None.
+        """
         super().__init__(color, image)
         self.notation = 'R'
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Calculates all possible moves for a piece on the board from a given position.
+
+        This function determines the valid moves for a piece based on its movement
+        rules (e.g., rook-like movement in this case). It considers the boundaries
+        of the board, empty squares, and enemy pieces that can be captured.
+
+        Parameters:
+            board: The game board object that provides methods to check bounds,
+                   piece presence, and piece ownership.
+            from_pos (tuple[int, int]): The current position of the piece on the board
+                                        as a tuple of (row, column).
+
+        Returns:
+            list[tuple[int, int]]: A list of tuples representing the valid positions
+                                   the piece can move to.
+        """
         self.moves = []
         for d_pos in rook_directions:
             new_pos = (from_pos[0] + d_pos[0], from_pos[1] + d_pos[1])
@@ -201,10 +230,37 @@ class Rook(Piece):
 
 class Bishop(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
+        """
+        Initializes a chess piece with a specified color and optional image.
+
+        Parameters:
+            color (int): The color of the chess piece. Typically, 0 for white and 1 for black.
+            image (pygame.Surface, optional): The graphical representation of the chess piece. Defaults to None.
+
+        Attributes:
+            notation (str): The notation representing the piece. Defaults to 'B' (e.g., for a Bishop).
+        """
         super().__init__( color, image)
         self.notation = 'B'
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Calculates all possible moves for a piece on the board from a given position.
+
+        This function determines the valid moves for a piece based on its movement 
+        rules (e.g., bishop-like movement in this case) and the current state of the board.
+
+        Parameters:
+            board: The board object representing the current state of the chess game. 
+                   It provides methods to check if a position is within bounds, 
+                   if a position is empty, and to retrieve a piece at a specific position.
+            from_pos (tuple[int, int]): The starting position of the piece as a tuple 
+                                        (row, column).
+
+        Returns:
+            list[tuple[int, int]]: A list of tuples representing the valid positions 
+                                   the piece can move to.
+        """
         self.moves = []
         for d_pos in bishop_directions:
             new_pos = (from_pos[0] + d_pos[0], from_pos[1] + d_pos[1])
@@ -222,10 +278,40 @@ class Bishop(Piece):
 
 class Knight(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
+        """
+        Initializes a chess piece with a specified color and optional image.
+
+        Attributes:
+            color (int): The color of the chess piece, typically represented as an integer (e.g., 0 for white, 1 for black).
+            image (pygame.Surface, optional): The graphical representation of the chess piece. Defaults to None.
+            notation (str): The notation symbol for the piece, initialized as 'N'.
+
+        Parameters:
+            color (int): The color of the chess piece.
+            image (pygame.Surface, optional): The image representing the chess piece. Defaults to None.
+        """
         super().__init__( color, image)
         self.notation = 'N'
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Calculates all possible moves for a knight piece from a given position on the board.
+
+        This method determines the valid moves for a knight based on its movement pattern 
+        (L-shaped moves) and the current state of the board. It checks if the target positions 
+        are within the board boundaries and whether they are either empty or occupied by an 
+        enemy piece.
+
+        Parameters:
+            board: The game board object that provides methods to check bounds, 
+                   piece presence, and piece ownership.
+            from_pos (tuple[int, int]): The current position of the knight on the board 
+                                        as a tuple of (row, column).
+
+        Returns:
+            list[tuple[int, int]]: A list of valid target positions (row, column) 
+                                   that the knight can move to.
+        """
         self.moves = []
         for d_pos in knight_directions:
             new_pos = (from_pos[0] + d_pos[0], from_pos[1] + d_pos[1])
@@ -237,10 +323,38 @@ class Knight(Piece):
 
 class Queen(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
+        """
+        Initializes a chess piece with a specified color and optional image.
+
+        Attributes:
+            notation (str): The notation representing the piece, default is 'Q' (Queen).
+
+        Parameters:
+            color (int): The color of the piece, typically 0 for white and 1 for black.
+            image (pygame.Surface, optional): The graphical representation of the piece. Defaults to None.
+        """
         super().__init__(color, image)
         self.notation = 'Q'
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Calculates all possible moves for a piece on the board from a given position.
+
+        This function determines the valid moves for a piece based on its movement
+        directions (e.g., queen directions) and the state of the board. It considers
+        whether the destination squares are empty, occupied by an enemy piece, or
+        occupied by an allied piece.
+
+        Parameters:
+            board: The game board object that provides methods to check bounds,
+                   piece positions, and piece ownership.
+            from_pos (tuple[int, int]): The current position of the piece on the board,
+                                        represented as a tuple of (row, column).
+
+        Returns:
+            list[tuple[int, int]]: A list of valid moves represented as tuples of
+                                   (row, column) positions.
+        """
         self.moves = []
         for d_pos in queen_directions:
             new_pos = (from_pos[0] + d_pos[0], from_pos[1] + d_pos[1])
@@ -258,10 +372,37 @@ class Queen(Piece):
     
 class King(Piece):
     def __init__(self, color: int, image: pygame.Surface = None):
+        """
+        Initializes a Piece object with a specified color and optional image.
+
+        Parameters:
+            color (int): The color of the piece, typically represented as an integer (e.g., 0 for white, 1 for black).
+            image (pygame.Surface, optional): A pygame Surface object representing the visual representation of the piece. Defaults to None.
+
+        Attributes:
+            notation (str): The notation symbol for the piece, initialized as 'K'.
+        """
         super().__init__(color, image)
         self.notation = 'K'
 
     def calc_moves(self, board, from_pos: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Calculates all possible moves for a chess piece from a given position on the board.
+
+        This function determines the valid moves for a piece based on its movement rules, 
+        the current state of the board, and special rules such as castling. It updates the 
+        `self.moves` attribute with the list of valid moves.
+
+        Parameters:
+            board (Board): The current state of the chessboard, which provides methods 
+                           to check bounds, piece positions, and other game rules.
+            from_pos (tuple[int, int]): The current position of the piece as a tuple 
+                                        (row, column).
+
+        Returns:
+            list[tuple[int, int]]: A list of tuples representing the valid positions 
+                                   the piece can move to.
+        """
         self.moves = []
         for d_pos in queen_directions:
             new_pos = (from_pos[0] + d_pos[0], from_pos[1] + d_pos[1])
