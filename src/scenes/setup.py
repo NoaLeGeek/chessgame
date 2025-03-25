@@ -605,9 +605,9 @@ class IaVsIaMenu(Scene):
                 text=ia,
                 font_name=Fonts.GEIZER,
                 font_size=int(config.height * 0.08),
-                color=Colors.GRAY.value if (ia in ['neural_network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
+                color=Colors.GRAY.value if (ia in ['neural network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']) else Colors.WHITE.value,
             )
-            for i, ia in enumerate(['random', 'negamax', 'neural_network'])
+            for i, ia in enumerate(['random', 'negamax', 'neural network'])
         }
 
         self.labels.update(ia_labels)
@@ -674,8 +674,10 @@ class IaVsIaMenu(Scene):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 for ia, button in self.white_buttons.items():
-                    if button.is_clicked() and not (ia in ['neural_network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']): 
+
+                    if button.is_clicked() and not (ia in ['neural_network1', 'negamax1'] and not config.rules['classic'] and not config.rules['chess960']): 
                         self.update_ia(1, ia, button, self.white_buttons)
                 for ia, button in self.black_buttons.items():
-                    if button.is_clicked() and not (ia in ['neural_network', 'negamax'] and not config.rules['classic'] and not config.rules['chess960']): 
+                    if button.is_clicked() and not (ia in ['neural_network2', 'negamax2'] and not config.rules['classic'] and not config.rules['chess960']): 
                         self.update_ia(2, ia, button, self.black_buttons)
+        
