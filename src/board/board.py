@@ -735,8 +735,12 @@ class Board:
             list[Move]: A list of filtered Move objects that are valid for the current game state.
         """
         moves = [self.convert_to_move(tile.pos, move) for move in tile.piece.calc_moves(self, tile.pos)]
+        for move in self.current_player.get_moves(self):
+            if move.is_capture():
+                print("Capture")
+            print(f"{move.from_pos} -> {move.to_pos}")
         if config.rules["giveaway"] == True:
-            if len([move for move in self.current_player.get_moves() if move.is_capture()]) == 0:
+            if len([move for move in self.current_player.get_moves(self) if move.is_capture()]) != 0:
                 return [move for move in moves if move.is_capture()]
             else:
                 return list(filter(lambda move: not move.castling, moves))
