@@ -6,7 +6,7 @@ from constants import Colors
 
 def main():
     pygame.init()
-    pygame.display.set_caption("Chessgame")
+    pygame.display.set_caption("CheckThisOut")
     pygame.mixer.init()
     config.set_dimensions(*pygame.display.get_desktop_sizes()[0])
     pygame.mixer.music.set_volume(config.volume)
