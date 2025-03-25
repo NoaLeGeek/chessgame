@@ -185,9 +185,6 @@ class Config:
             rule (str): The name of the rule to update.
             value (bool, optional): The new value to set for the rule. If not provided, the rule's
                                     value will be toggled.
-
-        Returns:
-            None
         """
         if value is None:
             value = not bool(self.rules.get(rule))

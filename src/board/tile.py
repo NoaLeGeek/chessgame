@@ -65,9 +65,6 @@ class Tile:
         based on its grid position (`self.pos`) and updates the `self.coord` attribute.
         The calculation takes into account the tile size, margin, and evaluation bar width
         defined in the `config` module.
-
-        Returns:
-            None: This method updates the `self.coord` attribute in place.
         """
         self.coord = (self.pos[1] * config.tile_size + config.margin + config.eval_bar_width, self.pos[0] * config.tile_size + config.margin)
 
@@ -77,9 +74,6 @@ class Tile:
 
         This method updates the tile's position by flipping it using the `flip_pos` function.
         After flipping, it recalculates the tile's position on the board by calling `calc_position`.
-
-        Returns:
-            None
         """
         self.pos = flip_pos(self.pos)
         self.calc_position()

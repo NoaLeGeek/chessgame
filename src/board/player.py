@@ -55,9 +55,6 @@ class Player:
         Parameters:
             piece (Piece): The piece object to be removed. It must have a `notation` attribute
                            that identifies the type of piece (e.g., 'K' for king).
-
-        Returns:
-            None
         """
         self.pieces[piece.notation].remove(piece)
         if piece.notation == 'K':
