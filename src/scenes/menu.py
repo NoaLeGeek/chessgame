@@ -9,11 +9,23 @@ from board.player import Player
 from scenes.setup import SetupMenu
 
 class MainMenu(Scene):
+    """
+    Represents the main menu of the game, providing navigation to different sections such as
+    starting the game, accessing settings, viewing credits, or quitting the application.
+    """
+
     def __init__(self):
+        """
+        Initializes the main menu with a background video and prepares buttons for navigation.
+        """
         super().__init__()
         self.video_player = VideoPlayer("assets/video/chess.mp4", config.width, config.height)
-        
+
     def create_buttons(self):
+        """
+        Creates the interactive buttons for the main menu, allowing the user to start the game,
+        access settings, view credits, read the rules, or quit the game.
+        """
         button_width = config.width * 0.27
         button_height = config.height * 0.1
         font_size_1 = int(button_height * 0.75)
@@ -100,21 +112,50 @@ class MainMenu(Scene):
         }
 
     def create_labels(self):
-        title_background =  create_rect_surface(Colors.WHITE.value, config.width*0.6, config.height*0.22, border_radius=int(config.height*0.055), border_width = int(config.height*0.01), border_color = Colors.DARK_GRAY.value)
+        """
+        Creates the labels for the main menu, including the game title.
+        """
+        title_background = create_rect_surface(
+            Colors.WHITE.value, config.width*0.6, config.height*0.22,
+            border_radius=int(config.height*0.055),
+            border_width=int(config.height*0.01),
+            border_color=Colors.DARK_GRAY.value
+        )
         self.labels = {
-            "title": Label((config.width*0.5, config.height*0.185), 'CheckThisOut', Fonts.ONE_SLICE,  int(config.height*0.2), Colors.DARK_GRAY.value, title_background, (config.width*0.5, config.height*0.17))
+            "title": Label(
+                (config.width*0.5, config.height*0.185), 'CheckThisOut',
+                Fonts.ONE_SLICE, int(config.height*0.2), Colors.DARK_GRAY.value,
+                title_background, (config.width*0.5, config.height*0.17)
+            )
         }
         
     def render(self, screen):
+        """
+        Renders the main menu scene, including the background video, labels, and buttons.
+        
+        Args:
+            screen (pygame.Surface): The pygame screen object where the scene will be rendered.
+        """
         self.video_player.play(screen)
         super().render(screen)
 
 
+
 class CreditsMenu(Scene):
+    """
+    Represents the credits menu, displaying the game's credits and allowing users to return to the previous menu.
+    """
+
     def __init__(self):
+        """
+        Initializes the credits menu without additional components.
+        """
         super().__init__()
 
     def create_buttons(self):
+        """
+        Creates the back button to return to the previous menu.
+        """
         self.buttons = {
             'back': RectButton(
                 x=config.width*0.955,
@@ -132,6 +173,9 @@ class CreditsMenu(Scene):
         }
 
     def create_labels(self):
+        """
+        Loads and creates the label displaying the credits from a text file.
+        """
         with open('assets/text/credits.txt', 'r', encoding='utf-8') as file:
             text = file.read()
         self.labels = {
@@ -141,11 +185,5 @@ class CreditsMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=int(config.height*0.1), 
                 color=Colors.WHITE.value
-                )
+            )
         }
-
-    def render(self, screen):
-        super().render(screen)
-    
-    def handle_event(self, event):
-        super().handle_event(event)

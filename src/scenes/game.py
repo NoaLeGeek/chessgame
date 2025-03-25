@@ -342,7 +342,7 @@ class Game(Scene):
         Args:
             screen (pygame.Surface): The screen where the evaluation bar is drawn.
         """
-        value = min(1, (self.board.score*2 + self.board.negamax.checkmate) / (2 * self.board.negamax.checkmate))
+        value = max(0, min(1, (self.board.score*30 + self.board.negamax.checkmate) / (2 * self.board.negamax.checkmate)))
 
         white_height = value * self.evaluation_bar.height
         black_height = self.evaluation_bar.height - white_height
