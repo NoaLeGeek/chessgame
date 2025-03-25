@@ -31,14 +31,14 @@ model:
       args: [512, 'num_classes']
 
 data:
-  train_path: 'data/dataset/output.pgn'
-  val_path: 'data/dataset/Kasparov.pgn'
+  train_path: ''
+  val_path: ''
 
 training:
   num_epochs: 200
   batch_size: 64
   num_workers: 4
-  checkpoint: 14
+  checkpoint: 0
 
   optimizer:
     AdamW: 

@@ -1,7 +1,6 @@
 import json
 
 import torch
-import torch_directml
 import numpy as np
 import torch.nn as nn
 
