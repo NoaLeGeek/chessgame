@@ -12,8 +12,7 @@ from ia.negamax import NegamaxAI
 from board.move import Move, MoveTree
 from constants import castling_king_column, en_passant_direction, Fonts, Colors
 from board.piece import notation_to_piece, piece_to_notation, piece_to_num
-from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, sign, debug_print, play_sound
-from ia.ml.loader import load_model_from_checkpoint
+from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, debug_print, play_sound
 
 class Board:
     def __init__(self, current_player: Player, waiting_player: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
@@ -709,7 +708,7 @@ class Board:
         columns = {"a":0, "b":1, "c":2, "d":3, "e":4, "f":5, "g":6, "h":7}
         from_pos = (8-int(uci_move[1]), columns[uci_move[0]])
         to_pos = (8-int(uci_move[3]), columns[uci_move[2]])
-        promotion = notation_captured_piece(uci_move[4]) if len(uci_move) == 5 else None
+        promotion = notation_to_piece(uci_move[4]) if len(uci_move) == 5 else None
         if self.is_empty(from_pos):
             return None
         exist = False
