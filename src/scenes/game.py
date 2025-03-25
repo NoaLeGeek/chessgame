@@ -234,8 +234,6 @@ class Game(Scene):
                 self.board.move_tree.go_next(self.board)
             if keys[pygame.K_DOWN]:
                 self.board.move_tree.go_previous(self.board)
-            if keys[pygame.K_t]:
-                print(self.board.history)
 
     def handle_winner(self):
         if self.board.winner == 'White':
