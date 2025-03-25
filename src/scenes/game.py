@@ -217,9 +217,6 @@ class Game(Scene):
                 self.board = Board(self.current_player if self.current_player.color == 1 else self.waiting_player, self.current_player if self.current_player.color == -1 else self.waiting_player)
             if keys[pygame.K_f]:
                 self.board.flip_board()
-            if keys[pygame.K_SPACE]:
-                move = self.board.ia.get_best_move(self.board)
-                move.execute(self.board)
             if keys[pygame.K_LEFT]:
                 if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
                     self.board.move_tree.go_root(self.board)
