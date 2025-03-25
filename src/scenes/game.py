@@ -10,7 +10,19 @@ from board.player import Player
 
 
 class Game(Scene):
+    """
+    Represents the main game scene where players can interact with the chessboard,
+    make moves, and view game progress.
+    """
     def __init__(self, current_player: Player, waiting_player: Player):
+        """
+        Initializes the game scene with the given players and sets up the board,
+        UI elements, and game state.
+        
+        Args:
+            current_player (Player): The player who starts the game.
+            waiting_player (Player): The opponent player.
+        """
         self.current_player = current_player
         self.waiting_player = waiting_player
         self.board = Board(current_player, waiting_player, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -23,6 +35,10 @@ class Game(Scene):
         super().__init__()
 
     def create_buttons(self):
+        """
+        Creates buttons for UI interactions such as flipping the board, undoing/redoing moves,
+        and navigating move history.
+        """
         font_size = int(config.height*0.06)
 
         self.buttons = {
@@ -104,9 +120,18 @@ class Game(Scene):
         }
 
     def create_labels(self):
+        """
+        Initializes label elements for the game UI.
+        """
         self.labels = {}
 
     def render(self, screen:pygame.Surface):
+        """
+        Renders the game scene, including the board and UI elements.
+        
+        Args:
+            screen (pygame.Surface): The pygame screen object where the scene is rendered.
+        """
         screen.blit(self.bg, (0, 0))
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.history_background)
         self.draw_eval_bar(screen)
@@ -128,6 +153,9 @@ class Game(Scene):
         super().render(screen)
         
     def update(self):
+        """
+        Updates the game state, including AI moves and game-over conditions.
+        """
         super().update()
         if self.board.game_over == False and self.board.current_player.ia == True:
             if self.ia_counter >= 1:
@@ -139,7 +167,13 @@ class Game(Scene):
         if self.board.winner and not self.labels:
             self.handle_winner()
 
-    def _draw_pieces(self, screen):
+    def _draw_pieces(self, screen:pygame.Surface):
+        """
+        Draws all pieces on the board.
+        
+        Args:
+            screen (pygame.Surface): The screen where pieces are drawn.
+        """
         for tile in self.board.board.values():
             if tile is None:
                 raise ValueError("Tile is None")
@@ -151,8 +185,13 @@ class Game(Scene):
                 raise ValueError(f"Piece image is None for {tile.piece}")
             screen.blit(tile.piece.image, tile.coord)
 
-    def _draw_highlight(self, screen):
-        """Draws the highlighted squares on the board."""
+    def _draw_highlight(self, screen:pygame.Surface):
+        """
+        Draws highlights on squares for selected pieces or legal moves.
+        
+        Args:
+            screen (pygame.Surface): The screen where highlights are drawn.
+        """
         highlight_surface = pygame.Surface((config.tile_size, config.tile_size), pygame.SRCALPHA)
         for tile in self.board.board.values():
             if tile.highlight_color is not None:
@@ -160,7 +199,13 @@ class Game(Scene):
                 x, y = tile.pos[1] * config.tile_size + config.margin + config.eval_bar_width, tile.pos[0] * config.tile_size + config.margin
                 screen.blit(highlight_surface, (x, y))
 
-    def _draw_moves(self, screen):
+    def _draw_moves(self, screen:pygame.Surface):
+        """
+        Draws potential moves for a selected piece.
+        
+        Args:
+            screen (pygame.Surface): The screen where move indicators are drawn.
+        """
         if self.board.promotion is not None:
             return
         for move in self.board.selected.piece.moves:
@@ -173,7 +218,13 @@ class Game(Scene):
                 pygame.draw.circle(transparent_surface, (0, 0, 0, 63), (config.tile_size // 2, config.tile_size // 2), config.tile_size // 8)
             screen.blit(transparent_surface, (move.to_pos[1] * config.tile_size + config.margin + config.eval_bar_width, move.to_pos[0] * config.tile_size + config.margin))
 
-    def _draw_promotion(self, screen):
+    def _draw_promotion(self, screen:pygame.Surface):
+        """
+        Displays the piece promotion selection when a pawn reaches the last rank.
+        
+        Args:
+            screen (pygame.Surface): The screen where promotion options are drawn.
+        """
         piece = self.board.selected.piece
         pos = self.board.promotion
         # Drawing the promotion's frame
@@ -187,14 +238,26 @@ class Game(Scene):
             image = self.board.piece_images[("w" if piece.color == 1 else "b") + piece_to_notation(type_piece)]
             screen.blit(image, (pos[1] * config.tile_size + config.margin + config.eval_bar_width, (pos[0] + i * self.board.flipped*piece.color) * config.tile_size + config.margin))
 
-    def handle_left_click(self, keys):
+    def handle_left_click(self, keys:dict):
+        """
+        Handles left mouse click interactions.
+
+        Args:
+            keys (dict): Dictionary of pressed keys.
+        """
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("LEFT CLICK", pos)
         if self.board.in_bounds(pos):
             if self.board.game_over == False and self.board.current_player.ia == -1:
                 self.board.select(pos)
 
-    def handle_right_click(self, keys):
+    def handle_right_click(self, keys:dict):
+        """
+        Handles right mouse click interactions.
+
+        Args:
+            keys (dict): Dictionary of pressed keys.
+        """
         pos = get_pos(pygame.mouse.get_pos())
         debug_print("RIGHT CLICK", pos)
         if self.board.in_bounds(pos):
@@ -205,6 +268,12 @@ class Game(Scene):
             self.board.highlight_tile(highlight_color, pos)
 
     def handle_event(self, event:pygame.event.Event):
+        """
+        Handles player inputs such as mouse clicks and keyboard events.
+        
+        Args:
+            event (pygame.event.Event): The event triggered by the player.
+        """
         super().handle_event(event)
         keys = pygame.key.get_pressed()
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -238,6 +307,9 @@ class Game(Scene):
                 print(self.board.history)
 
     def handle_winner(self):
+        """
+        Handles the display of the game-winning message when a player wins.
+        """
         if self.board.winner == 'White':
             text = 'White win'
         elif self.board.winner == 'Black' :
@@ -263,8 +335,14 @@ class Game(Scene):
             )
         })
 
-    def draw_eval_bar(self, screen, flip=False):
-        value = min(1, (self.board.score + self.board.negamax.checkmate) / (2 * self.board.negamax.checkmate))
+    def draw_eval_bar(self, screen:pygame.Surface):
+        """
+        Draws the evaluation bar indicating the game's current evaluation score.
+        
+        Args:
+            screen (pygame.Surface): The screen where the evaluation bar is drawn.
+        """
+        value = min(1, (self.board.score*2 + self.board.negamax.checkmate) / (2 * self.board.negamax.checkmate))
 
         white_height = value * self.evaluation_bar.height
         black_height = self.evaluation_bar.height - white_height
