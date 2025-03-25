@@ -5,6 +5,29 @@ import os
 
 class Config:
     def __init__(self):
+        """
+        Initializes the configuration object by reading settings from a configuration file.
+
+        This constructor uses the `configparser` module to parse a configuration file (`config.cfg`) 
+        and initializes various attributes of the object based on the file's contents. 
+        These attributes include general settings, asset paths, board dimensions, debug mode, 
+        and a dictionary of chess rule variations.
+
+        Attributes:
+            config (ConfigParser): The configuration parser object used to read the configuration file.
+            fps (int): Frames per second setting for the application.
+            volume (float): Volume level for the application.
+            piece_asset (str): Path to the chess piece assets.
+            board_asset (str): Path to the chessboard assets.
+            sound_asset (str): Path to the sound assets.
+            flipped_assets (bool): Whether the assets are flipped.
+            background_asset (str): Path to the background asset.
+            rows (int): Number of rows on the chessboard.
+            columns (int): Number of columns on the chessboard.
+            debug (bool): Debug mode flag.
+            rules (dict): A dictionary of chess rule variations, where each key is a rule name 
+                          (str) and the value is a boolean indicating whether the rule is enabled.
+        """
         self.config = configparser.ConfigParser()
         self.config.read('config.cfg')
         self.fps = self.config.getint('GENERAL', 'fps')
@@ -117,13 +140,34 @@ class Config:
             "bachelor": False,
         }
 
+    # Not implemented
     def save(self):
         pass
 
     def set_dimensions(self, width, height):
-        #self.dimensions = (width, height)
-        #self.height = self.config.getint('GENERAL', 'height') if self.config.getint('GENERAL', 'height') else self.dimensions[1] - 48
-        #self.width = self.height
+        """
+        Sets the dimensions and calculates related properties for a chess game board.
+
+        This method adjusts the height of the board to maintain a 16:9 aspect ratio 
+        based on the given width. It also calculates the margin, tile size, and 
+        evaluation bar width based on the board's dimensions and the number of columns.
+
+        Parameters:
+            width (int): The width of the chess game board.
+            height (int): The height of the chess game board. This value is recalculated 
+                          internally to maintain a 16:9 aspect ratio.
+
+        Attributes:
+            self.width (int): The width of the chess game board.
+            self.height (int): The height of the chess game board, adjusted to maintain 
+                               a 16:9 aspect ratio.
+            self.margin (int): The margin size around the board, calculated based on 
+                               the height and number of columns.
+            self.tile_size (int): The size of each tile on the board, calculated based 
+                                  on the height and number of columns.
+            self.eval_bar_width (int): The width of the evaluation bar, calculated as 
+                                       half the tile size.
+        """
         self.width = width
         self.height = int(self.width*(9/16))
         self.margin = self.height//(self.columns*2 + 2)
@@ -131,15 +175,22 @@ class Config:
         self.eval_bar_width = self.tile_size//2
 
     def update_rule(self, rule, value = None):
+        """
+        Updates the value of a specific rule in the rules dictionary.
+
+        If a value is provided, the rule will be set to that value. If no value is provided,
+        the method will toggle the current value of the rule (i.e., switch between True and False).
+
+        Parameters:
+            rule (str): The name of the rule to update.
+            value (bool, optional): The new value to set for the rule. If not provided, the rule's
+                                    value will be toggled.
+
+        Returns:
+            None
+        """
         if value is None:
             value = not bool(self.rules.get(rule))
         self.rules[rule] = value
-
-    def resource_path(self, relative_path):
-        try:
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-        return os.path.join(base_path, relative_path)
 
 config = Config()
