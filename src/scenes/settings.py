@@ -55,7 +55,7 @@ class SettingsMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
                 text_color=Colors.BLACK.value, 
-                command=lambda: self.show_menu(self.piece_assets_menu)
+                command=lambda: self.change_menu(self.piece_assets_menu)
             ),
             "board": RectButton(
                 x=button_x,
@@ -68,7 +68,7 @@ class SettingsMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
                 text_color=Colors.BLACK.value, 
-                command=lambda: self.show_menu(self.board_assets_menu)
+                command=lambda: self.change_menu(self.board_assets_menu)
             ),
             "sound": RectButton(
                 x=button_x,
@@ -81,7 +81,7 @@ class SettingsMenu(Scene):
                 font_name=Fonts.GEIZER, 
                 font_size=font_size, 
                 text_color=Colors.BLACK.value, 
-                command=lambda: self.show_menu(self.sound_assets_menu)
+                command=lambda: self.change_menu(self.sound_assets_menu)
             ),
             'back': RectButton(
                 x=config.width*0.955,
@@ -98,41 +98,6 @@ class SettingsMenu(Scene):
             )
         }
 
-    def create_labels(self):
-        """
-        Creates the labels to indicate the settings options: Volume, Piece Assets, Board Assets, and Sound Assets.
-        """
-        self.labels = {
-            "volume": Label(
-                center=(config.width*0.35, config.height*0.75),
-                text="VOLUME",
-                font_name=Fonts.GEIZER,
-                font_size=int(config.height*0.05),
-                color=Colors.WHITE.value
-            ),
-            "piece_assets": Label(
-                center=(config.width*0.35, config.height*0.3),
-                text="PIECE ASSETS",
-                font_name=Fonts.GEIZER,
-                font_size=int(config.height*0.05),
-                color=Colors.WHITE.value
-            ),
-            "board_assets": Label(
-                center=(config.width*0.35, config.height*0.45),
-                text="BOARD ASSETS",
-                font_name=Fonts.GEIZER,
-                font_size=int(config.height*0.05),
-                color=Colors.WHITE.value
-            ),
-            "sound_assets": Label(
-                center=(config.width*0.35, config.height*0.6),
-                text="SOUND ASSETS",
-                font_name=Fonts.GEIZER,
-                font_size=int(config.height*0.05),
-                color=Colors.WHITE.value
-            )
-        }
-
     def render(self, screen):
         """
         Renders the settings menu scene, including the background, frame, labels, and buttons.
@@ -144,10 +109,19 @@ class SettingsMenu(Scene):
         pygame.draw.rect(screen, Colors.DARK_GRAY.value, self.frame, border_radius=int(config.height*0.08))
         pygame.draw.rect(screen, Colors.WHITE.value, self.frame, width=1, border_radius=int(config.height*0.08))
         super().render(screen)
-        
-        # Draw labels for each section
-        for label in self.labels.values():
-            label.draw(screen)
+        self.volume_bar.draw(screen)
+        pygame.draw.ellipse(screen, Colors.WHITE.value, self.volume_icon_rect)
+        screen.blit(self.volume_icon, self.volume_icon_rect)
+        if self.assets_menu:
+            screen.blit(self.filter, (0, 0))
+            self.assets_menu.render(screen)
+
+    def update(self):
+        if not self.assets_menu:
+            super().update()
+            self.volume_bar.update()
+        else :
+            self.assets_menu.update()
     
     def handle_event(self, event):
         """
@@ -156,14 +130,16 @@ class SettingsMenu(Scene):
         Args:
             event (pygame.event): The event to be handled.
         """
-        super().handle_event(event)
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                for button in self.buttons.values():
-                    if button.is_clicked():
-                        button.command()
+        mouse_pos = pygame.mouse.get_pos()
+        if not self.assets_menu:
+            super().handle_event(event)
+        else:
+            self.assets_menu.handle_event(event)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if (mouse_pos[0] < list(self.assets_menu.buttons.values())[0].rect.left or mouse_pos[0] > list(self.assets_menu.buttons.values())[0].rect.right) and (not self.assets_menu.buttons['volume'].is_clicked() if type(self.assets_menu) == SoundAssetsMenu else True):
+                    self.change_menu(None)
     
-    def show_menu(self, menu:Scene):
+    def change_menu(self, menu:Scene):
         """
         Switches the displayed menu to one of the asset menus (piece, board, or sound).
         
@@ -171,8 +147,6 @@ class SettingsMenu(Scene):
             menu (Scene): The menu to be displayed.
         """
         self.assets_menu = menu
-        self.manager.go_to(menu)
-
 
 class PieceAssetsMenu(Scene):
     """
