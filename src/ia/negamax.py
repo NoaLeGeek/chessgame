@@ -1,5 +1,6 @@
-from random import choice, shuffle
+from random import choice
 from constants import piece_values, piece_heatmaps
+from config import config
 
 from board.player import Player
 
@@ -166,7 +167,15 @@ class RandomAI(Player):
         Returns:
             object: A randomly selected legal move from the list of possible moves.
         """
-        moves = [move for move in self.get_moves(board) if move.is_legal(board)]
+        moves = self.get_moves(board)
+        if config.rules["giveaway"] == True:
+            capture_moves = [move for move in moves if move.is_capture()]
+            if len(capture_moves) != 0:
+                moves = capture_moves
+            else:
+                moves = [move for move in moves if not move.castling]
+        else:
+            moves = self.get_legal_moves(board)
         return choice(moves)
     
     def play_move(self, board):
