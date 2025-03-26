@@ -1,0 +1,46 @@
+data
+        assets
+                board
+                font
+                images
+                piece
+                sound
+                text
+                        - credits.txt
+                video
+        dataset
+                - sources.txt
+        models
+                v1
+docs
+        - structure_du_projet.txt
+- requirements.txt
+src
+        board
+                - board.py
+                - move.py
+                - piece.py
+                - player.py
+                - tile.py
+        - config.py
+        - constants.py
+        - gui.py
+        ia
+                ml
+                        - builder.py
+                        - dataset.py
+                        - encoder.py
+                        - loader.py
+                        - model.py
+                        - plotter.py
+                        - train.py
+                - negamax.py
+        - main.py
+        scenes
+                - game.py
+                - menu.py
+                - scene.py
+                - settings.py
+                - setup.py
+        - utils.py
+- test.py
