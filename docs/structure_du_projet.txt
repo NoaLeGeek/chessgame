@@ -58,10 +58,16 @@ src
                 - negamax.py
         Fichier à lancer pour CheckThisOut
         - main.py
+        Interface graphique gérant différents menus
         scenes
+                Le menu du "jeu"
                 - game.py
+                Les objets Menu et Scene servant à l'interface graphique, ainsi que des menus plus petits ne nécessitant pas d'un fichier
                 - menu.py
                 - scene.py
+                Le menu paramètres
                 - settings.py
+                Le menu préparation d'une partie
                 - setup.py
+        Fonctions utilitaires et diverses utilisées dans le projet
         - utils.py
