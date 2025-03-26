@@ -153,8 +153,8 @@ class Config:
         evaluation bar width based on the board's dimensions and the number of columns.
 
         Parameters:
-            width (int): The width of the chess game board.
-            height (int): The height of the chess game board. This value is recalculated 
+            width (int): The width of screen.
+            height (int): The height of the screen. This value is recalculated 
                           internally to maintain a 16:9 aspect ratio.
 
         Attributes:
@@ -170,6 +170,9 @@ class Config:
         """
         self.width = width
         self.height = int(self.width*(9/16))
+        while self.height > height :
+            self.width -= 1
+            self.height = int(self.width*(9/16))
         self.margin = self.height//(self.columns*2 + 2)
         self.tile_size = self.height//(self.columns + 1)
         self.eval_bar_width = self.tile_size//2
