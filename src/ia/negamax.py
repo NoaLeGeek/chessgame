@@ -32,6 +32,7 @@ class NegamaxAI(Player):
 
         This method evaluates all possible moves on the given board and selects the 
         optimal move based on the Negamax algorithm with alpha-beta pruning.
+        If best move is None, the first legal move is returned.
 
         Parameters:
             board (object): The current state of the chessboard. It should be an 
@@ -44,6 +45,10 @@ class NegamaxAI(Player):
                     board object and its move representation.
         """
         best_move, _ = self.negamax(board, self.depth, -self.checkmate, self.checkmate)
+        if best_move is None:
+            legal_moves = board.current_player.get_legal_moves(board)
+            if legal_moves:
+                best_move = legal_moves[0]
         return best_move
 
     def negamax(self, board, depth, alpha, beta):
