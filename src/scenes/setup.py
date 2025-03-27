@@ -32,7 +32,7 @@ def str_to_ia(ia: str, color: int, depth=None):
         ia = 'neural_network'
     return {'random': RandomAI(color), 
             'negamax': NegamaxAI(color, depth), 
-            'neural_network': load_model('models/v1', color)}[ia]
+            'neural_network': load_model('data/models/v1', color)}[ia]
 
 class SetupMenu(Scene):
     """
