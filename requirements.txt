@@ -5,3 +5,5 @@ torch==2.4.1
 pyaml==25.1.0
 matplotlib==3.10.0
 pandas==2.2.3
+chess==1.11.1
+tqdm==4.66.1

@@ -45,14 +45,25 @@ src
         - gui.py
         Dossier regroupant les différentes IA
         ia
-                Le système de neurones
+                Le réseau de neurones
                 ml
+                        Fonctions pour construire dynamiquement le modèle et l'optimiseur à partir d'un fichier YAML
                         - builder.py
+                        L'objet ChessDataset permet de traiter les parties présentes dans un fichier .pgn.
+                        Les fichiers .pgn doivent être placer dans le dossier data/dataset.
                         - dataset.py
+                        Fichier qui génère un mapping (au format JSON) de tous les coups possibles vers un entier.
                         - encoder.py
+                        Fonctions pour charger les éléments nécessaires au fonctionnement du modèle et de son entraînement.
                         - loader.py
+                        L'objet ChessModel qui contient l'architecture du model.
                         - model.py
+                        Permet de tracer les informations relatives à l'entraînement du modèle.
                         - plotter.py
+                        Fichier principal pour entraîner un modèle.
+                        Pour entraîner un modèle, vous devez créer un dossier dédié dans data/models et y placer un fichier
+                        config.yaml, en le configurant sur le même modèle que les autres. Avant d'exécuter ce script, 
+                        assurez-vous d'avoir indiqué au début de celui-ci l'emplacement du dossier du modèle.
                         - train.py
                 L'algorithme de Negamax
                 - negamax.py
