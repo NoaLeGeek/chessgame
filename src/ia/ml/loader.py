@@ -3,10 +3,7 @@ import json
 import yaml
 import torch
 
-try:
-    from builder import build_model, build_optimizer
-except ImportError:
-    from ia.ml.builder import build_model, build_optimizer
+from src.ia.ml.builder import build_model, build_optimizer
 
 def load_encoded_moves(filepath: str) -> dict[str, object]:
     """

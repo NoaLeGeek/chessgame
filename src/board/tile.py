@@ -1,6 +1,6 @@
-from constants import Colors
-from config import config
-from utils import flip_pos
+from src.config import config
+from src.utils import flip_pos
+from src.constants import Colors
 
 class Tile:
     def __init__(self, pos: tuple[int, int]):

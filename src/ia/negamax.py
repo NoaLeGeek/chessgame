@@ -1,8 +1,8 @@
 from random import choice
-from constants import piece_values, piece_heatmaps
-from config import config
 
-from board.player import Player
+from src.config import config
+from src.board.player import Player
+from src.constants import piece_values, piece_heatmaps
 
 
 class NegamaxAI(Player):

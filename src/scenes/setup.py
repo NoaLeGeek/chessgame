@@ -2,15 +2,15 @@ import random
 
 import pygame
 
-from config import config
-from utils import load_image
-from scenes.game import Game
-from scenes.scene import Scene
-from board.player import Player
-from constants import Fonts, Colors, available_rule
-from gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
-from ia.negamax import NegamaxAI, RandomAI
-from ia.ml.loader import load_model, load_model_from_checkpoint
+from src.config import config
+from src.utils import load_image
+from src.scenes.game import Game
+from src.scenes.scene import Scene
+from src.board.player import Player
+from src.constants import Fonts, Colors, available_rule
+from src.gui import RectButton, Label, VideoPlayer, create_rect_surface, RadioButton
+from src.ia.negamax import NegamaxAI, RandomAI
+from src.ia.ml.loader import load_model, load_model_from_checkpoint
 
 def str_to_ia(ia: str, color: int, depth=None):
     """
@@ -33,7 +33,6 @@ def str_to_ia(ia: str, color: int, depth=None):
     return {'random': RandomAI(color), 
             'negamax': NegamaxAI(color, depth), 
             'neural_network': load_model('models/v1', color)}[ia]
-
 
 class SetupMenu(Scene):
     """

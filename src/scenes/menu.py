@@ -1,12 +1,14 @@
 import webbrowser
-from scenes.scene import Scene
-from scenes.game import Game
-from scenes.settings import SettingsMenu
-from gui import RectButton, Label, VideoPlayer, create_rect_surface
-from config import config
-from constants import Fonts, Colors
-from board.player import Player
-from scenes.setup import SetupMenu
+
+from src.config import config
+from src.scenes.game import Game
+from src.scenes.scene import Scene
+from src.board.player import Player
+from src.scenes.setup import SetupMenu
+from src.constants import Fonts, Colors
+from src.scenes.settings import SettingsMenu
+from src.gui import RectButton, Label, VideoPlayer, create_rect_surface
+
 
 class MainMenu(Scene):
     """

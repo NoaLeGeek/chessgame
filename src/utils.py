@@ -1,6 +1,8 @@
-import pygame
 import os
-from config import config
+
+import pygame
+
+from src.config import config
 
 def load_sound(filepath: str):
     """

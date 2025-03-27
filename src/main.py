@@ -1,8 +1,9 @@
 import pygame
-from scenes.scene import SceneManager
-from config import config
-from scenes.menu import MainMenu
-from constants import Colors
+
+from src.scenes.scene import SceneManager
+from src.config import config
+from src.scenes.menu import MainMenu
+from src.constants import Colors
 
 def main():
     pygame.init()

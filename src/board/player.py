@@ -1,5 +1,5 @@
-from config import config
-from board.move import Move
+from src.config import config
+from src.board.move import Move
 
 class Player:
     def __init__(self, color: int):

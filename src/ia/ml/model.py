@@ -4,7 +4,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-from board.player import Player
+from src.board.player import Player
 
 class ChessModel(nn.Module, Player):
     """

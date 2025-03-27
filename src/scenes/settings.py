@@ -1,16 +1,11 @@
 import pygame
 
-from config import config
-from scenes.scene import Scene
-from gui import Label, RectButton, create_rect_surface
-from constants import Colors, Fonts, available_board, available_piece, available_sound
-from utils import generate_piece_images, generate_board_image, load_image, generate_sounds, resize_image
-import pygame
-from config import config
-from scenes.scene import Scene
-from gui import Label, RectButton, create_rect_surface
-from constants import Colors, Fonts, available_board, available_piece, available_sound
-from utils import generate_piece_images, generate_board_image, load_image, generate_sounds, resize_image
+from src.config import config
+from src.scenes.scene import Scene
+from src.gui import Label, RectButton, create_rect_surface
+from src.constants import Colors, Fonts, available_board, available_piece, available_sound
+from src.utils import generate_piece_images, generate_board_image, load_image, generate_sounds, resize_image
+
 
 class SettingsMenu(Scene):
     """

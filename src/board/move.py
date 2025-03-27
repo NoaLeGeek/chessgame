@@ -1,7 +1,7 @@
-from utils import flip_pos, sign, get_value, debug_print, play_sound
-from config import config
-from constants import castling_king_column
-from board.piece import piece_to_notation
+from src.config import config
+from src.constants import castling_king_column
+from src.board.piece import piece_to_notation
+from src.utils import flip_pos, sign, get_value, debug_print, play_sound
 
 class Move:
     def __init__(self, board, from_pos, to_pos, promotion=None):

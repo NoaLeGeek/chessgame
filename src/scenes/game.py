@@ -1,12 +1,13 @@
 import pygame
-from scenes.scene import Scene
-from board.board import Board
-from board.piece import piece_to_notation
-from utils import left_click, right_click, get_pos, debug_print, load_image
-from constants import Fonts, Colors
-from config import config
-from gui import RectButton, Label, create_rect_surface
-from board.player import Player
+
+from src.config import config
+from src.board.board import Board
+from src.scenes.scene import Scene
+from src.board.player import Player
+from src.constants import Fonts, Colors
+from src.board.piece import piece_to_notation
+from src.gui import RectButton, Label, create_rect_surface
+from src.utils import left_click, right_click, get_pos, debug_print, load_image
 
 
 class Game(Scene):

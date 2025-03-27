@@ -4,15 +4,15 @@ from math import ceil
 import pygame
 import numpy as np
 
-from gui import Label
-from config import config
-from board.tile import Tile
-from board.player import Player
-from ia.negamax import NegamaxAI
-from board.move import Move, MoveTree
-from constants import castling_king_column, en_passant_direction, Fonts, Colors
-from board.piece import notation_to_piece, piece_to_notation, piece_to_num
-from utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, play_sound
+from src.gui import Label
+from src.config import config
+from src.board.tile import Tile
+from src.board.player import Player
+from src.ia.negamax import NegamaxAI
+from src.board.move import Move, MoveTree
+from src.constants import castling_king_column, en_passant_direction, Fonts, Colors
+from src.board.piece import notation_to_piece, piece_to_notation, piece_to_num
+from src.utils import generate_piece_images, generate_board_image, generate_sounds, flip_pos, play_sound
 
 class Board:
     def __init__(self, current_player: Player, waiting_player: Player, fen: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):

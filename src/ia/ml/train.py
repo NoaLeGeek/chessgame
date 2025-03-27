@@ -10,9 +10,9 @@ from tqdm import tqdm
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 
-from dataset import ChessDataset
-from builder import build_model, build_optimizer
-from loader import load_checkpoint, load_config, load_encoded_moves
+from src.ia.ml.dataset import ChessDataset
+from src.ia.ml.builder import build_model, build_optimizer
+from src.ia.ml.loader import load_checkpoint, load_config, load_encoded_moves
 
 # Constants
 MODEL_PATH = 'models/v1'

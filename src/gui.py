@@ -1,6 +1,7 @@
 import cv2
 import pygame
-from constants import Colors
+
+from src.constants import Colors
 
 
 def create_rect_surface(color: tuple[int, int, int], width: int, height: int, border_radius: int,

@@ -1,7 +1,7 @@
 import pygame
 
-from config import config
-from utils import singleton
+from src.config import config
+from src.utils import singleton
 
 class Scene:
     """

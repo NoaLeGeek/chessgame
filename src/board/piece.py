@@ -1,7 +1,9 @@
 import pygame
-from constants import bishop_directions, rook_directions, queen_directions, knight_directions, castling_king_column
-from utils import flip_pos
-from config import config
+
+from src.config import config
+from src.utils import flip_pos
+from src.constants import bishop_directions, rook_directions, queen_directions, knight_directions, castling_king_column
+
 
 def notation_to_piece(notation: str) -> "Piece":
     """

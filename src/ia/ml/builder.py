@@ -1,10 +1,8 @@
 import copy
+
 import torch
 
-try:
-    from model import ChessModel
-except ImportError:
-    from ia.ml.model import ChessModel 
+from src.ia.ml.model import ChessModel 
     
 class Builder:
     """
