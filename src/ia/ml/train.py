@@ -15,7 +15,7 @@ from src.ia.ml.builder import build_model, build_optimizer
 from src.ia.ml.loader import load_checkpoint, load_config, load_encoded_moves
 
 # Constants
-MODEL_PATH = 'models/v1'
+MODEL_PATH = 'data/models/v1'
 ENCODED_MOVES_PATH = 'data/encoded_moves.json'
 CONFIG_PATH = os.path.join(MODEL_PATH, 'config.yaml')
 CHECKPOINT_DIR = os.path.join(MODEL_PATH, 'checkpoints')

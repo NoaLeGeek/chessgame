@@ -24,10 +24,7 @@ def main():
         clock.tick(config.fps)
         for event in pygame.event.get():
             manager.handle_event(event)
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    manager.go_back()
-            elif event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:
                 run = False
     pygame.quit()
 
